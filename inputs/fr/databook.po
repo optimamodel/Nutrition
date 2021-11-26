@@ -332,8 +332,8 @@ msgstr "Léger (score HAZ entre -2 et -1)"
 msgid "Moderate (HAZ-score between -3 and -2)"
 msgstr "Modéré (score HAZ entre -3 et -2)"
 
-msgid "High (HAZ-score between < -3)"
-msgstr "Élevé (score HAZ entre < -3)"
+msgid "High (HAZ-score < -3)"
+msgstr "Élevé (score HAZ < -3)"
 
 msgid "Wasting (weight-for-height)"
 msgstr "Amaigrissement (poids-pour-taille)"

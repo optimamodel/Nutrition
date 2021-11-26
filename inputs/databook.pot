@@ -374,7 +374,7 @@ msgstr ""
 msgid "High"
 msgstr ""
 
-msgid "High (HAZ-score between < -3)"
+msgid "High (HAZ-score < -3)"
 msgstr ""
 
 msgid "Hypertensive disorders"

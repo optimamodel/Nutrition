@@ -120,7 +120,7 @@ Given previous stunting (HAZ < -2 in previous age band) - upper
 HAZ status
 Health facility
 High
-High (HAZ-score between < -3)
+High (HAZ-score < -3)
 Hypertensive disorders
 IFA fortification of maize
 IFA fortification of rice

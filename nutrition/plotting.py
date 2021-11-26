@@ -156,7 +156,7 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False, locale=None):
 def plot_prevs_reduce(all_res, all_reduce, locale=None):
     """ Plot prevs for each scenario generated through resampling"""
 
-    _ = utils.get_translator(locale, contacts=False)
+    _ = utils.get_translator(locale, context=False)
     pgettext = utils.get_translator(locale, context=True)
 
     prevs = utils.default_trackers(prev=True, rate=False)
@@ -389,10 +389,12 @@ def plot_alloc(results, optim, geo, locale=None):
     return figs
 
 
-def plot_annu_alloc(results, optim, geo):
+def plot_annu_alloc(results, optim, geo, locale=None):
     """Plots the annual spending for each scenario, coloured by program.
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario
     Generates a plot for each year"""
+
+    pgettext = utils.get_translator(locale, context=True)
 
     # Initialize
     width = 0.35
@@ -444,7 +446,7 @@ def plot_annu_alloc(results, optim, geo):
         ymax = max(bottom)
         if optim or geo:
             xlabs = [res.name for res in results]
-            title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
+            title = pgettext("plotting","Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
             # format x axis
             if valuestr[1] == ".":
@@ -452,12 +454,12 @@ def plot_annu_alloc(results, optim, geo):
             else:
                 valuestr = valuestr[:2]
             if geo:
-                xlab = "Region"
+                xlab = pgettext("plotting","Region")
             else:
-                xlab = "Total available budget (relative to US$%sM)" % valuestr
+                xlab = pgettext("plotting","Total available budget (relative to US$%sM)") % valuestr
         else:
             xlabs = [res.mult if res.mult is not None else res.name for res in results if "#" not in res.name]
-            title = "Annual spending for year %s" % year[k]
+            title = pgettext("plotting","Annual spending for year %s") % year[k]
             xlab = ""  # 'Scenario' # Collides with tick labels
         ax.set_title(title)
         ax.set_xticks(x)
@@ -465,9 +467,9 @@ def plot_annu_alloc(results, optim, geo):
         ax.set_xlabel(xlab)
         ax.set_ylim((0, ymax + ymax * 0.1))
         if scale == 1e1:
-            ylabel = "Spending (US$)"
+            ylabel = pgettext("plotting","Spending (US$)")
         elif scale == 1e6:
-            ylabel = "Spending (US$M)"
+            ylabel = pgettext("plotting","Spending (US$M)")
         else:
             raise Exception("Scale value must be 1e1 or 1e6, not %s" % scale)
         ax.set_ylabel(ylabel)
@@ -490,7 +492,7 @@ def plot_annu_alloc(results, optim, geo):
     return figs
 
 
-def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
+def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
     """Plots the annual spending for each scenario, coloured by program.
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario
     Generates a single plot that represent allocations for each scenario annually
@@ -500,7 +502,9 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
     
     :return a list of figures
     """
-    
+
+    pgettext = utils.get_translator(locale, context=True)
+
     res_list = [res for res in results if resampled_key_str not in res.name]
 
     # Initialize
@@ -526,8 +530,8 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
         for prog in progset:
             thisprog = np.zeros(len(res_list))
             for i, res in enumerate(res_list):
-                # if 'resampled' not in res.name:
-                if not (optim or geo) or (res.name != "Excess budget not allocated"):
+                _ = utils.get_translator(res.locale)
+                if not (optim or geo) or (res.name != _("Excess budget not allocated")):
                 
                     alloc = res.get_allocs(ref=refprogs)  # slightly inefficient to do this for every program
                     try:
@@ -560,7 +564,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
                 bottom += spend
         ymax = max(bottom)
         if optim or geo:
-            title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
+            title = pgettext("plotting","Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack TODO almost certainly this is broken now??
             # format x axis
             if valuestr[1] == ".":
@@ -568,21 +572,21 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
             else:
                 valuestr = valuestr[:2]
             if geo:
-                xlab = "Region"
+                xlab = pgettext("plotting","Region")
             else:
-                xlab = "Total available budget (relative to US$%sM)" % valuestr
+                xlab = pgettext("plotting","Total available budget (relative to US$%sM)") % valuestr
         else:
-            title = "Annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
-            xlab = "Years"
+            title = pgettext("plotting","Annual spending, %s-%s") % (ref.years[pltstart], ref.years[-1])
+            xlab = pgettext("plotting","Years")
     ax.set_title(title)
     ax.set_xticks(year_ticks[1:] + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
     ax.set_xticklabels(year[1:], fontsize=10)
     ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax + ymax * 0.1))
     if scale == 1e1:
-        ylabel = "Spending (US$)"
+        ylabel = pgettext("plotting","Spending (US$)")
     elif scale == 1e6:
-        ylabel = "Spending (US$M)"
+        ylabel = pgettext("plotting","Spending (US$M)")
     else:
         raise Exception("Scale value must be 1e1 or 1e6, not %s" % scale)
     ax.set_ylabel(ylabel)

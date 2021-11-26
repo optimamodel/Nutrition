@@ -7,6 +7,8 @@ import re
 from . import settings, populations, utils, programs
 from .migration import migrate
 from .utils import translate
+from itertools import chain
+
 
 def get_databook_locale(workbook) -> str:
     """
@@ -451,25 +453,25 @@ class DemographicData(object):
     def relative_risks(self):
         # risk areas hidden in spreadsheet (white text)
         # stunting
-        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=1)
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 1), range(26, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc[_("Stunting")].to_dict()
         self.rr_death[_("Stunting")] = self.make_dict2(rr)
         # wasting
-        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=28)
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 28), range(53, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc[_("Wasting")].to_dict()
         self.rr_death[_("Wasting")] = self.make_dict2(rr)
         # anaemia
-        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=55).dropna(axis=1, how="all")
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 55), range(62, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc[_("Anaemia")].to_dict()
         self.rr_death[_("Anaemia")] = self.make_dict2(rr)
         # currently no impact on mortality for anaemia
         self.rr_death[_("Anaemia")].update({age: {cat: {_("Diarrhoea"): 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
         # breastfeeding
-        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=64)
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 64), range(101, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc[_("Breastfeeding")].to_dict()
         self.rr_death[_("Breastfeeding")] = self.make_dict2(rr)
         # diarrhoea
-        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=103).dropna(axis=1, how="all")
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 103), range(108, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc[_("Diarrhoea")].to_dict()
         self.rr_dia = self.make_dict3(rr)
 
@@ -496,7 +498,7 @@ class DemographicData(object):
 
     @translate
     def odds_ratios(self):
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=1)
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
         this_or = or_sheet.loc[_("Condition")].to_dict("index")
         self.or_cond[_("Stunting")] = sc.odict()
         self.or_cond[_("Stunting")][_("Prev stunting")] = this_or[_("Given previous stunting (HAZ < -2 in previous age band)")]
@@ -510,7 +512,7 @@ class DemographicData(object):
         self.or_cond[_("Anaemia")][_("Severe diarrhoea")] = or_sheet.loc[_("Anaemia")].to_dict("index")[_("For anaemia per additional episode of severe diarrhoea")]
         self.or_stunting_prog = or_sheet.loc[_("By program")].to_dict("index")
         self.or_bf_prog = or_sheet.loc[_("Odds ratios for correct breastfeeding by program")].to_dict("index")
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=18).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
         self.or_space_prog = or_sheet.loc[_("Odds ratios for optimal birth spacing by program")].to_dict("index")
 
     @translate
@@ -525,13 +527,13 @@ class DemographicData(object):
 
     @translate
     def anaemia_progs(self):
-        anaem_sheet = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1])
+        anaem_sheet = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
         self.rr_anaem_prog = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].to_dict(orient="index")
         self.or_anaem_prog = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].to_dict(orient="index")
 
     @translate
     def wasting_progs(self):
-        wastingSheet = utils.read_sheet(self._spreadsheet, _("Programs wasting"), [0, 1])
+        wastingSheet = utils.read_sheet(self._spreadsheet, _("Programs wasting"), [0, 1], skiprows=[i for i in range(5, 19)]).dropna(axis=1, how="all")
         treatsam = wastingSheet.loc[_("Odds ratio of SAM when covered by program")].to_dict(orient="index")
         manman = wastingSheet.loc[_("Odds ratio of MAM when covered by program")].to_dict(orient="index")
         self.or_wasting_prog[_("SAM")] = treatsam
@@ -540,15 +542,15 @@ class DemographicData(object):
 
     @translate
     def get_child_progs(self):
-        self.child_progs = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], to_odict=True)
+        self.child_progs = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
 
     @translate
     def get_pw_progs(self):
-        self.pw_progs = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], to_odict=True)
+        self.pw_progs = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
 
     @translate
     def get_bo_risks(self):
-        bo_sheet = utils.read_sheet(self._spreadsheet, _("Birth outcome risks"), [0, 1], skiprows=[0])
+        bo_sheet = utils.read_sheet(self._spreadsheet, _("Birth outcome risks"), [0, 1], skiprows=[i for i in chain(range(25, 81), range(0, 1))]).dropna(axis=1, how="all")
         ors = bo_sheet.loc[_("Odds ratios for conditions")].to_dict("index")
         self.or_cond_bo[_("Stunting")] = ors[_("Stunting (HAZ-score < -2)")]
         self.or_cond_bo[_("MAM")] = ors[_("MAM (WHZ-score between -3 and -2)")]
@@ -559,7 +561,7 @@ class DemographicData(object):
     @translate
     def get_iycf_effects(self, iycf_packs):
         # TODO: need something that catches if iycf packages not included at all.
-        effects = utils.read_sheet(self._spreadsheet, _("IYCF odds ratios"), [0, 1, 2])
+        effects =  utils.read_sheet(self._spreadsheet, _("IYCF odds ratios"), [0, 1, 2], skiprows=[i for i in range(51, 157)]).dropna(axis=1, how="all")
         bf_effects = effects.loc[_("Odds ratio for correct breastfeeding")]
         stunt_effects = effects.loc[_("Odds ratio for stunting")]
         self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
@@ -649,7 +651,7 @@ class ProgramData(object):
         self.locale = get_databook_locale(data.book)
 
         self.settings = settings.Settings(self.locale)
-        self.spreadsheet = data
+        self._spreadsheet = data
         self.prog_set = []
         self.base_prog_set = []
         self.base_cov = []
@@ -674,7 +676,7 @@ class ProgramData(object):
         self.get_famplan_methods()
         self.create_iycf()
         self.recalc_treatsam_prog_costs()
-        self.spreadsheet = None  # Reset to save memory
+        self._spreadsheet = None  # Reset to save memory
         self.validate()
 
     def __repr__(self):
@@ -725,10 +727,10 @@ class ProgramData(object):
     def get_prog_target(self):
         # Load the main spreadsheet into a DataFrame.
 
-        targetPopSheet = utils.read_sheet(self.spreadsheet, _("Programs target population"), [0, 1])
+        targetPopSheet = utils.read_sheet(self._spreadsheet, _("Programs target population"), [0, 1])
 
         # Recalculate cells that need it, and remember in the calculations cache.
-        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
+        baseline = utils.read_sheet(self._spreadsheet, _("Baseline year population inputs"), [0, 1])
         food_insecure = baseline.loc[_("Population data")].loc[_("Percentage of population food insecure (default poor)")].values[0]
         frac_malaria_risk = baseline.loc[_("Population data")].loc[_("Percentage of population at risk of malaria")].values[0]
         school_attendance = baseline.loc[_("Population data")].loc[_("School attendance (percentage of 15-19 year women)")].values[0]
@@ -746,7 +748,7 @@ class ProgramData(object):
         else:
             preeclampsia_prev = baseline.loc[_("Other risks")].loc[_("Prevalence of pre-eclampsia")].values[0]
             eclampsia_prev = baseline.loc[_("Other risks")].loc[_("Prevalence of eclampsia")].values[0]
-        treatsam = self.spreadsheet.parse(sheet_name=_("Treatment of SAM"))
+        treatsam = self._spreadsheet.parse(sheet_name=_("Treatment of SAM"))
         comm_deliv_raw = treatsam.iloc[1][_("Add extension")]
         comm_deliv = pandas.notnull(comm_deliv_raw)
         cash_transfers_row = food_insecure * np.ones(4)
@@ -827,12 +829,12 @@ class ProgramData(object):
 
     @translate
     def get_ref_progs(self):
-        reference = self.spreadsheet.parse(sheet_name=_("Reference programs"), index_col=[0])
+        reference = self._spreadsheet.parse(sheet_name=_("Reference programs"), index_col=[0])
         self.ref_progs = list(reference.index)
 
     @translate
     def get_prog_deps(self):
-        deps = utils.read_sheet(self.spreadsheet, _("Program dependencies"), [0])
+        deps = utils.read_sheet(self._spreadsheet, _("Program dependencies"), [0])
         programDep = sc.odict()
         for program, dependency in deps.iterrows():
             programDep[program] = sc.odict()
@@ -852,7 +854,7 @@ class ProgramData(object):
     @translate
     def get_famplan_methods(self):
         # Load the main spreadsheet into a DataFrame.
-        famplan_methods = utils.read_sheet(self.spreadsheet, _("Programs family planning"), [0])
+        famplan_methods = utils.read_sheet(self._spreadsheet, _("Programs family planning"), [0])
 
         # Recalculate cells that need it, and remember in the calculations cache.
         dist = famplan_methods.loc[:, _("Distribution")].values
@@ -866,7 +868,7 @@ class ProgramData(object):
     @translate
     def get_prog_info(self):
         # Load the main spreadsheet into a DataFrame.
-        sheet = utils.read_sheet(self.spreadsheet, _("Programs cost and coverage"))
+        sheet = utils.read_sheet(self._spreadsheet, _("Programs cost and coverage"))
 
         self.base_prog_set = sheet.iloc[:, 0].tolist()  # This grabs _all_ programs even those with zero unit cost.
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:, 1].tolist()))
@@ -913,7 +915,7 @@ class ProgramData(object):
     @translate
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = self.spreadsheet.parse(sheet_name=_("IYCF packages"), index_col=[0, 1])
+        IYCFpackages = self._spreadsheet.parse(sheet_name=_("IYCF packages"), index_col=[0, 1])
         packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
@@ -930,7 +932,7 @@ class ProgramData(object):
 
     @translate
     def recalc_treatsam_prog_costs(self):
-        nutrition_status = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1])
+        nutrition_status = utils.read_sheet(self._spreadsheet, _("Nutritional status distribution"), [0, 1])
         sam_prev = []
         for s, span in enumerate(self.settings.child_age_spans):  # weight age group incidence/prevalence by size of group
             sam_prev.append(nutrition_status.values[7][s] * span)
@@ -944,7 +946,7 @@ class ProgramData(object):
         Note that frac in community and mass media assumed to be 1.
         Note also this fraction can exceed 1, and is adjusted for the target pop calculations of the Programs class"""
 
-        pop_data = self.spreadsheet.parse(_("Baseline year population inputs"), index_col=[0, 1]).loc[_("Population data")][_("Data")]
+        pop_data = self._spreadsheet.parse(_("Baseline year population inputs"), index_col=[0, 1]).loc[_("Population data")][_("Data")]
         frac_pw = float(pop_data.loc[_("Percentage of pregnant women attending health facility")])
         frac_child = float(pop_data.loc[_("Percentage of children attending health facility")])
         # target pop is the sum of fractions exposed to modality in each age band
@@ -1115,38 +1117,38 @@ class Dataset(object):
         
         # stunting
         rr = new._data_replace(new.uncert.rr_st_orig, resampled_rr_st ).to_dict()
-        new_dd.rr_death["Stunting"] = new.make_dict2(rr)
+        new_dd.rr_death[_("Stunting")] = new.make_dict2(rr)
         # wasting
         rr = new._data_replace(new.uncert.rr_ws_orig, resampled_rr_ws).to_dict()
-        new_dd.rr_death["Wasting"] = new.make_dict2(rr)
+        new_dd.rr_death[_("Wasting")] = new.make_dict2(rr)
         # anaemia
         rr = new._data_replace(new.uncert.rr_an_orig, resampled_rr_an ).to_dict()
-        new_dd.rr_death["Anaemia"] = new.make_dict2(rr)
+        new_dd.rr_death[_("Anaemia")] = new.make_dict2(rr)
         # currently no impact on mortality for anaemia
-        new_dd.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in new.settings.anaemia_list} for age in new.settings.child_ages})
+        new_dd.rr_death[_("Anaemia")].update({age: {cat: {_("Diarrhoea"): 1} for cat in new.demographic_data.settings.anaemia_list} for age in new.demographic_data.settings.child_ages})
         # breastfeeding
         rr = new._data_replace(new.uncert.rr_bf_orig,resampled_rr_bf).to_dict()
-        new_dd.rr_death["Breastfeeding"] = new.make_dict2(rr)
+        new_dd.rr_death[_("Breastfeeding")] = new.make_dict2(rr)
         # diarrhoea
         rr = new._data_replace(new.uncert.rr_diar_orig, resampled_rr_diar).to_dict()
         new_dd.rr_dia = new.make_dict3(rr)
         
         # odd ratios
         this_or = new._data_replace(new.uncert.this_or_orig, resampled_stun_or ).to_dict("index")
-        new_dd.or_cond["Stunting"] = sc.odict()
-        new_dd.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
-        new_dd.or_cond["Stunting"]["Diarrhoea"] = this_or["Diarrhoea (per additional episode)"]
+        new_dd.or_cond[_("Stunting")] = sc.odict()
+        new_dd.or_cond[_("Stunting")][_("Prev stunting")] = this_or[_("Given previous stunting (HAZ < -2 in previous age band)")]
+        new_dd.or_cond[_("Stunting")][_("Diarrhoea")] = this_or[_("Diarrhoea (per additional episode)")]
         
         wasting_or = new._data_replace(new.uncert.wasting_or_orig, resampled_wast_or)
-        new_dd.or_cond["SAM"] = sc.odict()
-        new_dd.or_cond["SAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For SAM per additional episode of diarrhoea"]
-        new_dd.or_cond["MAM"] = sc.odict()
-        new_dd.or_cond["MAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For MAM per additional episode of diarrhoea"]
+        new_dd.or_cond[_("SAM")] = sc.odict()
+        new_dd.or_cond[_("SAM")][_("Diarrhoea")] = wasting_or.to_dict("index")[_("For SAM per additional episode of diarrhoea")]
+        new_dd.or_cond[_("MAM")] = sc.odict()
+        new_dd.or_cond[_("MAM")][_("Diarrhoea")] = wasting_or.to_dict("index")[_("For MAM per additional episode of diarrhoea")]
         
         anem_or = new._data_replace(new.uncert.anem_or_orig, resampled_ane_or )
-        new_dd.or_cond["Anaemia"] = sc.odict()
-        new_dd.or_cond["Anaemia"]["Severe diarrhoea"] = sc.odict()
-        new_dd.or_cond["Anaemia"]["Severe diarrhoea"] = anem_or.to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
+        new_dd.or_cond[_("Anaemia")] = sc.odict()
+        new_dd.or_cond[_("Anaemia")][_("Severe diarrhoea")] = sc.odict()
+        new_dd.or_cond[_("Anaemia")][_("Severe diarrhoea")] = anem_or.to_dict("index")[_("For anaemia per additional episode of severe diarrhoea")]
         
         # programs
         new_dd.or_stunting_prog = new._data_replace(new.uncert.or_stunting_prog_orig, resampled_or_stunting_prog).to_dict("index")
@@ -1169,9 +1171,9 @@ class Dataset(object):
         
         treatsam = new._data_replace(new.uncert.treatsam_orig, resampled_treatsam).to_dict(orient="index")
         manman = new._data_replace(new.uncert.manman_orig, resampled_manman).to_dict(orient="index")
-        new_dd.or_wasting_prog["SAM"] = treatsam
+        new_dd.or_wasting_prog[_("SAM")] = treatsam
         if new_dd.man_mam:
-            new_dd.or_wasting_prog["MAM"] = {"Treatment of SAM": manman["Management of MAM"]}
+            new_dd.or_wasting_prog[_("MAM")] = {"_(Treatment of SAM)": manman[_("Management of MAM")]}
             
         new_dd.child_progs = new._data_replace(new.uncert.child_progs_orig, resampled_child_progs).to_dict()
         
@@ -1179,13 +1181,13 @@ class Dataset(object):
         
         
         ors = new._data_replace(new.uncert.ors_orig, resampled_ors).to_dict("index")
-        new_dd.or_cond_bo["Stunting"] = ors["Stunting (HAZ-score < -2)"]
-        new_dd.or_cond_bo["MAM"] = ors["MAM (WHZ-score between -3 and -2)"]
-        new_dd.or_cond_bo["SAM"] = ors["SAM (WHZ-score < -3)"]
+        new_dd.or_cond_bo[_("Stunting")] = ors[_("Stunting (HAZ-score < -2)")]
+        new_dd.or_cond_bo[_("MAM")] = ors[_("MAM (WHZ-score between -3 and -2)")]
+        new_dd.or_cond_bo[_("SAM")] = ors[_("SAM (WHZ-score < -3)")]
        
         new_dd.rr_space_bo = new._data_replace(new.uncert.rr_space_bo_orig, resampled_rr_space_bo).to_dict("index")
         
-        new_dd.rr_death["Birth outcomes"] = new._data_replace(new.uncert.rr_death_bo_orig, resampled_rr_death_bo).to_dict()
+        new_dd.rr_death[_("Birth outcomes")] = new._data_replace(new.uncert.rr_death_bo_orig, resampled_rr_death_bo).to_dict()
         
         new_dd.bf_effects = new._data_replace(new.uncert.bf_effects_orig, resampled_bf_effects)
         new_dd.stunt_effects = new._data_replace(new.uncert.stunt_effects_orig, resampled_stunt_effects)
@@ -1215,7 +1217,7 @@ class Dataset(object):
         for key, item in packages.items():
             if newPrograms.get(key) is None:
                 newPrograms[key] = sc.odict()
-            for age in self.settings.child_ages:
+            for age in self.demographic_data.settings.child_ages:
                 ORs[age] = 1.0
                 for pop, mode in item:
                     row = effects.loc[pop, mode]
@@ -1308,7 +1310,10 @@ class UncertaintyParams(object):
     This object is being called by Dataset to make parameters random"""
 
     def __init__(self, spreadsheet):
-        self.settings = settings.Settings()
+
+        self.locale = get_databook_locale(spreadsheet)
+        self.settings = settings.Settings(self.locale)
+
         self.impacted_pop = None
         self.prog_areas = sc.odict()
         self.pop_areas = sc.odict()
@@ -1393,9 +1398,9 @@ class UncertaintyParams(object):
         self.or_space_prog_orig = None
         self.rr_death = sc.odict()
         # read data
-        self.spreadsheet = spreadsheet
+        self._spreadsheet = spreadsheet
         self.read_spreadsheet()
-        self.spreadsheet = None
+        self._spreadsheet = None
         return None
 
     def __repr__(self):
@@ -1413,173 +1418,175 @@ class UncertaintyParams(object):
         self.set_relative_risks()
         self.set_odds_ratios()
 
-        
+    @translate
     def set_pw_progs(self):
-        self.pw_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))], to_odict=False).dropna(axis=1, how="all")
-        self.pw_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(1, 19)], to_odict=False).dropna(axis=1, how="all")
+        self.pw_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))], to_odict=False).dropna(axis=1, how="all")
+        self.pw_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(1, 19)], to_odict=False).dropna(axis=1, how="all")
         
-        self.pw_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
-       
+        self.pw_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
+
+    @translate
     def set_child_progs(self):
-        self.child_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in chain(range(1, 52), range(100, 152))]).dropna(axis=1, how="all")
-        self.child_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(1, 103)]).dropna(axis=1, how="all")
+        self.child_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in chain(range(1, 52), range(100, 152))]).dropna(axis=1, how="all")
+        self.child_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(1, 103)]).dropna(axis=1, how="all")
         
-        self.child_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
+        self.child_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
         
-
+    @translate
     def set_anaemia_progs(self):
-        anaem_sheet_lower = utils.read_sheet(self.spreadsheet, "Programs anaemia", [0, 1], skiprows=[i for i in chain(range(1, 24), range(43, 66))]).dropna(axis=1, how="all")
-        self.rr_anaem_prog_lower = anaem_sheet_lower.loc["Relative risks of anaemia when receiving intervention - lower"].dropna(axis=0, how="all")
-        self.or_anaem_prog_lower = anaem_sheet_lower.loc["Odds ratios of being anaemic when covered by intervention - lower"].dropna(axis=0, how="all")
-        anaem_sheet_upper = utils.read_sheet(self.spreadsheet, "Programs anaemia", [0, 1], skiprows=[i for i in range(1, 46)]).dropna(axis=1, how="all")
-        self.rr_anaem_prog_upper = anaem_sheet_upper.loc["Relative risks of anaemia when receiving intervention - upper"].dropna(axis=0, how="all")
-        self.or_anaem_prog_upper = anaem_sheet_upper.loc["Odds ratios of being anaemic when covered by intervention - upper"].dropna(axis=0, how="all")
+        anaem_sheet_lower = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in chain(range(1, 24), range(43, 66))]).dropna(axis=1, how="all")
+        self.rr_anaem_prog_lower = anaem_sheet_lower.loc[_("Relative risks of anaemia when receiving intervention - lower")].dropna(axis=0, how="all")
+        self.or_anaem_prog_lower = anaem_sheet_lower.loc[_("Odds ratios of being anaemic when covered by intervention - lower")].dropna(axis=0, how="all")
+        anaem_sheet_upper = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(1, 46)]).dropna(axis=1, how="all")
+        self.rr_anaem_prog_upper = anaem_sheet_upper.loc[_("Relative risks of anaemia when receiving intervention - upper")].dropna(axis=0, how="all")
+        self.or_anaem_prog_upper = anaem_sheet_upper.loc[_("Odds ratios of being anaemic when covered by intervention - upper")].dropna(axis=0, how="all")
         
-        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anaemia", [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
-        self.rr_anaem_prog_orig = anaem_sheet.loc["Relative risks of anaemia when receiving intervention"].dropna(axis=0, how="all")
-        self.or_anaem_prog_orig = anaem_sheet.loc["Odds ratios of being anaemic when covered by intervention"].dropna(axis=0, how="all")
+        anaem_sheet = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
+        self.rr_anaem_prog_orig = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].dropna(axis=0, how="all")
+        self.or_anaem_prog_orig = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].dropna(axis=0, how="all")
         
-
+    @translate
     def set_wasting_progs(self):
-        wastingSheet_lower = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in chain(range(1, 8), range(12, 19))]).dropna(axis=1, how="all")
-        self.treatsam_lower = wastingSheet_lower.loc["Odds ratio of SAM when covered by program - lower"].dropna(axis=0, how="all")
-        self.manman_lower = wastingSheet_lower.loc["Odds ratio of MAM when covered by program - lower"].dropna(axis=0, how="all")
-        wastingSheet_upper = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(1, 16)]).dropna(axis=1, how="all")
-        self.treatsam_upper = wastingSheet_upper.loc["Odds ratio of SAM when covered by program - upper"].dropna(axis=0, how="all")
-        self.manman_upper = wastingSheet_upper.loc["Odds ratio of MAM when covered by program - upper"].dropna(axis=0, how="all")
+        wastingSheet_lower = utils.read_sheet(self._spreadsheet, _("Programs wasting"), [0, 1], skiprows=[i for i in chain(range(1, 8), range(12, 19))]).dropna(axis=1, how="all")
+        self.treatsam_lower = wastingSheet_lower.loc[_("Odds ratio of SAM when covered by program - lower")].dropna(axis=0, how="all")
+        self.manman_lower = wastingSheet_lower.loc[_("Odds ratio of MAM when covered by program - lower")].dropna(axis=0, how="all")
+        wastingSheet_upper = utils.read_sheet(self._spreadsheet, _("Programs wasting"), [0, 1], skiprows=[i for i in range(1, 16)]).dropna(axis=1, how="all")
+        self.treatsam_upper = wastingSheet_upper.loc[_("Odds ratio of SAM when covered by program - upper")].dropna(axis=0, how="all")
+        self.manman_upper = wastingSheet_upper.loc[_("Odds ratio of MAM when covered by program - upper")].dropna(axis=0, how="all")
         
-        wastingSheet = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(5, 19)]).dropna(axis=1, how="all")
-        self.treatsam_orig = wastingSheet.loc["Odds ratio of SAM when covered by program"].dropna(axis=0, how="all")
-        self.manman_orig = wastingSheet.loc["Odds ratio of MAM when covered by program"].dropna(axis=0, how="all")
+        wastingSheet = utils.read_sheet(self._spreadsheet, _("Programs wasting"), [0, 1], skiprows=[i for i in range(5, 19)]).dropna(axis=1, how="all")
+        self.treatsam_orig = wastingSheet.loc[_("Odds ratio of SAM when covered by program")].dropna(axis=0, how="all")
+        self.manman_orig = wastingSheet.loc[_("Odds ratio of MAM when covered by program")].dropna(axis=0, how="all")
         
-
+    @translate
     def set_bo_progs(self):
-        self.progs_lower = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in chain(range(1, 16), range(28, 43))]).dropna(axis=1, how="all")
-        self.progs_upper = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(1, 31)]).dropna(axis=1, how="all")
+        self.progs_lower = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in chain(range(1, 16), range(28, 43))]).dropna(axis=1, how="all")
+        self.progs_upper = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(1, 31)]).dropna(axis=1, how="all")
         
-        self.progs_orig = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(13, 43)]).dropna(axis=1, how="all")
+        self.progs_orig = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(13, 43)]).dropna(axis=1, how="all")
         
-
+    @translate
     def set_iycf_effects(self):
 
-        effects_lower = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in chain(range(1, 54), range(104, 157))]).dropna(axis=1, how="all")
-        self.bf_effects_lower = effects_lower.loc["Odds ratio for correct breastfeeding - lower"].dropna(axis=0, how="all")
-        self.stunt_effects_lower = effects_lower.loc["Odds ratio for stunting - lower"].dropna(axis=0, how="all")
+        effects_lower = utils.read_sheet(self._spreadsheet, _("IYCF odds ratios"), [0, 1, 2], skiprows=[i for i in chain(range(1, 54), range(104, 157))]).dropna(axis=1, how="all")
+        self.bf_effects_lower = effects_lower.loc[_("Odds ratio for correct breastfeeding - lower")].dropna(axis=0, how="all")
+        self.stunt_effects_lower = effects_lower.loc[_("Odds ratio for stunting - lower")].dropna(axis=0, how="all")
 
-        effects_upper = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(1, 107)]).dropna(axis=1, how="all")
-        self.bf_effects_upper = effects_upper.loc["Odds ratio for correct breastfeeding - upper"].dropna(axis=0, how="all")
-        self.stunt_effects_upper = effects_upper.loc["Odds ratio for stunting - upper"].dropna(axis=0, how="all")
+        effects_upper = utils.read_sheet(self._spreadsheet, _("IYCF odds ratios"), [0, 1, 2], skiprows=[i for i in range(1, 107)]).dropna(axis=1, how="all")
+        self.bf_effects_upper = effects_upper.loc[_("Odds ratio for correct breastfeeding - upper")].dropna(axis=0, how="all")
+        self.stunt_effects_upper = effects_upper.loc[_("Odds ratio for stunting - upper")].dropna(axis=0, how="all")
         
-        effects = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(51, 157)]).dropna(axis=1, how="all")
-        self.bf_effects_orig = effects.loc["Odds ratio for correct breastfeeding"].dropna(axis=0, how="all")
-        self.stunt_effects_orig = effects.loc["Odds ratio for stunting"].dropna(axis=0, how="all")
+        effects = utils.read_sheet(self._spreadsheet, _("IYCF odds ratios"), [0, 1, 2], skiprows=[i for i in range(51, 157)]).dropna(axis=1, how="all")
+        self.bf_effects_orig = effects.loc[_("Odds ratio for correct breastfeeding")].dropna(axis=0, how="all")
+        self.stunt_effects_orig = effects.loc[_("Odds ratio for stunting")].dropna(axis=0, how="all")
         
 
+    @translate
     def set_bo_risks(self):
-        bo_sheet_lower = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(0, 28), range(52, 79))]).dropna(axis=1, how="all")
-        self.ors_lower = bo_sheet_lower.loc["Odds ratios for conditions - lower"]
-        bo_sheet_upper = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in range(0, 55)]).dropna(axis=1, how="all")
-        self.ors_upper = bo_sheet_upper.loc["Odds ratios for conditions - upper"].dropna(axis=0, how="all")
-        self.rr_space_bo_lower = bo_sheet_lower.loc["Relative risk by birth spacing - lower"].dropna(axis=0, how="all")
-        self.rr_death_bo_lower = bo_sheet_lower.loc["Relative risks of neonatal causes of death - lower"].dropna(axis=0, how="all")
-        self.rr_space_bo_upper = bo_sheet_upper.loc["Relative risk by birth spacing - upper"].dropna(axis=0, how="all")
-        self.rr_death_bo_upper = bo_sheet_upper.loc["Relative risks of neonatal causes of death - upper"].dropna(axis=0, how="all")
+        bo_sheet_lower = utils.read_sheet(self._spreadsheet, _("Birth outcome risks"), [0, 1], skiprows=[i for i in chain(range(0, 28), range(52, 79))]).dropna(axis=1, how="all")
+        self.ors_lower = bo_sheet_lower.loc[_("Odds ratios for conditions - lower")]
+        bo_sheet_upper = utils.read_sheet(self._spreadsheet, _("Birth outcome risks"), [0, 1], skiprows=[i for i in range(0, 55)]).dropna(axis=1, how="all")
+        self.ors_upper = bo_sheet_upper.loc[_("Odds ratios for conditions - upper")].dropna(axis=0, how="all")
+        self.rr_space_bo_lower = bo_sheet_lower.loc[_("Relative risk by birth spacing - lower")].dropna(axis=0, how="all")
+        self.rr_death_bo_lower = bo_sheet_lower.loc[_("Relative risks of neonatal causes of death - lower")].dropna(axis=0, how="all")
+        self.rr_space_bo_upper = bo_sheet_upper.loc[_("Relative risk by birth spacing - upper")].dropna(axis=0, how="all")
+        self.rr_death_bo_upper = bo_sheet_upper.loc[_("Relative risks of neonatal causes of death - upper")].dropna(axis=0, how="all")
         
-        bo_sheet = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(25, 81), range(0, 1))]).dropna(axis=1, how="all")
-        self.ors_orig = bo_sheet.loc["Odds ratios for conditions"].dropna(axis=0, how="all")
-        self.rr_space_bo_orig = bo_sheet.loc["Relative risk by birth spacing"].dropna(axis=0, how="all")
-        self.rr_death_bo_orig = bo_sheet.loc["Relative risks of neonatal causes of death"].dropna(axis=0, how="all")
+        bo_sheet = utils.read_sheet(self._spreadsheet, _("Birth outcome risks"), [0, 1], skiprows=[i for i in chain(range(25, 81), range(0, 1))]).dropna(axis=1, how="all")
+        self.ors_orig = bo_sheet.loc[_("Odds ratios for conditions")].dropna(axis=0, how="all")
+        self.rr_space_bo_orig = bo_sheet.loc[_("Relative risk by birth spacing")].dropna(axis=0, how="all")
+        self.rr_death_bo_orig = bo_sheet.loc[_("Relative risks of neonatal causes of death")].dropna(axis=0, how="all")
         
-
+    @translate
     def set_relative_risks(self):
         # lower values
         # stunting
-        rr_st_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 111), range(136, 328))]).dropna(axis=1, how="all")
-        self.rr_st_lower = rr_st_sheet_lower.loc["Stunting"]
+        rr_st_sheet_lower = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 111), range(136, 328))]).dropna(axis=1, how="all")
+        self.rr_st_lower = rr_st_sheet_lower.loc[_("Stunting")]
         # wasting
-        rr_ws_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 138), range(163, 328))]).dropna(axis=1, how="all")
-        self.rr_ws_lower = rr_ws_sheet_lower.loc["Wasting"]
+        rr_ws_sheet_lower = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 138), range(163, 328))]).dropna(axis=1, how="all")
+        self.rr_ws_lower = rr_ws_sheet_lower.loc[_("Wasting")]
         # anaemia
-        rr_an_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 165), range(172, 328))]).dropna(axis=1, how="all")
-        self.rr_an_lower = rr_an_sheet_lower.loc["Anaemia"]
+        rr_an_sheet_lower = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 165), range(172, 328))]).dropna(axis=1, how="all")
+        self.rr_an_lower = rr_an_sheet_lower.loc[_("Anaemia")]
         # breastfeeding
-        rr_bf_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 174), range(211, 328))]).dropna(axis=1, how="all")
-        self.rr_bf_lower = rr_bf_sheet_lower.loc["Breastfeeding"]
+        rr_bf_sheet_lower = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 174), range(211, 328))]).dropna(axis=1, how="all")
+        self.rr_bf_lower = rr_bf_sheet_lower.loc[_("Breastfeeding")]
         # diarrhoea
-        rr_diar_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 213), range(218, 328))]).dropna(axis=1, how="all")
-        self.rr_diar_lower = rr_diar_sheet_lower.loc["Diarrhoea"]
+        rr_diar_sheet_lower = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 213), range(218, 328))]).dropna(axis=1, how="all")
+        self.rr_diar_lower = rr_diar_sheet_lower.loc[_("Diarrhoea")]
         # upper values
         # stunting
-        rr_st_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 221), range(246, 328))]).dropna(axis=1, how="all")
-        self.rr_st_upper = rr_st_sheet_upper.loc["Stunting"]
+        rr_st_sheet_upper = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 221), range(246, 328))]).dropna(axis=1, how="all")
+        self.rr_st_upper = rr_st_sheet_upper.loc[_("Stunting")]
         # wasting
-        rr_ws_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 248), range(273, 328))]).dropna(axis=1, how="all")
-        self.rr_ws_upper = rr_ws_sheet_upper.loc["Wasting"]
+        rr_ws_sheet_upper = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 248), range(273, 328))]).dropna(axis=1, how="all")
+        self.rr_ws_upper = rr_ws_sheet_upper.loc[_("Wasting")]
         # anaemia
-        rr_an_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 275), range(282, 328))]).dropna(axis=1, how="all")
-        self.rr_an_upper = rr_an_sheet_upper.loc["Anaemia"]
+        rr_an_sheet_upper = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 275), range(282, 328))]).dropna(axis=1, how="all")
+        self.rr_an_upper = rr_an_sheet_upper.loc[_("Anaemia")]
         # breastfeeding
-        rr_bf_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 284), range(321, 328))]).dropna(axis=1, how="all")
-        self.rr_bf_upper = rr_bf_sheet_upper.loc["Breastfeeding"]
+        rr_bf_sheet_upper = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 284), range(321, 328))]).dropna(axis=1, how="all")
+        self.rr_bf_upper = rr_bf_sheet_upper.loc[_("Breastfeeding")]
         # diarrhoea
-        rr_diar_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in range(0, 323)]).dropna(axis=1, how="all")
-        self.rr_diar_upper = rr_diar_sheet_upper.loc["Diarrhoea"]
+        rr_diar_sheet_upper = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in range(0, 323)]).dropna(axis=1, how="all")
+        self.rr_diar_upper = rr_diar_sheet_upper.loc[_("Diarrhoea")]
         
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 1), range(26, 328))]).dropna(axis=1, how="all")
-        self.rr_st_orig = rr_sheet.loc["Stunting"]
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 1), range(26, 328))]).dropna(axis=1, how="all")
+        self.rr_st_orig = rr_sheet.loc[_("Stunting")]
        
         # wasting
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 28), range(53, 328))]).dropna(axis=1, how="all")
-        self.rr_ws_orig = rr_sheet.loc["Wasting"]
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 28), range(53, 328))]).dropna(axis=1, how="all")
+        self.rr_ws_orig = rr_sheet.loc[_("Wasting")]
         
         # anaemia
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 55), range(62, 328))]).dropna(axis=1, how="all")
-        self.rr_an_orig = rr_sheet.loc["Anaemia"]
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 55), range(62, 328))]).dropna(axis=1, how="all")
+        self.rr_an_orig = rr_sheet.loc[_("Anaemia")]
        
         # currently no impact on mortality for anaemia
         #self.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
         # breastfeeding
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 64), range(101, 328))]).dropna(axis=1, how="all")
-        self.rr_bf_orig = rr_sheet.loc["Breastfeeding"]
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 64), range(101, 328))]).dropna(axis=1, how="all")
+        self.rr_bf_orig = rr_sheet.loc[_("Breastfeeding")]
         
         # diarrhoea
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 103), range(108, 328))]).dropna(axis=1, how="all")
-        self.rr_diar_orig = rr_sheet.loc["Diarrhoea"]
-        
-        
+        rr_sheet = utils.read_sheet(self._spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=[i for i in chain(range(0, 103), range(108, 328))]).dropna(axis=1, how="all")
+        self.rr_diar_orig = rr_sheet.loc[_("Diarrhoea")]
+
+    @translate
     def set_odds_ratios(self):
-        or_sheet_cond_lower = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 23), range(38, 64))]).dropna(axis=1, how="all")
-        or_sheet_cond_upper = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 45), range(60, 64))]).dropna(axis=1, how="all")
-        or_sheet_space_lower = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 40), range(42, 64))]).dropna(axis=1, how="all")
-        or_sheet_space_upper = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in range(0, 62)]).dropna(axis=1, how="all")
-        self.stun_or_lower = or_sheet_cond_lower.loc["Condition"].fillna(0)
-        self.stun_or_upper = or_sheet_cond_upper.loc["Condition"].fillna(0)
+        or_sheet_cond_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 23), range(38, 64))]).dropna(axis=1, how="all")
+        or_sheet_cond_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 45), range(60, 64))]).dropna(axis=1, how="all")
+        or_sheet_space_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 40), range(42, 64))]).dropna(axis=1, how="all")
+        or_sheet_space_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in range(0, 62)]).dropna(axis=1, how="all")
+        self.stun_or_lower = or_sheet_cond_lower.loc[_("Condition")].fillna(0)
+        self.stun_or_upper = or_sheet_cond_upper.loc[_("Condition")].fillna(0)
         
-        self.wast_or_lower = or_sheet_cond_lower.loc["Wasting"]
-        self.wast_or_upper = or_sheet_cond_upper.loc["Wasting"]
+        self.wast_or_lower = or_sheet_cond_lower.loc[_("Wasting")]
+        self.wast_or_upper = or_sheet_cond_upper.loc[_("Wasting")]
         
-        self.ane_or_lower = or_sheet_cond_lower.loc["Anaemia"]
-        self.ane_or_upper = or_sheet_cond_upper.loc["Anaemia"]
+        self.ane_or_lower = or_sheet_cond_lower.loc[_("Anaemia")]
+        self.ane_or_upper = or_sheet_cond_upper.loc[_("Anaemia")]
         
-        self.or_stunting_prog_lower = or_sheet_cond_lower.loc["By program - lower"].dropna(axis=0, how="all")
-        self.or_bf_prog_lower = or_sheet_cond_lower.loc["Odds ratios for correct breastfeeding by program - lower"].dropna(axis=0, how="all")
-        self.or_stunting_prog_upper = or_sheet_cond_upper.loc["By program - upper"].dropna(axis=0, how="all")
-        self.or_bf_prog_upper = or_sheet_cond_upper.loc["Odds ratios for correct breastfeeding by program - upper"].dropna(axis=0, how="all")
+        self.or_stunting_prog_lower = or_sheet_cond_lower.loc[_("By program - lower")].dropna(axis=0, how="all")
+        self.or_bf_prog_lower = or_sheet_cond_lower.loc[_("Odds ratios for correct breastfeeding by program - lower")].dropna(axis=0, how="all")
+        self.or_stunting_prog_upper = or_sheet_cond_upper.loc[_("By program - upper")].dropna(axis=0, how="all")
+        self.or_bf_prog_upper = or_sheet_cond_upper.loc[_("Odds ratios for correct breastfeeding by program - upper")].dropna(axis=0, how="all")
         
         
-        self.or_space_prog_lower = or_sheet_space_lower.loc["Odds ratios for optimal birth spacing by program - lower"]
-        self.or_space_prog_upper = or_sheet_space_upper.loc["Odds ratios for optimal birth spacing by program - upper"]
+        self.or_space_prog_lower = or_sheet_space_lower.loc[_("Odds ratios for optimal birth spacing by program - lower")]
+        self.or_space_prog_upper = or_sheet_space_upper.loc[_("Odds ratios for optimal birth spacing by program - upper")]
         
-        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
-        self.this_or_orig = or_sheet.loc["Condition"]
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
+        self.this_or_orig = or_sheet.loc[_("Condition")]
         
-        self.wasting_or_orig = or_sheet.loc["Wasting"]
+        self.wasting_or_orig = or_sheet.loc[_("Wasting")]
         
-        self.anem_or_orig = or_sheet.loc["Anaemia"]
+        self.anem_or_orig = or_sheet.loc[_("Anaemia")]
         
-        self.or_stunting_prog_orig = or_sheet.loc["By program"].dropna(axis=0, how="all")
+        self.or_stunting_prog_orig = or_sheet.loc[_("By program")].dropna(axis=0, how="all")
         
-        self.or_bf_prog_orig = or_sheet.loc["Odds ratios for correct breastfeeding by program"].dropna(axis=0, how="all")
+        self.or_bf_prog_orig = or_sheet.loc[_("Odds ratios for correct breastfeeding by program")].dropna(axis=0, how="all")
        
-        or_sheet_space = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
-        self.or_space_prog_orig = or_sheet_space.loc["Odds ratios for optimal birth spacing by program"]
+        or_sheet_space = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
+        self.or_space_prog_orig = or_sheet_space.loc[_("Odds ratios for optimal birth spacing by program")]

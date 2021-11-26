@@ -9,9 +9,6 @@ run_scen = True
 run_optim = True
 run_geo = False
 
-P = nu.demo(scens=run_scen, optims=run_optim, geos=run_geo, locale='fr')
-
-
 P = nu.demo(scens=run_scen, optims=run_optim, geos=run_geo)
 
 if run_scen:

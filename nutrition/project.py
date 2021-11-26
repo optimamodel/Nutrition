@@ -719,7 +719,7 @@ def demo_optims(locale):
         "name": _("Maximize thrive"),
         "model_name": "demo",
         "mults": [1],
-        "weights": sc.odict({"thrive": 1}),
+        "weights": sc.odict({"thrive": [1]}),
         "prog_set": [
             _("Vitamin A supplementation"),
             _("IYCF 1"),
@@ -743,7 +743,7 @@ def demo_geos(locale):
     kwargs1 = {
         "name": _("Geospatial optimization"),
         "modelnames": ["demoregion1", "demoregion2", "demoregion3"],
-        "weights": "thrive",
+        "weights": sc.odict({"thrive": [1.0]}),
         "fix_curr": False,
         "fix_regionalspend": False,
         "add_funds": 0,
