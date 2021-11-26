@@ -28,6 +28,7 @@ Last update: 2019feb11
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Databook") }}</th>
             <th>{{ $t("Status") }}</th>
+            <th>Active?</th>
             <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
@@ -43,10 +44,12 @@ Last update: 2019feb11
               {{ statusFormatStr(optimSummary) }}
               {{ timeFormatStr(optimSummary) }}
             </td>
+            <td style="text-align: center">
+              <input type="checkbox" v-model="optimSummary.active"/>
+            </td>
             <td style="white-space: nowrap">
               <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">{{ $t("common.Run") }}</button>
               <button class="btn" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'test')">{{ $t("common.Test run") }}</button>
-              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">{{ $t("common.Plot results") }}</button>
               <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">{{ $t("common.Clear results") }}</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" :data-tooltip='$t("optimization.Edit optimization")'><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" :data-tooltip='$t("optimization.Copy optimization")'><i class="ti-files"></i></button>
@@ -62,6 +65,8 @@ Last update: 2019feb11
         </div>
 
         <div>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens(optimSummary)">Plot active scenarios</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(optimSummary, 1)">Run active scenarios with uncertainty</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>
@@ -223,6 +228,41 @@ Last update: 2019feb11
     </modal>
     <!-- END ADD-OPTIM MODAL -->
 
+    <!-- ### Start: input uncertainty runs modal ### -->
+    <modal name="uncert-nruns"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="400"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="false"
+    >
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          Input uncertainty runs
+        </div>
+        <div class="dialog-c-text">
+          Number of runs:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="modalUncertRuns"/><br>
+        </div>
+        <div style="text-align:justify">
+          <button @click="UncertRuns()" class='btn __green' style="display:inline-block">
+            Confirm
+          </button>
+
+          <button @click="$modal.hide('uncert-nruns')" class='btn __red' style="display:inline-block">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+    </modal>
+    <!-- ### End: input uncertainty runs modal ### -->
+  </div>
+
 
   </div>
 </template>
@@ -243,6 +283,8 @@ Last update: 2019feb11
         displayResultName: '',
         displayResultDatastoreId: '',
         optimSummaries: [],
+        scenSummaries: [],
+        scenariosLoaded: false,
         optimsLoaded: false,
         pollingTasks: false,
         datasetOptions: [],
@@ -251,6 +293,7 @@ Last update: 2019feb11
           origName: '',
           mode: 'add',
         },
+        modalUncertRuns: 1,  // Number of runs in the uncertainty nruns modal dialog
         figscale: 1.0,
         hasGraphs: false,
         calculateCostEff: false,
@@ -724,6 +767,77 @@ Last update: 2019feb11
             .catch(error => {
               this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
             })
+      },
+
+      getScenSummaries() {
+        console.log('getScenSummaries() called')
+        this.$sciris.start(this)
+        this.$sciris.rpc('opt_to_scen', [this.projectID, this.optimSummaries])
+          .then(response => {
+            this.scenSummaries = response.data // Set the scenarios to what we received.
+            console.log('Scenario summaries:')
+            console.log(this.scenSummaries)
+            this.scenariosLoaded = true
+            this.$sciris.succeed(this, 'Scenarios loaded')
+          })
+          .catch(error => {
+            this.$sciris.fail(this, 'Could not get scenarios', error)
+          })
+      },
+
+      runScens() {
+        console.log('runScens() called')
+        this.$sciris.start(this)
+        this.getScenSummaries()
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
+          .then(response => {
+            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff, 0]) // Go to the server to get the results
+              .then(response => {
+                this.hasTable = this.calculateCostEff
+                this.table = response.data.table
+                this.makeGraphs(response.data.graphs)
+                this.$sciris.succeed(this, '') // Success message in graphs function
+              })
+              .catch(error => {
+                console.log('There was an error', error) // Pull out the error message.
+                this.$sciris.fail(this, 'Could not run scenarios', error) // Indicate failure.
+              })
+          })
+          .catch(error => {
+            this.response = 'There was an error', error
+            this.$sciris.fail(this, 'Could not set scenarios', error)
+          })
+      },
+
+      UncertScensModal(nruns) {
+        console.log('UncertScensModal() called');
+        this.modalUncertRuns = nruns
+        this.$modal.show('uncert-nruns');
+      },
+
+      UncertRuns() {
+        console.log('uncertRuns() called')
+        this.$modal.hide('uncert-nruns');
+        this.$sciris.start(this)
+        this.getScenSummaries()
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
+          .then(response => {
+            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff, this.modalUncertRuns]) // Go to the server to get the results
+              .then(response => {
+                this.hasTable = this.calculateCostEff
+                this.table = response.data.table
+                this.makeGraphs(response.data.graphs)
+                this.$sciris.succeed(this, '') // Success message in graphs function
+              })
+              .catch(error => {
+                console.log('There was an error', error) // Pull out the error message.
+                this.$sciris.fail(this, 'Could not run scenarios', error) // Indicate failure.
+              })
+          })
+          .catch(error => {
+            this.response = 'There was an error', error
+            this.$sciris.fail(this, 'Could not set scenarios', error)
+          })
       },
     }
   }

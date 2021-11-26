@@ -20,7 +20,7 @@ import string
 for_frontend = True
 if for_frontend:
     legend_loc = {"bbox_to_anchor": (1.0, 1.0)}
-    fig_size = (8, 3)
+    fig_size = (8, 4)
     ax_size = [0.2, 0.18, 0.40, 0.72]
     pltstart = 1
     hueshift = 0.05
@@ -184,7 +184,7 @@ def plot_prevs_reduce(all_res, all_reduce, locale=None):
             if thismax > ymax:
                 ymax = thismax
             (line,) = ax.plot(newx, out_p, color=colors[r])
-            ax.fill_between(newx, out_l, out_h, alpha=0.2)
+            ax.fill_between(newx, out_l, out_h, alpha=0.2, color=colors[r])
             lines.append(line)
             leglabels.append(res)
         ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
@@ -210,7 +210,8 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
     for i, outcome in enumerate(outcomes): 
-        if "cost" not in outcome and "pop_rate" not in outcome:
+        if ("cost" not in outcome and "pop" not in outcome and seq) or ("mam" not in outcome and "sam" not in outcome and 
+                                                                "sga" not in outcome and "pop" not in outcome and not seq):
             fig = pl.figure(figsize=fig_size)
             ax = fig.add_axes(ax_size)
             ymax = 0
@@ -225,15 +226,15 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
             for r, res in enumerate(all_reduce):
 
                 offset = offsets[r]
-                xpos = years + offset if seq else offset
+                xpos = years[1:] + offset if seq else offset
                 if seq:
-                    output_p = sc.promotetoarray(all_reduce[res][outcome]["point"])
-                    output_l = sc.promotetoarray(all_reduce[res][outcome]["low"])
-                    output_h = sc.promotetoarray(all_reduce[res][outcome]["high"])
+                    output_p = sc.promotetoarray(all_reduce[res][outcome]["point"][1:])
+                    output_l = sc.promotetoarray(all_reduce[res][outcome]["low"][1:])
+                    output_h = sc.promotetoarray(all_reduce[res][outcome]["high"][1:])
                 if not seq:
-                    output_p = sc.promotetoarray(all_reduce[res][outcome]["point"].sum())
-                    output_l = sc.promotetoarray(all_reduce[res][outcome]["low"].sum())
-                    output_h = sc.promotetoarray(all_reduce[res][outcome]["high"].sum())
+                    output_p = sc.promotetoarray(all_reduce[res][outcome]["point"][1:].sum())
+                    output_l = sc.promotetoarray(all_reduce[res][outcome]["low"][1:].sum())
+                    output_h = sc.promotetoarray(all_reduce[res][outcome]["high"][1:].sum())
     
                 output_p /= scale
                 output_l /= scale
@@ -268,7 +269,9 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     height = rect.get_height()
                     ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="right", va="bottom", fontsize=10)
             # formatting
-            title += " %s \n %s-%s" % (utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
+
+            title += " %s \n %s-%s" % (utils.relabel(outcome, lower=True), baseres.years[pltstart], baseres.years[-1])
+
             sc.SIticks(ax=ax, axis="y")
             ax.set_ylim([0, ymax * 1.1])
             if scale == 1:
@@ -559,7 +562,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
         for i, spend in enumerate(avspend):
             if any(spend) > 0:  # only want to plot prog if spending is non-zero (solves legend issues)
                 leglabs.append(progset[i])
-                bar = ax.bar(x + k, spend, width, bottom, color=colors[i])  # bars for each year in iteration
+                bar = ax.bar(x + year[k], spend, width, bottom, color=colors[i])  # bars for each year in iteration
                 bars.append(bar)
                 bottom += spend
         ymax = max(bottom)
@@ -579,8 +582,8 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
             title = pgettext("plotting","Annual spending, %s-%s") % (ref.years[pltstart], ref.years[-1])
             xlab = pgettext("plotting","Years")
     ax.set_title(title)
-    ax.set_xticks(year_ticks[1:] + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
-    ax.set_xticklabels(year[1:], fontsize=10)
+    ax.set_xticks(np.array(year[1:]) + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
+    #ax.set_xticklabels(year[1:], fontsize=10)
     ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax + ymax * 0.1))
     if scale == 1e1:
@@ -618,27 +621,27 @@ def plot_costcurve(results, locale=None):
 
     pgettext = utils.get_translator(locale, context=True)
 
+    res_list = [res for res in results if resampled_key_str not in res.name]
     fig = pl.figure()
     ax = fig.add_axes(ax_size)
     leglabs = []
-    for res in results[:1]:
-        _ = utils.get_translator(res.locale)
+    for res in res_list:
         allocs = res.get_allocs()
         maxspend = 0
-        for name in res.programs.iterkeys():
+        for name in res.programs.keys():
             thisspend = allocs[name]
             leglabs.append(name)
             if maxspend < np.max(thisspend):
                 maxspend = np.max(thisspend)
         x = np.linspace(0, 2e7, 10000)
-        for prog in res.programs.itervalues():
+        for prog in res.programs.values():
             y = prog.func(x)
             ax.plot(x, y)
     ax.set_ylim([0, 1])
     ax.set_xlim([0, 2e7])
     ax.set_ylabel(pgettext("plotting", "Coverage (%)"))
     ax.set_xlabel(pgettext("plotting", "Spending ($US)"))
-    ax.legend(leglabs)
+    ax.legend(leglabs, fontsize=10)
     return fig
 
 
@@ -648,6 +651,7 @@ def get_costeff(project, results):
     (Total money spent on all programs (baseline + new) ) / (scneario outcome - zero cov outcome)
     :return: 3 levels of nested odicts, with keys (scen name, child name, pretty outcome) and value of type string
     """
+    results = [res for res in results if resampled_key_str not in res.name]
     parents = []
     baselines = []
     children = sc.odict()

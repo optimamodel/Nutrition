@@ -101,14 +101,14 @@ class ScenResult(sc.prettyobj):
         progset = self.programs.keys()
         base_progset = self.prog_info.base_progset()
         # zero cov scen
-        kwargs = {"name": _("Scenario overall"), "model_name": self.model_name, "scen_type": "budget", "progvals": {prog: cov for prog in base_progset}}
+        kwargs = {"name": _("Scenario overall"), "model_name": self.model_name, "scen_type": "budget", "progvals": {prog: cov for prog in base_progset}, "enforce_constraints_year": 0}
         allkwargs.append(kwargs)
         # scale down each program to 0 individually
         progvals = self.get_allocs(ref=True)
         for prog in progset:
             new_progvals = sc.dcp(progvals)
             new_progvals[prog] = cov
-            kwargs = {"name": prog, "model_name": self.model_name, "scen_type": "budget", "progvals": new_progvals}
+            kwargs = {"name": prog, "model_name": self.model_name, "scen_type": "budget", "progvals": new_progvals, "enforce_constraints_year": 0}
             allkwargs.append(kwargs)
         return allkwargs
 
