@@ -32,10 +32,10 @@ const persist = store => {
 const store = new Vuex.Store({
   state: {
     // The currently logged in user
-    currentUser: {},
+    currentUser: null,
 
     // The project currently chosen by the user
-    activeProject: {}
+    activeProject: null,
   },
   plugins: [persist],
   mutations: {
@@ -51,14 +51,17 @@ const store = new Vuex.Store({
     },
 
     logOut(state) {
-      state.currentUser = {};
-      state.activeProject = {};
+      state.currentUser = null;
+      state.activeProject = null;
     },
 
   },
   getters: {
-    isLoggedIn: state => "displayname" in state.currentUser && state.currentUser.displayname !== undefined,
-    projectOpen: state => state.activeProject !== null,
+    activeProjectName: state => state.activeProject ? state.activeProject.project.name : 'none',
+    activeProjectID: state => state.activeProject ? state.activeProject.project.id : undefined,
+    isLoggedIn: state => !!state.currentUser,
+    projectOpen: state => !!state.activeProject,
+    activeUserName: state => state.currentUser ?  state.currentUser.displayname || state.currentUser.username : 'none',
   },
 });
 

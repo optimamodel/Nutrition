@@ -21,6 +21,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 // Vue.use(BootstrapVue)
 import './sass/project.scss'
 import 'es6-promise/auto'
+import i18n from "./i18n.js";
 
 import Simplert from 'vue2-simplert-plugin'
 require('vue2-simplert-plugin/dist/vue2-simplert-plugin.css');
@@ -69,6 +70,7 @@ new Vue({
   render: h => h(App),
   router: router,
   store: store,
+  i18n,
   template: '<App/>',
   components: { App },
   data: {

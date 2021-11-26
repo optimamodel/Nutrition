@@ -9,27 +9,27 @@ Last update: 2019feb11
 
     <div v-if="projectID ==''">
       <div style="font-style:italic">
-        <p>No project is loaded.</p>
+        <p>{{ $t("common.no_project_loaded") }}.</p>
       </div>
     </div>
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>Data not yet uploaded for the project.  Please upload a databook in the Projects page.</p>
+        <p>{{ $t("common.no_data_loaded") }}</p>
       </div>
     </div>
 
     <div v-else>
       <div class="card">
-        <help reflink="scenarios" label="Define scenarios"></help>
+        <help reflink="scenarios" :label='$t("scenarios.Define scenarios")'></help>
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Databook</th>
-            <th>Active?</th>
-            <th>Actions</th>
+            <th>{{ $t("Name") }}</th>
+            <th>{{ $t("Type") }}</th>
+            <th>{{ $t("Databook") }}</th>
+            <th>{{ $t("Active") }}?</th>
+            <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
           <tbody>
@@ -47,10 +47,10 @@ Last update: 2019feb11
               <input type="checkbox" v-model="scenSummary.active"/>
             </td>
             <td style="white-space: nowrap">
-              <button class="btn btn-icon" @click="editScenModal(scenSummary)" data-tooltip="Edit scenario"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyScen(scenSummary)"      data-tooltip="Copy scenario"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="convertScen(scenSummary)"   data-tooltip="Convert scenario type"><i class="ti-control-shuffle"></i></button>
-              <button class="btn btn-icon" @click="deleteScen(scenSummary)"    data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="editScenModal(scenSummary)" :data-tooltip='$t("scenarios.Edit scenario")'><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyScen(scenSummary)"      :data-tooltip='$t("scenarios.Copy scenario")'><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="convertScen(scenSummary)"   :data-tooltip='$t("scenarios.Convert scenario type")'><i class="ti-control-shuffle"></i></button>
+              <button class="btn btn-icon" @click="deleteScen(scenSummary)"    :data-tooltip='$t("scenarios.Delete scenario")'><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -58,14 +58,14 @@ Last update: 2019feb11
 
         <div>
             <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
-            <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+            <label for="costeff_checkbox">{{ $t("scenarios.Perform intervention cost-effectiveness analysis") }}</label>
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
+          <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">{{ $t("scenarios.Run scenarios") }}</button>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="UncertScensModal(1)">Run scenarios with uncertainty</button>
-          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
-          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">{{ $t("scenarios.Add coverage scenario") }}</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">{{ $t("scenarios.Add budget scenario") }}</button>
         </div>
       </div>
     </div>
@@ -75,12 +75,12 @@ Last update: 2019feb11
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" :data-tooltip='$t("Zoom out")'>&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, 'scens')">Export plots</button>
-          <button class="btn" @click="exportResults(projectID, 'scens')">Export results</button>
+          <button class="btn" @click="exportGraphs(projectID, 'scens')">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, 'scens')">{{ $t("common.Export results") }}</button>
         </div>
       </div>
 
@@ -101,13 +101,13 @@ Last update: 2019feb11
 
       <br>
       <div v-if="hasTable">
-        <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
+        <help reflink="cost-effectiveness" :label='$t("scenarios.Program cost-effectiveness")'></help>
         <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
-              <th>Scenario/program</th>
-              <th>Outcomes</th>
+              <th>{{ $t("scenarios.Scenario/program") }}</th>
+              <th>{{ $t("Outcomes") }}</th>
               <th v-for="i in table[0].length-3"></th>
             </tr>
             </thead>
@@ -139,22 +139,21 @@ Last update: 2019feb11
            :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="false"
-           :transition="transition">
+           :clickToClose="false">
 
         <div class="dialog-content">
           <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-            Add scenario
+            {{ $t("scenarios.Add scenario") }}
           </div>
           <div class="dialog-c-title" v-else>
-            Edit scenario
+            {{ $t("scenarios.Edit scenario") }}
           </div>
           <div class="dialog-c-text">
-            <b>Scenario name:</b><br>
+            <b>{{ $t("scenarios.Scenario name") }}:</b><br>
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
-            <b>Databook:</b><br>
+            <b>{{ $t("scenarios.Databook") }}:</b><br>
             <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
@@ -165,13 +164,13 @@ Last update: 2019feb11
                 <thead>
                 <tr>
                   <th colspan=100><div class="dialog-header">
-                    <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
-                    <span v-else>Program spending</span>
+                    <span v-if="addEditModal.modalScenarioType==='coverage'">{{ $t("scenarios.Program coverages") }} (%)</span>
+                    <span v-else>{{ $t("scenarios.Program spending") }}</span>
                   </div></th>
                 </tr>
                 <tr>
-                  <th>Name</th>
-                  <th>Include?</th>
+                  <th>{{ $t("Name") }}</th>
+                  <th>{{ $t("Include") }}?</th>
                   <th v-for="year in defaultScenYears.slice(0, 1)">{{ year - 1 }}</th>
                   <th v-for="year in defaultScenYears">{{ year }}</th>
                 </tr>
@@ -198,15 +197,17 @@ Last update: 2019feb11
                 </tbody>
               </table>
             </div>
-            <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
+            <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
           </div>
           <div style="text-align:center">
             <button @click="modalSave()" class='btn __green' style="display:inline-block">
-              Save
+              {{ $t("Save") }}
             </button>
             &nbsp;&nbsp;&nbsp;
             <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
-              Cancel
+              <!--<editor-fold desc="Description">-->
+              {{ $t("Cancel") }}
+              <!--</editor-fold>-->
             </button>
           </div>
         </div>
@@ -285,7 +286,7 @@ Last update: 2019feb11
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
+      projectID()    { return this.$store.getters.activeProjectID },
       hasData()      { return utils.hasData(this) },
       placeholders() { return utils.placeholders() },
     },
@@ -327,7 +328,7 @@ Last update: 2019feb11
             console.log('Scenario summaries:')
             console.log(this.scenSummaries)
             this.scenariosLoaded = true
-            this.$sciris.succeed(this, 'Scenarios loaded')
+            this.$sciris.succeed(this)
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not get scenarios', error)

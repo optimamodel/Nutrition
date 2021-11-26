@@ -1,0 +1,1133 @@
+#
+msgid ""
+msgstr ""
+
+msgid "1-5 months"
+msgstr ""
+
+msgid "12-23 months"
+msgstr ""
+
+msgid "18-23 months"
+msgstr ""
+
+msgid "24 months or greater"
+msgstr ""
+
+msgid "24-59 months"
+msgstr ""
+
+msgid "6-11 months"
+msgstr ""
+
+msgid "<1 month"
+msgstr ""
+
+msgid "=\"Baseline (\"&start_year&\") coverage\""
+msgstr ""
+
+msgid ""
+"=\"Percentage of children in each category in baseline year "
+"(\"&start_year&\")\""
+msgstr ""
+
+msgid ""
+"=\"Percentage of deaths in baseline year (\"&start_year&\") attributable to "
+"cause\""
+msgstr ""
+
+msgid ""
+"=\"Percentage of population in each category in baseline year "
+"(\"&start_year&\")\""
+msgstr ""
+
+msgid "AIDS"
+msgstr ""
+
+msgid "Abortion"
+msgstr ""
+
+msgid "Add extension"
+msgstr ""
+
+msgid "Affected fraction"
+msgstr ""
+
+msgid "Age distribution of pregnant women"
+msgstr ""
+
+msgid "Age group"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Anaemia"
+msgstr ""
+
+msgid "Anaemia prevalence (%)"
+msgstr ""
+
+msgid "Anaemia status"
+msgstr ""
+
+msgid "Anaemic"
+msgstr ""
+
+msgid "Anaemic child (per year)"
+msgstr ""
+
+msgid "Anaemic pregnant woman (per pregnancy)"
+msgstr ""
+
+msgid "Antepartum haemorrhage"
+msgstr ""
+
+msgid "Average episodes per year: 1-5 months"
+msgstr ""
+
+msgid "Average episodes per year: 12-23 months"
+msgstr ""
+
+msgid "Average episodes per year: 24-59 months"
+msgstr ""
+
+msgid "Average episodes per year: 6-11 months"
+msgstr ""
+
+msgid "Average episodes per year: <1 month"
+msgstr ""
+
+msgid "Balanced energy-protein supplementation"
+msgstr ""
+
+msgid "Baseline (2017) coverage"
+msgstr ""
+
+msgid "Baseline (2019) coverage"
+msgstr ""
+
+msgid "Baseline year (projection start year)"
+msgstr ""
+
+msgid "Baseline year data"
+msgstr ""
+
+msgid "Baseline year mortality and risk factors"
+msgstr ""
+
+msgid "Baseline year population inputs"
+msgstr ""
+
+msgid "Behaviour"
+msgstr ""
+
+msgid "Birth number"
+msgstr ""
+
+msgid "Birth outcome distribution"
+msgstr ""
+
+msgid "Birth outcome risks"
+msgstr ""
+
+msgid "Birth outcomes"
+msgstr ""
+
+msgid "Birth spacing"
+msgstr ""
+
+msgid "Breastfeeding"
+msgstr ""
+
+msgid "Breastfeeding distribution"
+msgstr ""
+
+msgid "Breastfeeding status"
+msgstr ""
+
+msgid "Broad population group"
+msgstr ""
+
+msgid "By program"
+msgstr ""
+
+msgid "By program - lower"
+msgstr ""
+
+msgid "By program - upper"
+msgstr ""
+
+msgid "Calcium supplementation"
+msgstr ""
+
+msgid "Cash transfers"
+msgstr ""
+
+msgid "Cause of death"
+msgstr ""
+
+msgid "Causes"
+msgstr ""
+
+msgid "Causes of death"
+msgstr ""
+
+msgid "Child death"
+msgstr ""
+
+msgid "Child turning 5 stunted (over lifetime)"
+msgstr ""
+
+msgid "Child turning age 5 stunted (over lifetime)"
+msgstr ""
+
+msgid "Child wasting episode"
+msgstr ""
+
+msgid "Children"
+msgstr ""
+
+msgid "Children 0-5 months"
+msgstr ""
+
+msgid "Children 0-59 months"
+msgstr ""
+
+msgid "Children 6-23 months"
+msgstr ""
+
+msgid "Children under 5 population"
+msgstr ""
+
+msgid "Community"
+msgstr ""
+
+msgid "Community based"
+msgstr ""
+
+msgid "Community-based"
+msgstr ""
+
+msgid "Condom"
+msgstr ""
+
+msgid "Cost"
+msgstr ""
+
+msgid "Cost curve options"
+msgstr ""
+
+msgid "Cost-coverage relationship"
+msgstr ""
+
+msgid "Curved with decreasing marginal cost"
+msgstr ""
+
+msgid "Curved with increasing marginal cost"
+msgstr ""
+
+msgid "Data"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Delayed cord clamping"
+msgstr ""
+
+msgid "Delivery mode"
+msgstr ""
+
+msgid "Demographic projections"
+msgstr ""
+
+msgid "Diarrhoea"
+msgstr ""
+
+msgid "Diarrhoea (per additional episode)"
+msgstr ""
+
+msgid "Diarrhoea (per additional episode) - lower"
+msgstr ""
+
+msgid "Diarrhoea (per additional episode) - upper"
+msgstr ""
+
+msgid "Diarrhoea incidence"
+msgstr ""
+
+msgid "Economic loss"
+msgstr ""
+
+msgid "Effectiveness"
+msgstr ""
+
+msgid "Effectiveness incidence"
+msgstr ""
+
+msgid "Effectiveness mortality"
+msgstr ""
+
+msgid "Embolism"
+msgstr ""
+
+msgid "End year"
+msgstr ""
+
+msgid "Estimated pregnant women"
+msgstr ""
+
+msgid "Exclusion dependency"
+msgstr ""
+
+msgid "Exclusive"
+msgstr ""
+
+msgid "Extension"
+msgstr ""
+
+msgid "Family planning"
+msgstr ""
+
+msgid "Family planning - lower"
+msgstr ""
+
+msgid "Family planning - upper"
+msgstr ""
+
+msgid "Female sterilization"
+msgstr ""
+
+msgid "Fertility awareness"
+msgstr ""
+
+msgid "First birth"
+msgstr ""
+
+msgid "Food"
+msgstr ""
+
+msgid "For MAM per additional episode of diarrhoea"
+msgstr ""
+
+msgid "For MAM per additional episode of diarrhoea - lower"
+msgstr ""
+
+msgid "For MAM per additional episode of diarrhoea - upper"
+msgstr ""
+
+msgid "For SAM per additional episode of diarrhoea"
+msgstr ""
+
+msgid "For SAM per additional episode of diarrhoea - lower"
+msgstr ""
+
+msgid "For SAM per additional episode of diarrhoea - upper"
+msgstr ""
+
+msgid "For anaemia per additional episode of severe diarrhoea"
+msgstr ""
+
+msgid "For anaemia per additional episode of severe diarrhoea - lower"
+msgstr ""
+
+msgid "For anaemia per additional episode of severe diarrhoea - upper"
+msgstr ""
+
+msgid "Fraction eating maize as main staple food"
+msgstr ""
+
+msgid "Fraction eating rice as main staple food"
+msgstr ""
+
+msgid "Fraction eating wheat as main staple food"
+msgstr ""
+
+msgid "Fraction of pregnancies ending in spontaneous abortion"
+msgstr ""
+
+msgid "Fraction of subsistence farming"
+msgstr ""
+
+msgid "Fraction on other staples as main staple food"
+msgstr ""
+
+msgid "General population"
+msgstr ""
+
+msgid "Given previous stunting (HAZ < -2 in previous age band)"
+msgstr ""
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - lower"
+msgstr ""
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - upper"
+msgstr ""
+
+msgid "HAZ status"
+msgstr ""
+
+msgid "Health facility"
+msgstr ""
+
+msgid "High"
+msgstr ""
+
+msgid "High (HAZ-score < -3)"
+msgstr ""
+
+msgid "Hypertensive disorders"
+msgstr ""
+
+msgid "IFA fortification of maize"
+msgstr ""
+
+msgid "IFA fortification of rice"
+msgstr ""
+
+msgid "IFA fortification of wheat flour"
+msgstr ""
+
+msgid "IFAS (community)"
+msgstr ""
+
+msgid "IFAS (health facility)"
+msgstr ""
+
+msgid "IFAS (retailer)"
+msgstr ""
+
+msgid "IFAS (school)"
+msgstr ""
+
+msgid "IFAS for pregnant women (community)"
+msgstr ""
+
+msgid "IFAS for pregnant women (health facility)"
+msgstr ""
+
+msgid "IPTp"
+msgstr ""
+
+msgid "IUD"
+msgstr ""
+
+msgid "IYCF 1"
+msgstr ""
+
+msgid "IYCF 2"
+msgstr ""
+
+msgid "IYCF 3"
+msgstr ""
+
+msgid "IYCF odds ratios"
+msgstr ""
+
+msgid "IYCF package"
+msgstr ""
+
+msgid "IYCF packages"
+msgstr ""
+
+msgid "Implant"
+msgstr ""
+
+msgid "Incidence of conditions"
+msgstr ""
+
+msgid "Indirect causes"
+msgstr ""
+
+msgid "Infant mortality (per 1,000 live births)"
+msgstr ""
+
+msgid "Injectable"
+msgstr ""
+
+msgid "Injury"
+msgstr ""
+
+msgid "Intrapartum haemorrhage"
+msgstr ""
+
+msgid "Iron and iodine fortification of salt"
+msgstr ""
+
+msgid "Kangaroo mother care"
+msgstr ""
+
+msgid "Kangaroo mother care - lower"
+msgstr ""
+
+msgid "Kangaroo mother care - upper"
+msgstr ""
+
+msgid "Linear (constant marginal cost) [default]"
+msgstr ""
+
+msgid "Lipid-based nutrition supplements"
+msgstr ""
+
+msgid "Lipid-based nutrition supplements - lower"
+msgstr ""
+
+msgid "Lipid-based nutrition supplements - upper"
+msgstr ""
+
+msgid "Long-lasting insecticide-treated bednets"
+msgstr ""
+
+msgid "Lower bound"
+msgstr ""
+
+msgid "Lower bounds"
+msgstr ""
+
+msgid "MAM"
+msgstr ""
+
+msgid "MAM (WHZ-score between -3 and -2)"
+msgstr ""
+
+msgid "MAM (WHZ-score between -3 and -2)-l"
+msgstr ""
+
+msgid "MAM (WHZ-score between -3 and -2)-u"
+msgstr ""
+
+msgid "Malaria"
+msgstr ""
+
+msgid "Male sterilization"
+msgstr ""
+
+msgid "Management of MAM"
+msgstr ""
+
+msgid "Mass media"
+msgstr ""
+
+msgid "Maternal (deaths per 1,000 births)"
+msgstr ""
+
+msgid "Maternal death"
+msgstr ""
+
+msgid "Maternal mortality (per 1,000 live births)"
+msgstr ""
+
+msgid "Maternal risk factors leading to birth outcomes"
+msgstr ""
+
+msgid "Max-decrease per annum"
+msgstr ""
+
+msgid "Max-increase per annum"
+msgstr ""
+
+msgid "Measles"
+msgstr ""
+
+msgid "Meningitis"
+msgstr ""
+
+msgid "Method"
+msgstr ""
+
+msgid "Mg for eclampsia"
+msgstr ""
+
+msgid "Mg for pre-eclampsia"
+msgstr ""
+
+msgid "Micronutrient powders"
+msgstr ""
+
+msgid "Mild"
+msgstr ""
+
+msgid "Mild (HAZ-score between -2 and -1)"
+msgstr ""
+
+msgid "Mild (WHZ-score between -2 and -1)"
+msgstr ""
+
+msgid "Moderate"
+msgstr ""
+
+msgid "Moderate (HAZ-score between -3 and -2)"
+msgstr ""
+
+msgid "Mortality"
+msgstr ""
+
+msgid "Multiple micronutrient supplementation"
+msgstr ""
+
+msgid "Neonatal"
+msgstr ""
+
+msgid "Neonatal asphyxia"
+msgstr ""
+
+msgid "Neonatal congenital anomalies"
+msgstr ""
+
+msgid "Neonatal diarrhoea"
+msgstr ""
+
+msgid "Neonatal mortality (per 1,000 live births)"
+msgstr ""
+
+msgid "Neonatal other"
+msgstr ""
+
+msgid "Neonatal pneumonia"
+msgstr ""
+
+msgid "Neonatal prematurity"
+msgstr ""
+
+msgid "Neonatal sepsis"
+msgstr ""
+
+msgid "Neonatal tetanus"
+msgstr ""
+
+msgid "Non-pregnant WRA"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Normal"
+msgstr ""
+
+msgid "Normal (HAZ-score > -1)"
+msgstr ""
+
+msgid "Normal (WHZ-score > -1)"
+msgstr ""
+
+msgid "Not anaemic"
+msgstr ""
+
+msgid "Number of births"
+msgstr ""
+
+msgid "Nutritional status distribution"
+msgstr ""
+
+msgid "Odds ratio for correct breastfeeding"
+msgstr ""
+
+msgid "Odds ratio for correct breastfeeding - lower"
+msgstr ""
+
+msgid "Odds ratio for correct breastfeeding - upper"
+msgstr ""
+
+msgid "Odds ratio for correct breastfeeding by program"
+msgstr ""
+
+msgid "Odds ratio for correct complementary feeding"
+msgstr ""
+
+msgid "Odds ratio for correct complementary feeding - lower"
+msgstr ""
+
+msgid "Odds ratio for correct complementary feeding - upper"
+msgstr ""
+
+msgid "Odds ratio for stunting"
+msgstr ""
+
+msgid "Odds ratio for stunting - lower"
+msgstr ""
+
+msgid "Odds ratio for stunting - upper"
+msgstr ""
+
+msgid "Odds ratio for women with maternal anaemia"
+msgstr ""
+
+msgid "Odds ratio of MAM when covered by program"
+msgstr ""
+
+msgid "Odds ratio of MAM when covered by program - lower"
+msgstr ""
+
+msgid "Odds ratio of MAM when covered by program - upper"
+msgstr ""
+
+msgid "Odds ratio of SAM when covered by program"
+msgstr ""
+
+msgid "Odds ratio of SAM when covered by program - lower"
+msgstr ""
+
+msgid "Odds ratio of SAM when covered by program - upper"
+msgstr ""
+
+msgid "Odds ratio of being anaemic when covered by intervention"
+msgstr ""
+
+msgid "Odds ratios"
+msgstr ""
+
+msgid "Odds ratios for conditions"
+msgstr ""
+
+msgid "Odds ratios for conditions - lower"
+msgstr ""
+
+msgid "Odds ratios for conditions - upper"
+msgstr ""
+
+msgid "Odds ratios for correct breastfeeding by program"
+msgstr ""
+
+msgid "Odds ratios for correct breastfeeding by program - lower"
+msgstr ""
+
+msgid "Odds ratios for correct breastfeeding by program - upper"
+msgstr ""
+
+msgid "Odds ratios for optimal birth spacing by program"
+msgstr ""
+
+msgid "Odds ratios for optimal birth spacing by program - lower"
+msgstr ""
+
+msgid "Odds ratios for optimal birth spacing by program - upper"
+msgstr ""
+
+msgid "Odds ratios for stunting"
+msgstr ""
+
+msgid "Odds ratios for women with maternal anaemia"
+msgstr ""
+
+msgid "Odds ratios for women with maternal anaemia - lower"
+msgstr ""
+
+msgid "Odds ratios for women with maternal anaemia - upper"
+msgstr ""
+
+msgid "Odds ratios of being anaemic when covered by intervention"
+msgstr ""
+
+msgid "Odds ratios of being anaemic when covered by intervention - lower"
+msgstr ""
+
+msgid "Odds ratios of being anaemic when covered by intervention - upper"
+msgstr ""
+
+msgid "Oral rehydration salts"
+msgstr ""
+
+msgid "Other"
+msgstr ""
+
+msgid "Other direct causes"
+msgstr ""
+
+msgid "Other odds ratios"
+msgstr ""
+
+msgid "Other risks"
+msgstr ""
+
+msgid "PW: 15-19 years"
+msgstr ""
+
+msgid "PW: 20-29 years"
+msgstr ""
+
+msgid "PW: 30-39 years"
+msgstr ""
+
+msgid "PW: 40-49 years"
+msgstr ""
+
+msgid "Partial"
+msgstr ""
+
+msgid "Percentage of anaemia that is iron deficient"
+msgstr ""
+
+msgid "Percentage of children attending health facility"
+msgstr ""
+
+msgid "Percentage of children in each category in baseline year (2019)"
+msgstr ""
+
+msgid "Percentage of deaths in baseline year (2017) attributable to cause"
+msgstr ""
+
+msgid "Percentage of diarrhea that is severe"
+msgstr ""
+
+msgid "Percentage of population at risk of malaria"
+msgstr ""
+
+msgid "Percentage of population food insecure (default poor)"
+msgstr ""
+
+msgid "Percentage of population in each category in baseline year (2017)"
+msgstr ""
+
+msgid "Percentage of pregnant women 15-19 years"
+msgstr ""
+
+msgid "Percentage of pregnant women 20-29 years"
+msgstr ""
+
+msgid "Percentage of pregnant women 30-39 years"
+msgstr ""
+
+msgid "Percentage of pregnant women 40-49 years"
+msgstr ""
+
+msgid "Percentage of pregnant women attending health facility"
+msgstr ""
+
+msgid "Pertussis"
+msgstr ""
+
+msgid "Pill"
+msgstr ""
+
+msgid "Pneumonia"
+msgstr ""
+
+msgid "Population"
+msgstr ""
+
+msgid "Population data"
+msgstr ""
+
+msgid "Population risk areas"
+msgstr ""
+
+msgid "Postpartum haemorrhage"
+msgstr ""
+
+msgid "Pre-term AGA"
+msgstr ""
+
+msgid "Pre-term SGA"
+msgstr ""
+
+msgid "Predominant"
+msgstr ""
+
+msgid "Pregnant women"
+msgstr ""
+
+msgid "Prevalence of age-appropriate breastfeeding"
+msgstr ""
+
+msgid "Prevalence of anaemia"
+msgstr ""
+
+msgid "Prevalence of eclampsia"
+msgstr ""
+
+msgid "Prevalence of iron deficiency anaemia"
+msgstr ""
+
+msgid "Prevalence of pre-eclampsia"
+msgstr ""
+
+msgid "Program"
+msgstr ""
+
+msgid "Program dependencies"
+msgstr ""
+
+msgid "Program risk areas"
+msgstr ""
+
+msgid "Programs anaemia"
+msgstr ""
+
+msgid "Programs birth outcomes"
+msgstr ""
+
+msgid "Programs cost and coverage"
+msgstr ""
+
+msgid "Programs family planning"
+msgstr ""
+
+msgid "Programs for PW"
+msgstr ""
+
+msgid "Programs for children"
+msgstr ""
+
+msgid "Programs impacted population"
+msgstr ""
+
+msgid "Programs target population"
+msgstr ""
+
+msgid "Programs wasting"
+msgstr ""
+
+msgid "Projection years"
+msgstr ""
+
+msgid "Proportional Cost"
+msgstr ""
+
+msgid "Public provision of complementary foods"
+msgstr ""
+
+msgid "Public provision of complementary foods - lower"
+msgstr ""
+
+msgid "Public provision of complementary foods - upper"
+msgstr ""
+
+msgid "Reference programs"
+msgstr ""
+
+msgid "Relative risk by birth spacing"
+msgstr ""
+
+msgid "Relative risk by birth spacing - lower"
+msgstr ""
+
+msgid "Relative risk by birth spacing - upper"
+msgstr ""
+
+msgid "Relative risk of causes of death by anaemia status"
+msgstr ""
+
+msgid "Relative risk of causes of death by breastfeeding status"
+msgstr ""
+
+msgid ""
+"Relative risk of causes of death by height-for-age (stunting) distribution"
+msgstr ""
+
+msgid ""
+"Relative risk of causes of death by weight-for-height (wasting) distribution"
+msgstr ""
+
+msgid "Relative risks"
+msgstr ""
+
+msgid "Relative risks of anaemia when receiving intervention"
+msgstr ""
+
+msgid "Relative risks of anaemia when receiving intervention - lower"
+msgstr ""
+
+msgid "Relative risks of anaemia when receiving intervention - upper"
+msgstr ""
+
+msgid "Relative risks of experiencing diarrhoea by breastfeeding status"
+msgstr ""
+
+msgid "Relative risks of neonatal causes of death"
+msgstr ""
+
+msgid "Relative risks of neonatal causes of death - lower"
+msgstr ""
+
+msgid "Relative risks of neonatal causes of death - upper"
+msgstr ""
+
+msgid "Risk"
+msgstr ""
+
+msgid "Risks for children who experience birth outcomes"
+msgstr ""
+
+msgid "S-shaped (decreasing then increasing marginal cost)"
+msgstr ""
+
+msgid "SAM"
+msgstr ""
+
+msgid "SAM (WHZ-score < -3)"
+msgstr ""
+
+msgid "SAM (WHZ-score < -3)-l"
+msgstr ""
+
+msgid "SAM (WHZ-score < -3)-u"
+msgstr ""
+
+msgid "Saturation coverage of target population"
+msgstr ""
+
+msgid "School attendance (percentage of 15-19 year women)"
+msgstr ""
+
+msgid "Sepsis"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Stillbirths (per 1,000 total births)"
+msgstr ""
+
+msgid "Stunting"
+msgstr ""
+
+msgid "Stunting (HAZ-score < -2)"
+msgstr ""
+
+msgid "Stunting (HAZ-score < -2)-l"
+msgstr ""
+
+msgid "Stunting (HAZ-score < -2)-u"
+msgstr ""
+
+msgid "Stunting (height-for-age)"
+msgstr ""
+
+msgid "Stunting prevalence (%)"
+msgstr ""
+
+msgid "Target population"
+msgstr ""
+
+msgid "Targetted condition"
+msgstr ""
+
+msgid "Term AGA"
+msgstr ""
+
+msgid "Term SGA"
+msgstr ""
+
+msgid "Threshold dependency"
+msgstr ""
+
+msgid "Time trends"
+msgstr ""
+
+msgid "Total (must be 100%)"
+msgstr ""
+
+msgid "Total WRA"
+msgstr ""
+
+msgid "Treatment of SAM"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Under 5 mortality (per 1,000 live births)"
+msgstr ""
+
+msgid "Under five (deaths per 1,000 births)"
+msgstr ""
+
+msgid "Unit cost (US$ per person per year)"
+msgstr ""
+
+msgid "Unit cost (US$)"
+msgstr ""
+
+msgid "Unmet need for family planning"
+msgstr ""
+
+msgid "Upper bound"
+msgstr ""
+
+msgid "Upper bounds"
+msgstr ""
+
+msgid "Vitamin A supplementation"
+msgstr ""
+
+msgid "WASH: Handwashing"
+msgstr ""
+
+msgid "WASH: Hygenic disposal"
+msgstr ""
+
+msgid "WASH: Improved sanitation"
+msgstr ""
+
+msgid "WASH: Improved water source"
+msgstr ""
+
+msgid "WASH: Piped water"
+msgstr ""
+
+msgid "WHZ status"
+msgstr ""
+
+msgid "WRA: 15-19 years"
+msgstr ""
+
+msgid "WRA: 20-29 years"
+msgstr ""
+
+msgid "WRA: 30-39 years"
+msgstr ""
+
+msgid "WRA: 40-49 years"
+msgstr ""
+
+msgid "Wasting"
+msgstr ""
+
+msgid "Wasting (weight-for-height)"
+msgstr ""
+
+msgid "Wasting prevalence (%)"
+msgstr ""
+
+msgid "Wasting prevention"
+msgstr ""
+
+msgid "Wasting treatment"
+msgstr ""
+
+msgid "Withdrawal"
+msgstr ""
+
+msgid "Women of reproductive age"
+msgstr ""
+
+msgid "Year"
+msgstr ""
+
+msgid "Zinc for treatment + ORS"
+msgstr ""
+
+msgid "Zinc supplementation"
+msgstr ""
+
+msgid "Zinc supplementation - lower"
+msgstr ""
+
+msgid "Zinc supplementation - upper"
+msgstr ""
+
+msgid "affected fraction"
+msgstr ""
+
+msgid "effectiveness"
+msgstr ""
+
+msgid "less than 18 months"
+msgstr ""
+
+msgid "non-pregnant WRA"
+msgstr ""
+
+msgid "year"
+msgstr ""

@@ -15,7 +15,7 @@ Last update: 2018-08-26
         <input class="txbox __l"
                type="password"
                name="oldpassword"
-               placeholder="Reenter old password"
+               :placeholder="$t('placeholder.Reenter old password')"
                required="required"
                v-model='oldPassword'/>
       </div>
@@ -24,7 +24,7 @@ Last update: 2018-08-26
         <input class="txbox __l"
                type="password"
                name="password"
-               placeholder="Enter new password"
+               :placeholder="$t('placeholder.Enter new password')"
                required="required"
                v-model='newPassword'/>
       </div>
