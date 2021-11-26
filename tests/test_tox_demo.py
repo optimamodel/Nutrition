@@ -21,6 +21,7 @@ def test_scens(project):
     plt.close('all')
     P.write_results(tempdir/f"{P.locale}_scen_results.xlsx")
 
+
 def test_optims(project):
     P = sc.dcp(project)
     P.run_optim(parallel=False, maxtime=1, maxiter=1)
