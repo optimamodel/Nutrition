@@ -50,5 +50,6 @@ setup(
         "pandas>=1.2.4",
         "babel",
         "openpyxl",
+        "sciris",
     ],
 )
