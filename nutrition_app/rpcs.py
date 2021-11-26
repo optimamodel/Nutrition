@@ -387,7 +387,7 @@ def del_result(result_key, project_key, die=None):
 @RPC()
 def jsonify_project(project_key, verbose=False):
     """ Return the project json, given the Project UID. """
-    proj = load_project(project_id)  # Load the project record matching the UID of the project passed in.
+    proj = load_project(project_key)  # Load the project record matching the UID of the project passed in.
     json = {
         "project": {
             "id": str(proj.uid),
@@ -400,6 +400,7 @@ def jsonify_project(project_key, verbose=False):
             "n_results": len(proj.results),
             "n_tasks": len(proj.webapp.tasks),
             "locale": proj.locale,
+            "key": project_key,
         }
     }
     if verbose:
@@ -628,7 +629,7 @@ def define_formats(locale):
         ["head", "name", "name", "tick"],
     ]
 
-    formats["Programs cost and coverage"] = [
+    formats[_("Programs cost and coverage")] = [
         ["head", "head", "head", "head", "head", "head", "head"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
