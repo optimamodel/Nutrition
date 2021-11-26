@@ -1110,7 +1110,7 @@ def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     """ Convert a Python to JSON representation of an optimization """
     obj_labels = nu.pretty_labels(direction=True).values()
     js_optim = {}
-    attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs"]
+    attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs", "active"]
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr)  # Copy the attributes into a dictionary
     weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_optim.weights))]  # WARNING, ABS HACK
@@ -1126,7 +1126,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
     """ Convert a JSON to Python representation of an optimization """
     obj_keys = nu.default_trackers()
     kwargs = sc.odict()
-    attrs = ["name", "model_name", "fix_curr", "filter_progs"]
+    attrs = ["name", "model_name", "fix_curr", "filter_progs", "active"]
     for attr in attrs:
         kwargs[attr] = js_optim[attr]
     try:
@@ -1220,6 +1220,7 @@ def opt_switch_dataset(project_id, js_optim: dict) -> dict:
 def plot_optimization(project_id, cache_id, do_costeff=False):
     proj = load_project(project_id, die=True)
     proj = retrieve_results(proj)
+
     figs = proj.plot(key=cache_id, optim=True)  # Only plot allocation
     graphs = []
     for f, fig in enumerate(figs.values()):
@@ -1238,6 +1239,36 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
         table = []
 
     return {"graphs": graphs, "table": table}
+
+@RPC()
+def opt_to_scen(project_id, js_optims: dict):
+    print("Converting optimization to scenario...")
+    proj = load_project(project_id, die=True)
+    py_optims = sc.odict()
+    for js_optim in js_optims:
+        id = js_optim["serverDatastoreId"]
+        py_optims[id] = js_to_py_optim(js_optim)
+
+    proj = retrieve_results(proj)
+    scens = []
+
+    for py_optim in py_optims.items():
+        if py_optim[1].active:
+
+            res = proj.results[py_optim[0]]
+            py_base_scen = proj.run_baseline(py_optim[1].model_name, py_optim[1].prog_set, growth=py_optim[1].growth, dorun=False)
+
+            optim_alloc = res[0].get_allocs()
+
+            py_scen = nu.Scen(name=py_optim[1].name, model_name=py_optim[1].model_name, scen_type="budget", progvals=optim_alloc,
+                        enforce_constraints_year=0, growth=py_optim[1].growth)
+
+            scens.append(py_to_js_scen(py_base_scen, proj))
+            scens.append(py_to_js_scen(py_scen, proj))
+
+    return scens
+
+
 
 
 ##################################################################################
