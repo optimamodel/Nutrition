@@ -51,5 +51,6 @@ setup(
         "babel",
         "openpyxl",
         "sciris",
+        "seaborn",
     ],
 )
