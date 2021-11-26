@@ -147,7 +147,7 @@ def reduce_results(results, point_estimate:str="best", bounds:str = "quantiles",
                 errormsg = f"Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})"
                 raise ValueError(errormsg)
     
-    res_unc = {} #this will be the returned results with uncertainty and without sampled results
+    res_unc = sc.odict() #this will be the returned results with uncertainty and without sampled results
 
     for res in results:
         if resampled_key_str not in res.name: #e.g. it's a "real" point estimate result

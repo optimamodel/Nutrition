@@ -985,63 +985,19 @@ class ProgramData(object):
 class Dataset(object):
     """ Store all the data for a project """
 
-    def __init__(self,
-                 country=None,
-                 region=None,
-                 name=None,
-                 demographic_data: DemographicData =None,
-                 prog_data: ProgramData=None,
-                 default_params=None,
-                 pops=None,
-                 prog_info=None,
-                 doload=False,
-                 inputspath=None,
-                 defaultspath=None,
-                 fromfile=None,
-                 databook: pandas.ExcelFile=None,
-                 ):
+    def __init__(self, databook: pandas.ExcelFile, country=None, region=None, name=None):
         """
-
+        :param databook: Databook that is being used in the model
         :param country: The country of interest for data
         :param region: The region of interest in the country (in geospatial optimization)
-        :param demographic_data: All the default parameters and input data stored here
-        :param prog_data: All the program specific data are stored here
-        :param pops: Population related data
-        :param prog_info: Intervention related data are stored here
-        :param doload: (Boolean)
-        :param databook: Databook that is being used in the model
+        :param name:
         """
-
-        self.locale = None  # Store the databook locale (set during `Dataset.load`)
 
         self.country = country
         self.region = region
+        self.name = name
 
         self.calcscache = CalcCellCache()
-
-        self.demographic_data = demographic_data
-        self.prog_data = prog_data
-        self.pops = pops  # populations
-        self.prog_info = prog_info  # program info
-        self.t = None  # start and end years for the simulation
-        self.name = name
-        self.modified = sc.now(utc=True)
-        if doload:
-            self.load(databook=databook)
-        return None
-
-    def __repr__(self):
-        output = sc.prepr(self)
-        return output
-
-    @translate
-    def load(self, databook: pandas.ExcelFile):
-
-        self.locale = get_databook_locale(databook)
-
-        # Handle inputs
-        if databook is None:
-            raise Exception(_("Sorry, but you must supply a project for load()."))
 
         # Read them into actual data
         try:
@@ -1068,7 +1024,15 @@ class Dataset(object):
 
         self.t = self.demographic_data.t
         self.modified = sc.now(utc=True)
-        return None
+
+    @property
+    def locale(self):
+        return self.demographic_data.locale
+
+    def __repr__(self):
+        output = sc.prepr(self)
+        return output
+
 
     def set_pops(self):
         children = populations.Children(self.demographic_data)
@@ -1076,11 +1040,13 @@ class Dataset(object):
         nonPregnantWomen = populations.NonPregnantWomen(self.demographic_data)
         self.pops = [children, pregnantWomen, nonPregnantWomen]
 
+
     def prog_names(self):
         """ WARNING, hacky function to get program names """
         names = self.prog_data.base_prog_set
         return names
-    
+
+    @translate
     def resample(self, seed = None):
         
         new = sc.dcp(self)
@@ -1226,9 +1192,10 @@ class Dataset(object):
             newPrograms[key].update(ORs)
         return newPrograms
 
+    @translate
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = self._spreadsheet.parse(sheet_name="IYCF packages", index_col=[0, 1])
+        IYCFpackages = self._spreadsheet.parse(sheet_name=_("IYCF packages"), index_col=[0, 1])
         packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
@@ -1236,7 +1203,7 @@ class Dataset(object):
             for mode in package:
                 col = package[mode]
                 if col.notnull()[0]:
-                    if mode == "Mass media":
+                    if mode == _("Mass media"):
                         ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]]  # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]

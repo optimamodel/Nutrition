@@ -166,7 +166,7 @@ class Project(object):
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
         databook = self.inputsheet(name).pandas()
 
-        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, databook=databook)
+        dataset = Dataset(databook=databook, country=country, region=region, name=name)
         if dataset.locale != self.locale:
             if not self.datasets:
                 self.locale = dataset.locale
