@@ -476,10 +476,7 @@ class Project(object):
         else:
             return geos
 
-    def repeat_fun(self, n_runs, f, *args):
-        for i in range(n_runs):
-            f(*args)
-
+    @translate
     def run_scen(self, scen, n_samples=0, seed=None):
         """Function for running a single scenario that may or may not be saved in P.scens
         NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
@@ -500,8 +497,8 @@ class Project(object):
 
         def _add_excess_budget(scen, model):
             # unclear why this is needed?
-            if "Excess budget not allocated" in scen.prog_set: #add a dummy program to the model
-                excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+            if _("Excess budget not allocated") in scen.prog_set: #add a dummy program to the model
+                excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated", self.locale)}
                 model.prog_info.add_prog(excess_spend, model.pops)
                 model.prog_info.prog_data = excess_spend["prog_data"]
 
