@@ -5,7 +5,7 @@ Version:
 import nutrition.ui as nu
 
 do_plot = True
-run_scen = True
+run_scen = False
 run_optim = True
 run_geo = False
 
@@ -17,7 +17,7 @@ if run_scen:
         P.plot()
 
 if run_optim:
-    P.run_optim(parallel=False)
+    P.run_optim(parallel=False, n_samples=5)
     if do_plot:
         P.plot(-1, optim=True)
 

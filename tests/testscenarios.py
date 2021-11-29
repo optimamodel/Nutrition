@@ -38,7 +38,7 @@ kwargs7 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progval
 kwargs8 = {"name": "Treat SAM 100%", "model_name": "Maximize thrive", "mults": [1], "weights": sc.odict({"thrive": 1}), "prog_set": ["Vitamin A supplementation", "IYCF 1", "IFA fortification of maize", "Balanced energy-protein supplementation", "Public provision of complementary foods", "Iron and iodine fortification of salt"], "fix_curr": False, "add_funds": 0, "filter_progs": True}
 
 if __name__ == "__main__":
-    scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
+    scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3, kwargs2])
     p.add_scens(scen_list)
 
     p.run_scens(n_samples=5)

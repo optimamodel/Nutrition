@@ -44,15 +44,15 @@ def parallel_optim(region, path=None, n_samples=2):
         "model_name": region,
         "weights": sc.odict(
             {
-                "Minimize the number of child deaths": [1.0, 0.0, 0.0],
-                "thrive": [0.0, 1.0, 0.0],
-                "Minimize the prevalence of wasting in children": [0.0, 0.0, 1.0],
+                "Minimize the number of child deaths": [1.0, 0.5, 0.0],
+                "thrive": [0.5, 1.0, 0.0],
+                "Minimize the prevalence of wasting in children": [0.5, 0.0, 1.0],
             }
         ),
         "prog_set": ["Balanced energy-protein supplementation", "Cash transfers", "IFA fortification of wheat flour", "IYCF 1", "IYCF 2", "IFAS for pregnant women (community)", "IFAS for pregnant women (health facility)", "Lipid-based nutrition supplements", "Multiple micronutrient supplementation", "Micronutrient powders", "Kangaroo mother care", "Treatment of SAM", "Vitamin A supplementation", "Zinc for treatment + ORS", "Iron and iodine fortification of salt"],
         "fix_curr": False,
         "add_funds": 0,
-        "growth": "fixed coverage",
+        "growth": "fixed budget",
     }
 
     p2.add_optims(Optim(**kwargs))
