@@ -668,6 +668,7 @@ def define_formats(locale):
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
     ]
 
     return formats
