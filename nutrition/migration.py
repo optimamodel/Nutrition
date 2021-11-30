@@ -200,19 +200,22 @@ def migrate(obj, registry=migrations, version=version, gitinfo=gitinfo):
     return obj
 
 
-@migration("Project", "1.7.2", "1.7.3", "Add locale")
+@migration("Project", "1.7.2", "1.7.6", "Add locale")
 def _add_project_locale(proj):
-    proj.locale = "en"
+    if not hasattr(proj, 'locale'):
+        proj.locale = "en"
     return proj
 
 
-@migration("InputData", "1.7.2", "1.7.3", "Add locale")
+@migration("InputData", "1.7.2", "1.7.6", "Add locale")
 def _add_inputdata_locale(inputdata):
-    inputdata.locale = "en"
+    if not hasattr(inputdata, 'locale'):
+        inputdata.locale = "en"
     return inputdata
 
 
-@migration("ProgData", "1.7.2", "1.7.3", "Add locale")
+@migration("ProgData", "1.7.2", "1.7.6", "Add locale")
 def _add_progdata_locale(progdata):
-    progdata.locale = "en"
+    if not hasattr(progdata, 'locale'):
+        progdata.locale = "en"
     return progdata
