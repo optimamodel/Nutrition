@@ -1131,3 +1131,15 @@ msgstr ""
 
 msgid "year"
 msgstr ""
+
+msgid "Low birth weight"
+msgstr ""
+
+msgid "Small quantity lipid-based nutrition supplements"
+msgstr ""
+
+msgid "Small quantity lipid-based nutrition supplements - lower"
+msgstr ""
+
+msgid "Small quantity lipid-based nutrition supplements - upper"
+msgstr ""
