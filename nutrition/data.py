@@ -498,7 +498,7 @@ class DemographicData(object):
 
     @translate
     def odds_ratios(self):
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(17, 67))]).dropna(axis=1, how="all")
         this_or = or_sheet.loc[_("Condition")].to_dict("index")
         self.or_cond[_("Stunting")] = sc.odict()
         self.or_cond[_("Stunting")][_("Prev stunting")] = this_or[_("Given previous stunting (HAZ < -2 in previous age band)")]
@@ -512,7 +512,7 @@ class DemographicData(object):
         self.or_cond[_("Anaemia")][_("Severe diarrhoea")] = or_sheet.loc[_("Anaemia")].to_dict("index")[_("For anaemia per additional episode of severe diarrhoea")]
         self.or_stunting_prog = or_sheet.loc[_("By program")].to_dict("index")
         self.or_bf_prog = or_sheet.loc[_("Odds ratios for correct breastfeeding by program")].to_dict("index")
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 19), range(21, 67))]).dropna(axis=1, how="all")
         self.or_space_prog = or_sheet.loc[_("Odds ratios for optimal birth spacing by program")].to_dict("index")
 
     @translate
@@ -527,7 +527,7 @@ class DemographicData(object):
 
     @translate
     def anaemia_progs(self):
-        anaem_sheet = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
+        anaem_sheet = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(23, 69)]).dropna(axis=1, how="all")
         self.rr_anaem_prog = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].to_dict(orient="index")
         self.or_anaem_prog = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].to_dict(orient="index")
 
@@ -542,7 +542,7 @@ class DemographicData(object):
 
     @translate
     def get_child_progs(self):
-        self.child_progs = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
+        self.child_progs = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(53, 163)]).dropna(axis=1, how="all")
 
     @translate
     def get_pw_progs(self):
@@ -748,6 +748,7 @@ class ProgramData(object):
         else:
             preeclampsia_prev = baseline.loc[_("Other risks")].loc[_("Prevalence of pre-eclampsia")].values[0]
             eclampsia_prev = baseline.loc[_("Other risks")].loc[_("Prevalence of eclampsia")].values[0]
+            low_birth = baseline.loc[_("Other risks")].loc[_("Low birth weight")].values[0]
         treatsam = self._spreadsheet.parse(sheet_name=_("Treatment of SAM"))
         comm_deliv_raw = treatsam.iloc[1][_("Add extension")]
         comm_deliv = pandas.notnull(comm_deliv_raw)
@@ -755,8 +756,11 @@ class ProgramData(object):
         targetPopSheet.loc[_("Children"), _("Cash transfers")].iloc[1:5] = cash_transfers_row
         self.calcscache.write_row(_("Programs target population"), 1, 3, cash_transfers_row)
         lipid_row = food_insecure * np.ones(2)
+        small_qty_lipid_row = food_insecure * np.ones(2)
         targetPopSheet.loc[_("Children"), _("Lipid-based nutrition supplements")].iloc[2:4] = lipid_row
         self.calcscache.write_row(_("Programs target population"), 4, 4, lipid_row)
+        targetPopSheet.loc[_("Children"), _("Small quantity lipid-based nutrition supplements")].iloc[2:4] = small_qty_lipid_row
+        self.calcscache.write_row(_("Programs target population"), 8, 4, small_qty_lipid_row)
         oral_rehyd_row = diarr_incid
         targetPopSheet.loc[_("Children"), _("Oral rehydration salts")].iloc[0:5] = oral_rehyd_row
         self.calcscache.write_row(_("Programs target population"), 6, 2, oral_rehyd_row)
@@ -769,58 +773,58 @@ class ProgramData(object):
             treat_SAM_val = frac_children_health_facility
         treat_SAM_row = treat_SAM_val * np.ones(4)
         targetPopSheet.loc[_("Children"), _("Treatment of SAM")].iloc[1:5] = treat_SAM_row
-        self.calcscache.write_row(_("Programs target population"), 8, 3, treat_SAM_row)
+        self.calcscache.write_row(_("Programs target population"), 9, 3, treat_SAM_row)
         zinc_treatment_row = diarr_incid
         targetPopSheet.loc[_("Children"), _("Zinc for treatment + ORS")].iloc[0:5] = zinc_treatment_row
-        self.calcscache.write_row(_("Programs target population"), 10, 2, zinc_treatment_row)
+        self.calcscache.write_row(_("Programs target population"), 11, 2, zinc_treatment_row)
         balanced_energy_row = food_insecure * np.ones(4)
         targetPopSheet.loc[_("Pregnant women"), _("Balanced energy-protein supplementation")].iloc[5:9] = balanced_energy_row
-        self.calcscache.write_row(_("Programs target population"), 13, 7, balanced_energy_row)
+        self.calcscache.write_row(_("Programs target population"), 14, 7, balanced_energy_row)
         IFAS_preg_health_row = frac_PW_health_facility * np.ones(4)
         targetPopSheet.loc[_("Pregnant women"), _("IFAS for pregnant women (health facility)")].iloc[5:9] = IFAS_preg_health_row
-        self.calcscache.write_row(_("Programs target population"), 16, 7, IFAS_preg_health_row)
+        self.calcscache.write_row(_("Programs target population"), 17, 7, IFAS_preg_health_row)
         IPTp_row = frac_malaria_risk * np.ones(4)
         targetPopSheet.loc[_("Pregnant women"), _("IPTp")].iloc[5:9] = IPTp_row
-        self.calcscache.write_row(_("Programs target population"), 17, 7, IPTp_row)
+        self.calcscache.write_row(_("Programs target population"), 18, 7, IPTp_row)
         mg_eclampsia_row = eclampsia_prev * np.ones(4)
         targetPopSheet.loc[_("Pregnant women"), _("Mg for eclampsia")].iloc[5:9] = mg_eclampsia_row
-        self.calcscache.write_row(_("Programs target population"), 18, 7, mg_eclampsia_row)
+        self.calcscache.write_row(_("Programs target population"), 19, 7, mg_eclampsia_row)
         mg_preeclampsia_row = preeclampsia_prev * np.ones(4)
         targetPopSheet.loc[_("Pregnant women"), _("Mg for pre-eclampsia")].iloc[5:9] = mg_preeclampsia_row
-        self.calcscache.write_row(_("Programs target population"), 19, 7, mg_preeclampsia_row)
+        self.calcscache.write_row(_("Programs target population"), 20, 7, mg_preeclampsia_row)
         fam_planning_row = famplan_unmet_need * np.ones(4)
         targetPopSheet.loc[_("Non-pregnant WRA"), _("Family planning")].iloc[9:13] = fam_planning_row
-        self.calcscache.write_row(_("Programs target population"), 22, 11, fam_planning_row)
+        self.calcscache.write_row(_("Programs target population"), 23, 11, fam_planning_row)
         IFAS_comm_row = np.ones(4)
         IFAS_comm_row[0] = (1.0 - food_insecure) * 0.49 * (1.0 - school_attendance) + food_insecure * 0.7 * (1.0 - school_attendance)
         IFAS_comm_row[1:] = (1.0 - food_insecure) * 0.49 + food_insecure * 0.7
         targetPopSheet.loc[_("Non-pregnant WRA"), _("IFAS (community)")].iloc[9:13] = IFAS_comm_row
-        self.calcscache.write_row(_("Programs target population"), 23, 11, IFAS_comm_row)
+        self.calcscache.write_row(_("Programs target population"), 24, 11, IFAS_comm_row)
         IFAS_health_fac_row = np.ones(4)
         IFAS_health_fac_row[0] = (1.0 - food_insecure) * 0.21 * (1.0 - school_attendance) + food_insecure * 0.3 * (1.0 - school_attendance)
         IFAS_health_fac_row[1:] = (1.0 - food_insecure) * 0.21 + food_insecure * 0.3
         targetPopSheet.loc[_("Non-pregnant WRA"), _("IFAS (health facility)")].iloc[9:13] = IFAS_health_fac_row
-        self.calcscache.write_row(_("Programs target population"), 24, 11, IFAS_health_fac_row)
+        self.calcscache.write_row(_("Programs target population"), 25, 11, IFAS_health_fac_row)
         IFAS_retailer_row = np.ones(4)
         IFAS_retailer_row[0] = (1.0 - food_insecure) * 0.3 * (1.0 - school_attendance)
         IFAS_retailer_row[1:] = (1.0 - food_insecure) * 0.3
         targetPopSheet.loc[_("Non-pregnant WRA"), _("IFAS (retailer)")].iloc[9:13] = IFAS_retailer_row
-        self.calcscache.write_row(_("Programs target population"), 25, 11, IFAS_retailer_row)
+        self.calcscache.write_row(_("Programs target population"), 26, 11, IFAS_retailer_row)
         IFAS_school_row = (1.0 - food_insecure) * school_attendance + food_insecure * school_attendance
         targetPopSheet.loc[_("Non-pregnant WRA"), _("IFAS (school)")].iloc[9] = IFAS_school_row
-        self.calcscache.write_cell(_("Programs target population"), 26, 11, IFAS_school_row)
+        self.calcscache.write_cell(_("Programs target population"), 27, 11, IFAS_school_row)
         IFA_maize_row = frac_maize * np.ones(11)
         targetPopSheet.loc[_("General population"), _("IFA fortification of maize")].iloc[2:13] = IFA_maize_row
-        self.calcscache.write_row(_("Programs target population"), 28, 4, IFA_maize_row)
+        self.calcscache.write_row(_("Programs target population"), 29, 4, IFA_maize_row)
         IFA_rice_row = frac_rice * np.ones(11)
         targetPopSheet.loc[_("General population"), _("IFA fortification of rice")].iloc[2:13] = IFA_rice_row
-        self.calcscache.write_row(_("Programs target population"), 29, 4, IFA_rice_row)
+        self.calcscache.write_row(_("Programs target population"), 30, 4, IFA_rice_row)
         IFA_wheat_row = frac_wheat * np.ones(11)
         targetPopSheet.loc[_("General population"), _("IFA fortification of wheat flour")].iloc[2:13] = IFA_wheat_row
-        self.calcscache.write_row(_("Programs target population"), 30, 4, IFA_wheat_row)
+        self.calcscache.write_row(_("Programs target population"), 31, 4, IFA_wheat_row)
         bednet_row = frac_malaria_risk * np.ones(13)
         targetPopSheet.loc[(_("General population"), _("Long-lasting insecticide-treated bednets")), :] = bednet_row
-        self.calcscache.write_row(_("Programs target population"), 32, 2, bednet_row)
+        self.calcscache.write_row(_("Programs target population"), 33, 2, bednet_row)
 
         targetPop = sc.odict()
         for pop in [_("Children"), _("Pregnant women"), _("Non-pregnant WRA"), _("General population")]:
@@ -1391,21 +1395,21 @@ class UncertaintyParams(object):
 
     @translate
     def set_child_progs(self):
-        self.child_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in chain(range(1, 52), range(100, 152))]).dropna(axis=1, how="all")
-        self.child_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(1, 103)]).dropna(axis=1, how="all")
+        self.child_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in chain(range(1, 56), range(108, 164))]).dropna(axis=1, how="all")
+        self.child_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(1, 111)]).dropna(axis=1, how="all")
         
-        self.child_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
+        self.child_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(53, 163)]).dropna(axis=1, how="all")
         
     @translate
     def set_anaemia_progs(self):
-        anaem_sheet_lower = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in chain(range(1, 24), range(43, 66))]).dropna(axis=1, how="all")
+        anaem_sheet_lower = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in chain(range(1, 25), range(45, 69))]).dropna(axis=1, how="all")
         self.rr_anaem_prog_lower = anaem_sheet_lower.loc[_("Relative risks of anaemia when receiving intervention - lower")].dropna(axis=0, how="all")
         self.or_anaem_prog_lower = anaem_sheet_lower.loc[_("Odds ratios of being anaemic when covered by intervention - lower")].dropna(axis=0, how="all")
-        anaem_sheet_upper = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(1, 46)]).dropna(axis=1, how="all")
+        anaem_sheet_upper = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(1, 48)]).dropna(axis=1, how="all")
         self.rr_anaem_prog_upper = anaem_sheet_upper.loc[_("Relative risks of anaemia when receiving intervention - upper")].dropna(axis=0, how="all")
         self.or_anaem_prog_upper = anaem_sheet_upper.loc[_("Odds ratios of being anaemic when covered by intervention - upper")].dropna(axis=0, how="all")
         
-        anaem_sheet = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
+        anaem_sheet = utils.read_sheet(self._spreadsheet, _("Programs anaemia"), [0, 1], skiprows=[i for i in range(23, 69)]).dropna(axis=1, how="all")
         self.rr_anaem_prog_orig = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].dropna(axis=0, how="all")
         self.or_anaem_prog_orig = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].dropna(axis=0, how="all")
         
@@ -1519,10 +1523,10 @@ class UncertaintyParams(object):
 
     @translate
     def set_odds_ratios(self):
-        or_sheet_cond_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 23), range(38, 64))]).dropna(axis=1, how="all")
-        or_sheet_cond_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 45), range(60, 64))]).dropna(axis=1, how="all")
-        or_sheet_space_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 40), range(42, 64))]).dropna(axis=1, how="all")
-        or_sheet_space_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in range(0, 62)]).dropna(axis=1, how="all")
+        or_sheet_cond_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 24), range(40, 67))]).dropna(axis=1, how="all")
+        or_sheet_cond_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 47), range(63, 67))]).dropna(axis=1, how="all")
+        or_sheet_space_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 42), range(44, 67))]).dropna(axis=1, how="all")
+        or_sheet_space_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in range(0, 65)]).dropna(axis=1, how="all")
         self.stun_or_lower = or_sheet_cond_lower.loc[_("Condition")].fillna(0)
         self.stun_or_upper = or_sheet_cond_upper.loc[_("Condition")].fillna(0)
         
@@ -1541,7 +1545,7 @@ class UncertaintyParams(object):
         self.or_space_prog_lower = or_sheet_space_lower.loc[_("Odds ratios for optimal birth spacing by program - lower")]
         self.or_space_prog_upper = or_sheet_space_upper.loc[_("Odds ratios for optimal birth spacing by program - upper")]
         
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(17, 67))]).dropna(axis=1, how="all")
         self.this_or_orig = or_sheet.loc[_("Condition")]
         
         self.wasting_or_orig = or_sheet.loc[_("Wasting")]
@@ -1552,5 +1556,5 @@ class UncertaintyParams(object):
         
         self.or_bf_prog_orig = or_sheet.loc[_("Odds ratios for correct breastfeeding by program")].dropna(axis=0, how="all")
        
-        or_sheet_space = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
+        or_sheet_space = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 19), range(21, 67))]).dropna(axis=1, how="all")
         self.or_space_prog_orig = or_sheet_space.loc[_("Odds ratios for optimal birth spacing by program")]

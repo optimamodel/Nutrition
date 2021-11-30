@@ -49,7 +49,7 @@ def parallel_optim(region, path=None, n_samples=2):
                 "Minimize the prevalence of wasting in children": [0.5, 0.0, 1.0],
             }
         ),
-        "prog_set": ["Balanced energy-protein supplementation", "Cash transfers", "IFA fortification of wheat flour", "IYCF 1", "IYCF 2", "IFAS for pregnant women (community)", "IFAS for pregnant women (health facility)", "Lipid-based nutrition supplements", "Multiple micronutrient supplementation", "Micronutrient powders", "Kangaroo mother care", "Treatment of SAM", "Vitamin A supplementation", "Zinc for treatment + ORS", "Iron and iodine fortification of salt"],
+        "prog_set": ["Balanced energy-protein supplementation", "Cash transfers", "IFA fortification of wheat flour", "IYCF 1", "IYCF 2", "IFAS for pregnant women (community)", "IFAS for pregnant women (health facility)", "Lipid-based nutrition supplements", "Multiple micronutrient supplementation", "Micronutrient powders", "Kangaroo mother care", "Treatment of SAM", "Vitamin A supplementation", "Zinc for treatment + ORS", "Iron and iodine fortification of salt", "Small quantity lipid-based nutrition supplements"],
         "fix_curr": False,
         "add_funds": 0,
         "growth": "fixed budget",
