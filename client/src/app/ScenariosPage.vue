@@ -25,15 +25,18 @@ Last update: 2019feb11
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
+            <th>{{ $t("") }}</th>
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Type") }}</th>
             <th>{{ $t("Databook") }}</th>
-            <th>{{ $t("Active") }}?</th>
             <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
           <tbody>
           <tr v-for="scenSummary in scenSummaries">
+            <td style="text-align: center">
+              <input type="checkbox" v-model="scenSummary.active"/>
+            </td>
             <td>
               <b>{{ scenSummary.name }}</b>
             </td>
@@ -42,9 +45,6 @@ Last update: 2019feb11
             </td>
             <td>
               {{ scenSummary.model_name }}
-            </td>			
-            <td style="text-align: center">
-              <input type="checkbox" v-model="scenSummary.active"/>
             </td>
             <td style="white-space: nowrap">
               <button class="btn btn-icon" @click="editScenModal(scenSummary)" :data-tooltip='$t("scenarios.Edit scenario")'><i class="ti-pencil"></i></button>

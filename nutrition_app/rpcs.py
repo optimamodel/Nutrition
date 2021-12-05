@@ -673,43 +673,44 @@ def define_formats(locale):
 
     formats[_("Program dependencies")] = [
         ["head", "head", "head"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
-        ["drop", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
+        ["name", "drop", "drop"],
     ]
     return formats
 
@@ -728,6 +729,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
         _("IYCF packages"),
         _("Treatment of SAM"),
         _("Programs cost and coverage"),
+        _("Program dependencies"),
     ]
     wb = proj.inputsheet(key)  # Get the spreadsheet
     calcscache = proj.dataset(key).calcscache  # Get the calculation cells cache
@@ -1262,6 +1264,28 @@ def opt_new_optim(project_id, dataset, locale):
 
 @RPC()
 def opt_switch_dataset(project_id, js_optim: dict) -> dict:
+    """
+    Switch FE dataset preserving content
+
+    The JS optim can be reused with the exception of the selected programs
+    - Missing programs need to be added
+    - Extra programs missing from the new dataset need to be removed
+    - Otherwise, preserve the selected state of the programs
+
+    :param project_id:
+    :param js_optim: Dict from `py_to_js_optim`
+    :return: An optimization summary for the FE
+    """
+    proj = load_project(project_id, die=True)
+    included = {x["name"]: x["included"] for x in js_optim["programs"]}
+    programs = []
+    for program in proj.model(js_optim["model_name"]).prog_info.programs.values():
+        programs.append({"name": program.name, "included": program.name in included and included[program.name]})
+    js_optim["programs"] = programs
+    return js_optim
+
+@RPC()
+def opt_switch_growth(project_id, js_optim: dict) -> dict:
     """
     Switch FE dataset preserving content
 

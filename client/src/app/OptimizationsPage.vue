@@ -25,15 +25,18 @@ Last update: 2019feb11
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
+            <th></th>
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Databook") }}</th>
             <th>{{ $t("Status") }}</th>
-            <th>Active?</th>
             <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
           <tbody>
           <tr v-for="optimSummary in optimSummaries">
+            <td style="text-align: center">
+              <input type="checkbox" v-model="optimSummary.active"/>
+            </td>
             <td>
               <b>{{ optimSummary.name }}</b>
             </td>
@@ -43,9 +46,6 @@ Last update: 2019feb11
             <td>
               {{ statusFormatStr(optimSummary) }}
               {{ timeFormatStr(optimSummary) }}
-            </td>
-            <td style="text-align: center">
-              <input type="checkbox" v-model="optimSummary.active"/>
             </td>
             <td style="white-space: nowrap">
               <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">{{ $t("common.Run") }}</button>
@@ -65,8 +65,8 @@ Last update: 2019feb11
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens(optimSummary)">Plot active scenarios</button>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(optimSummary, 1)">Run active scenarios with uncertainty</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens(optimSummary)">Plot optimizations</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(optimSummary, 1)">Plot optimizations with uncertainty</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>
@@ -151,11 +151,18 @@ Last update: 2019feb11
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
           <b>{{ $t("Databook") }}</b><br>
-          <select v-model="addEditModal.optimSummary.model_name" @change="modalSwitchDataset">
-            <option v-for='dataset in datasetOptions'>
-              {{ dataset }}
-            </option>
-          </select><br><br>
+          <tr>
+            <th><select v-model="addEditModal.optimSummary.model_name" @change="modalSwitchDataset">
+              <option v-for='dataset in datasetOptions'>
+                {{ dataset }}
+              </option>
+            </select><br><br></th>
+            <th><select v-model="addEditModal.optimSummary.growth" @change="modalSwitchGrowth">
+              <option v-for='growth in growthOptions'>
+                {{ growth }}
+              </option>
+            </select><br><br></th>
+          </tr>
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
               <thead>
@@ -288,6 +295,7 @@ Last update: 2019feb11
         optimsLoaded: false,
         pollingTasks: false,
         datasetOptions: [],
+        growthOptions: [],
         addEditModal: {
           optimSummary: {},
           origName: '',
@@ -631,6 +639,16 @@ Last update: 2019feb11
         console.log('modalSwitchDataset() called');
         try {
           let response = await this.$sciris.rpc('opt_switch_dataset', [this.projectID, this.addEditModal.optimSummary]);
+          this.addEditModal.optimSummary = response.data;  // overwrite the old optimization
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not switch databooks', error)
+        }
+      },
+
+      async modalSwitchGrowth() {
+        console.log('modalSwitchGrowth() called');
+        try {
+          let response = await this.$sciris.rpc('opt_switch_dataset', [this.projectID, this.addEditModal.optimSummary, ]);
           this.addEditModal.optimSummary = response.data;  // overwrite the old optimization
         } catch (error) {
           this.$sciris.fail(this, 'Could not switch databooks', error)
