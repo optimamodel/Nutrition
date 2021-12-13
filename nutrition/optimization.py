@@ -277,7 +277,7 @@ def make_default_optim(modelname=None, basename="Maximize thrive", locale=None):
         "name": basename,
         "model_name": modelname,
         "mults": [1],
-        "weights": sc.odict({"thrive": 1}),
+        "weights": sc.odict({"thrive": [1]}),
         "prog_set": [
             _("Vitamin A supplementation"),
             _("IYCF 1"),

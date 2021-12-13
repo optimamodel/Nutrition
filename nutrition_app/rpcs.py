@@ -1180,7 +1180,9 @@ def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr)  # Copy the attributes into a dictionary
     weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_optim.weights))]  # WARNING, ABS HACK
+    growth = py_optim.growth
     js_optim["weightslist"] = weightslist
+    js_optim["growth"] = growth
     js_optim["objective_options"] = obj_labels  # Not modified but used on the FE
     js_optim["programs"] = []
     for prog_name in proj.dataset(py_optim.model_name).prog_names():
@@ -1192,7 +1194,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
     """ Convert a JSON to Python representation of an optimization """
     obj_keys = nu.default_trackers()
     kwargs = sc.odict()
-    attrs = ["name", "model_name", "fix_curr", "filter_progs", "active"]
+    attrs = ["name", "model_name", "fix_curr", "filter_progs", "active", "growth"]
     for attr in attrs:
         kwargs[attr] = js_optim[attr]
     try:
@@ -1264,28 +1266,6 @@ def opt_new_optim(project_id, dataset, locale):
 
 @RPC()
 def opt_switch_dataset(project_id, js_optim: dict) -> dict:
-    """
-    Switch FE dataset preserving content
-
-    The JS optim can be reused with the exception of the selected programs
-    - Missing programs need to be added
-    - Extra programs missing from the new dataset need to be removed
-    - Otherwise, preserve the selected state of the programs
-
-    :param project_id:
-    :param js_optim: Dict from `py_to_js_optim`
-    :return: An optimization summary for the FE
-    """
-    proj = load_project(project_id, die=True)
-    included = {x["name"]: x["included"] for x in js_optim["programs"]}
-    programs = []
-    for program in proj.model(js_optim["model_name"]).prog_info.programs.values():
-        programs.append({"name": program.name, "included": program.name in included and included[program.name]})
-    js_optim["programs"] = programs
-    return js_optim
-
-@RPC()
-def opt_switch_growth(project_id, js_optim: dict) -> dict:
     """
     Switch FE dataset preserving content
 

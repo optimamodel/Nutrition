@@ -157,11 +157,6 @@ Last update: 2019feb11
                 {{ dataset }}
               </option>
             </select><br><br></th>
-            <th><select v-model="addEditModal.optimSummary.growth" @change="modalSwitchGrowth">
-              <option v-for='growth in growthOptions'>
-                {{ growth }}
-              </option>
-            </select><br><br></th>
           </tr>
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
@@ -194,6 +189,9 @@ Last update: 2019feb11
           <b>{{ $t("optimization.Existing spending") }}</b><br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="false">&nbsp;{{ $t("common.Can be reallocated") }}<br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="true">&nbsp;{{ $t("common.Cannot be reallocated") }}<br><br>
+          <b>{{ $t("Growth type") }}</b><br>
+          <input type="radio" v-model="addEditModal.optimSummary.growth" value="fixed budget">&nbsp;{{ $t("Fixed budget") }}<br>
+          <input type="radio" v-model="addEditModal.optimSummary.growth" value="fixed coverage">&nbsp;{{ $t("Fixed coverage") }}<br><br>
           <b>{{ $t("optimization.Additional funds to allocate") }}</b><br>
           <input type="text"
                  class="txbox"
@@ -301,7 +299,7 @@ Last update: 2019feb11
           origName: '',
           mode: 'add',
         },
-        modalUncertRuns: 1,  // Number of runs in the uncertainty nruns modal dialog
+        modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
         figscale: 1.0,
         hasGraphs: false,
         calculateCostEff: false,
@@ -639,16 +637,6 @@ Last update: 2019feb11
         console.log('modalSwitchDataset() called');
         try {
           let response = await this.$sciris.rpc('opt_switch_dataset', [this.projectID, this.addEditModal.optimSummary]);
-          this.addEditModal.optimSummary = response.data;  // overwrite the old optimization
-        } catch (error) {
-          this.$sciris.fail(this, 'Could not switch databooks', error)
-        }
-      },
-
-      async modalSwitchGrowth() {
-        console.log('modalSwitchGrowth() called');
-        try {
-          let response = await this.$sciris.rpc('opt_switch_dataset', [this.projectID, this.addEditModal.optimSummary, ]);
           this.addEditModal.optimSummary = response.data;  // overwrite the old optimization
         } catch (error) {
           this.$sciris.fail(this, 'Could not switch databooks', error)
