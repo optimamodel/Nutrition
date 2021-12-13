@@ -537,8 +537,29 @@ class Project(object):
                 results += self.run_scen(scen, n_samples = 0) #best estimate (no random seed relevant)
                 if n_samples > 0:
                     results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
-                
+
         self.add_result(results, name="scens")
+        return results
+
+    def run_opt_scens(self, scens=None, n_samples=0, seed=None):
+        """Function for running scenarios
+        - If scens is specified, they are added to self.scens
+        - The first run happens with default parameters (point estimates)
+        - The subsequent runs consider resampling
+
+        """
+
+        if scens is not None:
+            self.add_scens(scens)
+
+        results = []
+        for scen in self.scens.values():
+            if scen.from_optim:
+                results += self.run_scen(scen, n_samples=0)  # best estimate (no random seed relevant)
+                if n_samples > 0:
+                    results += self.run_scen(scen, n_samples=n_samples, seed=seed)  # actual samples
+
+        self.add_result(results, name="opts")
         return results
 
     @translate

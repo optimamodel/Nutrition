@@ -6,7 +6,7 @@ import multiprocessing
 
 
 class Scen(sc.prettyobj):
-    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, active=True):
+    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, active=True, from_optim=False):
         """
         Structure to define a scenario which can be used to fully instantiate a model instance in the project class.
         :param name: The name of the scenario (string)
@@ -22,6 +22,7 @@ class Scen(sc.prettyobj):
         self.scen_type = scen_type
         self.vals = list(progvals.values())
         self.prog_set = list(progvals.keys())
+        self.from_optim = from_optim
         if growth is None:
             if "budget" in self.scen_type:
                 self.growth = "fixed budget"

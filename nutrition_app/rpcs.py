@@ -964,7 +964,7 @@ def py_to_js_scen(py_scen, proj, default_included=False):
     key = py_scen.model_name
     prog_names = proj.dataset(key).prog_names
     scen_years = proj.dataset(key).t[1] - proj.dataset(key).t[0]  # First year is baseline
-    attrs = ["name", "active", "scen_type", "model_name"]
+    attrs = ["name", "active", "scen_type", "model_name", "from_optim"]
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr)  # Copy the attributes into a dictionary
@@ -1016,7 +1016,7 @@ def js_to_py_scen(js_scen):
     # WARNING - this is a destructive operation because the Python scenario doesn't record whether an intervention is included or not
     # Therefore, any interventions that aren't included are dropped and the text box values are discarded entirely
     py_json = sc.odict()
-    for attr in ["name", "scen_type", "model_name", "active"]:  # Copy these directly
+    for attr in ["name", "scen_type", "model_name", "active", "from_optim"]:  # Copy these directly
         py_json[attr] = js_scen[attr]
     py_json["progvals"] = sc.odict()  # These require more TLC
     for js_spec in js_scen["progvals"]:
@@ -1047,8 +1047,9 @@ def get_scen_info(project_id, verbose=False):
     proj = load_project(project_id, die=True)
     scenario_jsons = []
     for py_scen in proj.scens.values():
-        js_scen = py_to_js_scen(py_scen, proj)
-        scenario_jsons.append(js_scen)
+        if not py_scen.from_optim:
+            js_scen = py_to_js_scen(py_scen, proj)
+            scenario_jsons.append(js_scen)
     if verbose:
         print("JavaScript scenario info:")
         sc.pp(scenario_jsons)
@@ -1059,7 +1060,7 @@ def get_scen_info(project_id, verbose=False):
 def set_scen_info(project_id, scenario_jsons):
     print("Setting scenario info...")
     proj = load_project(project_id, die=True)
-    proj.scens.clear()
+    #proj.scens.clear()
     for j, js_scen in enumerate(scenario_jsons):
         print("Setting scenario %s of %s..." % (j + 1, len(scenario_jsons)))
         scen = js_to_py_scen(js_scen)
@@ -1348,23 +1349,69 @@ def opt_to_scen(project_id, js_optims: dict):
         py_optims[id] = js_to_py_optim(js_optim)
 
     proj = retrieve_results(proj)
-    scens = []
+    scens = [scen for scen in proj.scens.values()]
 
     for py_optim in py_optims.items():
         if py_optim[1].active:
 
             res = proj.results[py_optim[0]]
             py_base_scen = proj.run_baseline(py_optim[1].model_name, py_optim[1].prog_set, growth=py_optim[1].growth, dorun=False)
+            py_base_scen.from_optim = True
 
             optim_alloc = res[0].get_allocs()
 
             py_scen = nu.Scen(name=py_optim[1].name, model_name=py_optim[1].model_name, scen_type="budget", progvals=optim_alloc,
                         enforce_constraints_year=0, growth=py_optim[1].growth)
+            py_scen.from_optim = True
 
             scens.append(py_to_js_scen(py_base_scen, proj))
             scens.append(py_to_js_scen(py_scen, proj))
 
     return scens
+
+@RPC()
+def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
+
+    print("Running optimizations...")
+    proj = load_project(project_id, die=True)
+
+    #if "opts" in proj.results:
+    #    try:
+    #        datastore.delete(key=proj.results["opts"])
+    #    except:
+    #        pass
+
+    if isinstance(n_runs, str):
+        n_runs = int(n_runs)
+
+    proj.run_opt_scens(n_samples=n_runs)
+
+    if do_costeff:
+        # Get cost-effectiveness table
+        costeff = nu.get_costeff(project=proj, results=proj.result("opts"))
+        table = reformat_costeff(costeff)
+    else:
+        table = []
+
+    # Get graphs
+    graphs = []
+    if doplot:
+        figs = proj.plot("opts")
+        for f, fig in enumerate(figs.values()):
+            for ax in fig.get_axes():
+                ax.set_facecolor("none")
+            graph_dict = sw.mpld3ify(fig, jsonify=False)
+            graphs.append(graph_dict)
+            pl.close(fig)
+            print("Converted figure %s of %s" % (f + 1, len(figs)))
+
+    # Store results in cache
+    proj = cache_results(proj)
+
+    print("Saving project...")
+    save_project(proj)
+    output = {"graphs": graphs, "table": table}
+    return output
 
 
 
