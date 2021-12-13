@@ -14,6 +14,8 @@ can be run with more recent versions of the code. This module defines
 import sys
 import io
 from distutils.version import LooseVersion
+
+import nutrition.settings
 from .version import version, gitinfo
 import sciris as sc
 import types
@@ -219,3 +221,10 @@ def _add_progdata_locale(progdata):
     if not hasattr(progdata, 'locale'):
         progdata.locale = "en"
     return progdata
+
+@migration("Settings", "1.7.6", "1.7.7", "Add cost types")
+def _add_cost_types(settings):
+    if not hasattr(settings, 'cost_types'):
+        new = nutrition.settings.Settings(settings.locale)
+        settings.cost_types = new.cost_types
+    return settings

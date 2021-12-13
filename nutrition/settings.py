@@ -4,15 +4,14 @@ import sciris as sc
 from .version import version
 from .utils import get_translator
 import pathlib
-
+from .migration import migrate
 
 class Settings(object):
     """Store all the static data for a project that won't change except between Optima versions
     WARNING: Do not change the order of these lists without checking the potential consequences within the code"""
 
     def __init__(self, locale):
-
-        self.locale = locale # Store the locale for this settings instance
+        self.locale = locale  # Store the locale for this settings instance
 
         _ = get_translator(locale)
 
@@ -46,10 +45,21 @@ class Settings(object):
         self.child_age_spans = [1.0, 5.0, 6.0, 12.0, 36.0]  # in months
         self.women_age_rates = [1.0 / 5.0, 1.0 / 10.0, 1.0 / 10.0, 1.0 / 10.0]  # in years
 
+        self.cost_types = {
+            _("Linear (constant marginal cost) [default]"): "linear",
+            _("Curved with increasing marginal cost"): "increasing",
+            _("Curved with decreasing marginal cost"): "decreasing",
+            _("S-shaped (decreasing then increasing marginal cost)"): "s-shaped",
+        }
+
     def __repr__(self):
         output = sc.prepr(self)
         return output
 
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
 ONpath = pathlib.Path(__file__).parent.parent
 

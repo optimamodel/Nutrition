@@ -569,11 +569,10 @@ editableformats = ["edit", "tick", "bdgt", "drop"]  # Define which kinds of form
 
 def define_formats(locale):
     """ Hard-coded sheet formats """
-    _ = nu.get_translator(locale)
 
     formats = sc.odict()
 
-    formats[_("Nutritional status distribution")] = [
+    formats["nutritional_status"] = [
         ["head", "head", "name", "name", "name", "name", "name", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
         ["name", "name", "calc", "calc", "calc", "calc", "calc", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
@@ -591,7 +590,7 @@ def define_formats(locale):
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats[_("Breastfeeding distribution")] = [
+    formats['breastfeeding_distribution'] = [
         ["head", "head", "head", "head", "head", "head", "head"],
         ["name", "name", "edit", "edit", "edit", "edit", "edit"],
         ["blnk", "name", "edit", "edit", "edit", "edit", "edit"],
@@ -599,7 +598,7 @@ def define_formats(locale):
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats[_("IYCF packages")] = [
+    formats['iycf_packages'] = [
         ["head", "head", "head", "head", "head"],
         ["head", "name", "tick", "tick", "blnk"],
         ["blnk", "name", "tick", "tick", "blnk"],
@@ -623,13 +622,13 @@ def define_formats(locale):
         ["blnk", "name", "blnk", "blnk", "tick"],
     ]
 
-    formats[_("Treatment of SAM")] = [
+    formats['treat_sam'] = [
         ["blnk", "head", "head", "head"],
         ["head", "name", "name", "tick"],
         ["head", "name", "name", "tick"],
     ]
 
-    formats[_("Programs cost and coverage")] = [
+    formats['program_cost_cov'] = [
         ["head", "head", "head", "head", "head", "head", "head"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
@@ -671,13 +670,9 @@ def define_formats(locale):
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
     ]
 
-    formats[_("Program dependencies")] = [
-        ["head", "head", "head"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-    ]
+
+    formats["program_dependencies"] = None
+
     return formats
 
 
@@ -686,38 +681,39 @@ def get_sheet_data(project_id, key=None, verbose=False):
 
     proj = load_project(project_id, die=True)
 
-    locale = proj.dataset(key).locale
+    dataset = proj.dataset(key)
+    locale = dataset.locale
     _ = nu.get_translator(locale)
 
-    sheets = [
-        _("Nutritional status distribution"),
-        _("Breastfeeding distribution"),
-        _("IYCF packages"),
-        _("Treatment of SAM"),
-        _("Programs cost and coverage"),
-        _("Program dependencies"),
-    ]
+    sheets = {
+        'nutritional_status': _("Nutritional status distribution"),
+        'breastfeeding_distribution': _("Breastfeeding distribution"),
+        'iycf_packages': _("IYCF packages"),
+        'treat_sam': _("Treatment of SAM"),
+        'program_cost_cov': _("Programs cost and coverage"),
+    }
+    
     wb = proj.inputsheet(key)  # Get the spreadsheet
-    calcscache = proj.dataset(key).calcscache  # Get the calculation cells cache
+    calcscache = dataset.calcscache  # Get the calculation cells cache
     sheetdata = sc.odict()
-    for sheet in sheets:  # Read pandas DataFrames in for each worksheet
-        sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
+    for key, sheet in sheets.items():  # Read pandas DataFrames in for each worksheet
+        sheetdata[key] = wb.readcells(sheetname=sheet, header=False)
     sheetformat = define_formats(locale)
 
-    sheetjson = sc.odict()
-    for sheet in sheets:  # loop over each GUI worksheet
-        datashape = np.shape(sheetdata[sheet])
-        formatshape = np.shape(sheetformat[sheet])
+    tables = sc.odict()
+    for key, sheet in sheets.items():  # loop over each GUI worksheet
+        datashape = np.shape(sheetdata[key])
+        formatshape = np.shape(sheetformat[key])
         if datashape != formatshape:
             errormsg = 'Sheet data and formats have different shapes for sheet "%s": %s vs. %s' % (sheet, datashape, formatshape)
             raise Exception(errormsg)
         rows, cols = datashape
-        sheetjson[sheet] = []
+        tables[key] = []
         for r in range(rows):
-            sheetjson[sheet].append([])
+            tables[key].append([])
             for c in range(cols):
-                cellformat = sheetformat[sheet][r][c]
-                cellval = sheetdata[sheet][r][c]
+                cellformat = sheetformat[key][r][c]
+                cellval = sheetdata[key][r][c]
                 if cellformat in ["calc"]:  # Pull from cache if 'calc'
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
@@ -737,21 +733,58 @@ def get_sheet_data(project_id, key=None, verbose=False):
                     else:
                         pass  # It's fine, just let it go, let it go, can't hold it back any more
                 cellinfo = {"format": cellformat, "value": cellval}
-                sheetjson[sheet][r].append(cellinfo)
+                tables[key][r].append(cellinfo)
 
-    sheetjson = sc.sanitizejson(sheetjson)
-    if verbose:
-        sc.pp(sheetjson)
-    return {"names": sheets, "tables": sheetjson}
+
+    output = {}
+    output['tables'] = tables
+
+    # Handle program dependencies
+    output['prog_names'] = dataset.prog_names
+
+    print( wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False))
+    output['tables']['program_dependencies'] = [tuple(x.values()) for x in wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False)] # List of tuples [(program,exclusion,threshold)]
+    output['tables']['program_dependencies'] = [{'program':x[0], 'exclusion': x[1], 'threshold': x[2]} for x in output['tables']['program_dependencies']]
+
+
+    sheets['program_dependencies'] = _("Program dependencies")
+    # Get cost types
+    output['cost_types'] = list(dataset.prog_data.settings.cost_types.keys())
+
+    output['sheet_names'] = list(sheets.items())
+
+    return  sc.sanitizejson(output)
+
+
+
 
 
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
+    
+
     proj = load_project(project_id, die=True)
     if key is None:
         key = proj.datasets.keys()[-1]  # There should always be at least one
+
+    dataset = proj.datasets[key]
+    _ = nu.get_translator(dataset.locale)
+
+    sheetnames = {
+        'nutritional_status': _("Nutritional status distribution"),
+        'breastfeeding_distribution': _("Breastfeeding distribution"),
+        'iycf_packages': _("IYCF packages"),
+        'treat_sam': _("Treatment of SAM"),
+        'program_cost_cov': _("Programs cost and coverage"),
+    }
+
     wb = proj.inputsheet(key)  # CK: Warning, might want to change
+
     for sheet in sheetdata.keys():
+
+        if sheet not in sheetnames:
+            continue
+
         if verbose:
             print("Saving sheet %s..." % sheet)
         datashape = np.shape(sheetdata[sheet])
@@ -780,7 +813,33 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     vals.append(cellval)
                     if verbose:
                         print("  Cell (%s,%s) = %s" % (r + 1, c + 1, cellval))
-        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+        wb.writecells(sheetname=sheetnames[sheet], cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+
+
+    # Write program dependencies
+    cells = []
+    vals = []
+
+    existing = wb.readcells(sheetname=_('Program dependencies'))
+    print(existing)
+
+    for i, entry in enumerate(sheetdata['program_dependencies']):
+
+        cells.append([i+2,1]) # 1-based indexing, plus skipping header row
+        vals.append(entry['program'])
+
+        cells.append([i+2,2])
+        vals.append(entry['exclusion'])
+
+        cells.append([i+2,3])
+        vals.append(entry['threshold'])
+
+    for i in range(len(sheetdata['program_dependencies']), len(existing)):
+        cells.extend([[i+2,1], [i+2,2], [i+2,3]])
+        vals.extend([None,None,None])
+
+    wb.writecells(sheetname=_('Program dependencies'), cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
     print("Saving project...")
     save_project(proj)
@@ -903,7 +962,7 @@ def is_included(prog_set, program, default_included):
 def py_to_js_scen(py_scen, proj, default_included=False):
     """ Convert a Python to JSON representation of a scenario """
     key = py_scen.model_name
-    prog_names = proj.dataset(key).prog_names()
+    prog_names = proj.dataset(key).prog_names
     scen_years = proj.dataset(key).t[1] - proj.dataset(key).t[0]  # First year is baseline
     attrs = ["name", "active", "scen_type", "model_name"]
     js_scen = {}
@@ -1153,7 +1212,7 @@ def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     js_optim["balanced_optimization"] = balanced_optimization
     js_optim["objective_options"] = obj_labels  # Not modified but used on the FE
     js_optim["programs"] = []
-    for prog_name in proj.dataset(py_optim.model_name).prog_names():
+    for prog_name in proj.dataset(py_optim.model_name).prog_names:
         js_optim["programs"].append({"name": prog_name, "included": prog_name in py_optim.prog_set})
     return js_optim
 
@@ -1321,7 +1380,7 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     # different programs. This should be debugged when there is a specific use case
     locale = proj.locale
     obj_labels = nu.pretty_labels(direction=True, locale=locale).values()
-    prog_names = proj.dataset(key).prog_names()
+    prog_names = proj.dataset(key).prog_names
     js_geo = {}
     attrs = ["name", "modelnames", "mults", "add_funds", "fix_curr", "fix_regionalspend", "filter_progs"]
     for attr in attrs:

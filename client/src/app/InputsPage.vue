@@ -42,12 +42,12 @@ Last update: 2019-02-11
           </div>
           <br>
           <br>
-          <div v-for="name in sheetNames" style="display:inline-block; padding-right:10px">
-            <div v-if="name===activeSheet">
-              <button class="btn sheetbtn" @click="setActive(name)" :data-tooltip='$t("inputs.Current sheet")'>{{ name }}</button>
+          <div v-for="[key, label] in sheetNames" style="display:inline-block; padding-right:10px">
+            <div v-if="key===activeSheet">
+              <button class="btn sheetbtn" @click="activeSheet = key" :data-tooltip='$t("inputs.Current sheet")'>{{ label }}</button>
             </div>
             <div v-else>
-              <button class="btn sheetbtn deselected" @click="setActive(name)" :data-tooltip='$t("inputs.Switch to this sheet")'>{{ name }}</button>
+              <button class="btn sheetbtn deselected" @click="activeSheet = key" :data-tooltip='$t("inputs.Switch to this sheet")'>{{ label }}</button>
             </div>
 
           </div>
@@ -55,16 +55,17 @@ Last update: 2019-02-11
           <br><br>
 
           <div>
-            <button class="btn __green" @click="saveSheetData()"    :data-tooltip="$t('inputs.save_tooltip')">{{ $t("inputs.save_changes") }}</button>
-            <button class="btn __red"         @click="getSheetData()"     :data-tooltip="$t('inputs.revert_tooltip')">{{ $t("inputs.revert") }}</button>
+            <button class="btn __green" @click="saveSheetData()"  :data-tooltip="$t('inputs.save_tooltip')">{{ $t("inputs.save_changes") }}</button>
+            <button class="btn __red"   @click="getSheetData()"   :data-tooltip="$t('inputs.revert_tooltip')">{{ $t("inputs.revert") }}</button>
           </div>
 
           <br>
 
           <div class="icantbelieveitsnotexcel">
-            <table class="table table-bordered table-hover table-striped" style="width: 100%;">
-              <tr v-for="rowData in sheetTables[activeSheet]" style="height:30px">
-                <td v-for="cellDict in rowData" style="border: 1px solid #ccc;">
+
+            <table v-if="!customSheets.includes(activeSheet)" class="table table-bordered table-hover table-striped" style="width: 100%;">
+              <tr v-for="rowData in sheetTables[activeSheet]">
+                <td v-for="cellDict in rowData">
                   <div v-if="cellDict.format==='head'" class="cell c_head"><div class="cellpad">{{ cellDict.value }}</div></div>
                   <div v-if="cellDict.format==='name'" class="cell c_name"><div class="cellpad">{{ cellDict.value }}</div></div>
                   <div v-if="cellDict.format==='blnk'" class="cell c_blnk"><div class="cellpad"></div></div> <!-- Force empty, even if value -->
@@ -107,6 +108,51 @@ Last update: 2019-02-11
                 </td>
               </tr>
             </table>
+
+            <div v-else-if="activeSheet == 'program_dependencies'" >
+
+              <table  class="table table-bordered table-hover table-striped" style="width: 100%;">
+
+              <tr>
+                <td class="c_head">Program</td>
+                <td class="c_head">Exclusion dependency</td>
+                <td class="c_head">Threshold dependency</td>
+                <td />
+              </tr>
+
+              <tr v-for="(entry, index) in sheetTables['program_dependencies']">
+
+                <td class="c_drop">
+                  <select v-model="entry.program">
+                    <option v-for='program in programOptions'>{{ program }}</option>
+                  </select>
+                </td>
+
+                <td class="c_drop">
+                  <select v-model="entry.exclusion">
+                    <option v-for='program in programOptions'>{{ program }}</option>
+                  </select>
+                </td>
+
+                <td class="c_drop">
+                  <select v-model="entry.threshold">
+                    <option v-for='program in programOptions'>{{ program }}</option>
+                  </select>
+                </td>
+
+                <td>
+                  <button class="btn btn-icon __red" @click="sheetTables['program_dependencies'].splice(index, 1)"><i class="ti-trash"></i></button>
+                </td>
+              </tr>
+
+            </table>
+
+            <button class="btn btn-icon" @click="sheetTables['program_dependencies'].push({'program':undefined,'exclusion':undefined,'threshold':undefined})">Add dependency</button>
+
+            </div>
+
+
+
           </div>
 
           <br>
@@ -167,11 +213,10 @@ Last update: 2019-02-11
         datasetOptions: [],
         sheetNames: [],
         sheetTables: {},
-        activeSheet: '',
-        costFuncOptions: ['Linear (constant marginal cost) [default]',
-                          'Curved with increasing marginal cost',
-                          'Curved with decreasing marginal cost',
-                          'S-shaped (decreasing then increasing marginal cost)']
+        activeSheet: undefined,
+        costFuncOptions: [],
+        programOptions: [],
+        customSheets: ['program_dependencies'],
       }
     },
 
@@ -198,26 +243,21 @@ Last update: 2019-02-11
 
       updateDatasets() { return utils.updateDatasets(this) },
 
-      setActive(active) {
-        console.log('Setting active to ' + active)
-        this.activeSheet = active
-      },
-
-      getSheetData() {
-        console.log('getSheetData() called')
+      async getSheetData() {
         this.$sciris.start(this, 'Getting data...')
-        this.$sciris.rpc('get_sheet_data', [this.projectID], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
-          .then(response => {
-            this.sheetNames = response.data.names
-            this.sheetTables = response.data.tables
-            if (this.activeSheet === '') {
-              this.activeSheet = this.sheetNames[0]
-            }
-            this.$sciris.succeed(this)
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not get sheet data', error)
-          })
+        try {
+          let response = await this.$sciris.rpc('get_sheet_data', [this.projectID], {'key': this.activeDataset}); // Make the server call to download the framework to a .prj file.
+          this.sheetNames = response.data.sheet_names;
+          this.sheetTables = response.data.tables;
+          this.costFuncOptions = response.data.cost_types;
+          this.programOptions = response.data.prog_names;
+          if (this.activeSheet === undefined) {
+            this.activeSheet = this.sheetNames[0][0];
+          }
+          this.$sciris.succeed(this);
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not get sheet data', error);
+        }
       },
 
       saveSheetData() {
@@ -306,7 +346,7 @@ Last update: 2019-02-11
               .then(response2 => {
                 this.getSheetData() // Load the sheet data (since we've switched to a new one).
 				this.$sciris.succeed(this, 'Databook "'+this.activeDataset+'" deleted') // Indicate success.
-              })        
+              })
           })
           .catch(error => {
             this.$sciris.fail(this, 'Cannot delete last databook: ensure there are at least 2 databooks before deleting one', error)
@@ -324,6 +364,18 @@ Last update: 2019-02-11
     max-width: 90vw;
     max-height: 90vh;
     overflow: auto;
+  }
+
+  .table { height: 1px; }
+
+  tr {
+    height: 100%;
+  }
+
+  td {
+    height: 100%;
+    padding: 0;
+    border: 1px solid #ccc;
   }
 
   .cell {

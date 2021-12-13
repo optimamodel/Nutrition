@@ -839,6 +839,7 @@ class ProgramData(object):
     @translate
     def get_prog_deps(self):
         deps = utils.read_sheet(self._spreadsheet, _("Program dependencies"), [0])
+        print(deps)
         programDep = sc.odict()
         for program, dependency in deps.iterrows():
             programDep[program] = sc.odict()
@@ -883,28 +884,10 @@ class ProgramData(object):
         self.max_inc = sc.odict(zip(self.base_prog_set, sheet.iloc[:, 5].tolist()))
         self.max_dec = sc.odict(zip(self.base_prog_set, sheet.iloc[:, 6].tolist()))
 
-    @translate
     def _format_costtypes(self, oldlabs):
-        maps = {_("Linear (constant marginal cost) [default]"): "linear",
-                _("Curved with increasing marginal cost"): "increasing",
-                _("Curved with decreasing marginal cost"): "decreasing",
-                _("S-shaped (decreasing then increasing marginal cost)"): "s-shaped",
-                }
         newlabs = []
         for lab in oldlabs:
-            newlabs.append(maps[lab])
-        return newlabs
-
-    @translate
-    def _format_costtypes(self, oldlabs):
-        maps = {_("Linear (constant marginal cost) [default]"): "linear",
-                _("Curved with increasing marginal cost"): "increasing",
-                _("Curved with decreasing marginal cost"): "decreasing",
-                _("S-shaped (decreasing then increasing marginal cost)"): "s-shaped",
-                }
-        newlabs = []
-        for lab in oldlabs:
-            newlabs.append(maps[lab])
+            newlabs.append(self.settings.cost_types[lab])
         return newlabs
 
     def create_iycf(self):
@@ -1044,7 +1027,7 @@ class Dataset(object):
         nonPregnantWomen = populations.NonPregnantWomen(self.demographic_data)
         self.pops = [children, pregnantWomen, nonPregnantWomen]
 
-
+    @property
     def prog_names(self):
         """ WARNING, hacky function to get program names """
         names = self.prog_data.base_prog_set
