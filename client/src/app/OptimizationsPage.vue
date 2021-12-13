@@ -65,8 +65,8 @@ Last update: 2019feb11
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens(optimSummary)">Plot optimizations</button>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(optimSummary, 1)">Plot optimizations with uncertainty</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens()">Plot optimizations</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(10)">Plot optimizations with uncertainty</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>
@@ -800,7 +800,7 @@ Last update: 2019feb11
         this.getScenSummaries()
         this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
           .then(response => {
-            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff, 0]) // Go to the server to get the results
+            this.$sciris.rpc('run_opt_scens', [this.projectID, true, this.calculateCostEff, 0]) // Go to the server to get the results
               .then(response => {
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
@@ -831,7 +831,7 @@ Last update: 2019feb11
         this.getScenSummaries()
         this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
           .then(response => {
-            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff, this.modalUncertRuns]) // Go to the server to get the results
+            this.$sciris.rpc('run_opt_scens', [this.projectID, true, this.calculateCostEff, this.modalUncertRuns]) // Go to the server to get the results
               .then(response => {
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table

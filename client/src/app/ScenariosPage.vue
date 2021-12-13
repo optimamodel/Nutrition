@@ -63,7 +63,7 @@ Last update: 2019feb11
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">{{ $t("scenarios.Run scenarios") }}</button>
-          <button class="btn __green" :disabled="!scenariosLoaded" @click="UncertScensModal(1)">Run scenarios with uncertainty</button>
+          <button class="btn __green" :disabled="!scenariosLoaded" @click="UncertScensModal(10)">Run scenarios with uncertainty</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">{{ $t("scenarios.Add coverage scenario") }}</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">{{ $t("scenarios.Add budget scenario") }}</button>
         </div>
@@ -275,7 +275,7 @@ Last update: 2019feb11
           origName: '',
           mode: 'add',
           modalScenarioType: 'coverage',
-          modalUncertRuns: 1,  // Number of runs in the uncertainty nruns modal dialog
+          modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
         },
         figscale: 1.0,
         hasGraphs: false,
