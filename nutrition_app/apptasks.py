@@ -35,18 +35,19 @@ celery_instance = sw.make_celery(config=config)  # Create the Celery instance fo
 
 
 @async_task
-def run_optim(project_id, cache_id, optim_name=None, runtype=None):
+def run_optim(project_id, cache_id, optim_name=None, runtype=None, runbalanced=False):
     # Load the projects from the DataStore.
     if runtype is None:
         runtype = "full"
     print("Running %s optimization..." % runtype)
     proj = rpcs.load_project(project_id)
     if runtype == "test":
-        results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=None, maxtime=5)
+        results, scens = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=None, maxtime=5, runbalanced=runbalanced)
     else:
-        results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
+        results, scens = proj.run_optim(key=optim_name, dosave=False, parallel=False, runbalanced=runbalanced)
     newproj = rpcs.load_project(project_id)
     newproj.results[cache_id] = results
+    newproj.add_scens(scens)
     rpcs.cache_results(newproj)
     return None
 

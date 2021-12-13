@@ -70,12 +70,13 @@ class Optim(sc.prettyobj):
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, weight, mult, keep_inds), mult) + optim for mult in self.mults for weight in list(self.weights)]
         if parallel:
-            res = utils.run_parallel(self.one_optim_parallel, args, num_procs)
+            res, scen = utils.run_parallel(self.one_optim_parallel, args, num_procs)
         else:
-            res = []
+            res, scen = [], []
             for arg in args:
-                this_res = self.one_optim(arg)
+                this_res, this_scen = self.one_optim(arg)
                 res.append(this_res)
+                scen.append(this_scen)
 
         """The goal of this is to balance progress toward multiple competing objectives, e.g.
         weight[0] = 100% Maximize thrive,  the objective progress (baseline evaluation - optimized evaluation) of the optimized result is 100
@@ -108,28 +109,32 @@ class Optim(sc.prettyobj):
                 balanced_args.append((self.get_kwargs(model, balanced_weight, mult, keep_inds), mult) + optim)
 
             if parallel:
-                res_balanced = utils.run_parallel(self.one_optim_parallel, balanced_args, num_procs)
+                res_balanced, scen_balanced = utils.run_parallel(self.one_optim_parallel, balanced_args, num_procs)
             else:
-                res_balanced = []
+                res_balanced, scen_balanced = [], []
                 for arg in balanced_args:
-                    this_res = self.one_optim(arg)
+                    this_res, this_scen = self.one_optim(arg)
                     res_balanced.append(this_res)
+                    scen_balanced.append(this_scen)
             # Prettier names
             for i, mult in enumerate(self.mults):
                 mult_str = f"(mult={res_balanced[i].mult}) " if len(self.mults) > 1 or res_balanced[i].mult != 1 else ""
                 res_balanced[i].name = f"{mult_str}Balanced objectives"
 
 
-        for result in res:
+        for r, result in enumerate(res):
             if len(self.mults) > 1 or result.mult != 1:  # add clarity on multiplier only if necessary
                 result.name = result.obj + f" (budget x{result.mult})"
             else:
                 result.name = result.obj
+            scen[r].name = result.name
+
 
         if runbalanced and len(self.weights) > 1:
             res += res_balanced
+            scen += scen_balanced
 
-        return res
+        return res, scen
 
     def objfun_val(self, outs, weights):
         """ "This is used to find the value of the objective functional for
@@ -226,17 +231,17 @@ class Optim(sc.prettyobj):
         # generate results
         name = "%s (x%s) (w%s)" % (self.name, mult, weight)
         progvals = {prog: spend for prog, spend in zip(self.prog_set, best_alloc)}
-        scen = Scen(name=name, model_name=self.model_name, scen_type="budget", progvals=progvals, enforce_constraints_year=0, growth=self.growth)
+        scen = Scen(name=name, model_name=self.model_name, scen_type="budget", progvals=progvals, enforce_constraints_year=0, growth=self.growth, from_optim=True)
         res = run_scen(scen, model, obj=self.name, mult=mult, weight=weight, restrictcovs=False)
         if _("Excess budget not allocated") in self.prog_set:
             self.prog_set.remove(_("Excess budget not allocated"))
 
-        return res
+        return res, scen
 
     @utils.trace_exception
     def one_optim_parallel(self, args):
-        res = self.one_optim(args)
-        return res
+        res, scen = self.one_optim(args)
+        return res, scen
 
     def print_status(self, objective, multiple, exitreason, now):
         print("Finished optimization for %s for objective %s and multiple %s" % (self.name, objective, multiple))
