@@ -677,40 +677,6 @@ def define_formats(locale):
         ["name", "drop", "drop"],
         ["name", "drop", "drop"],
         ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
-        ["name", "drop", "drop"],
     ]
     return formats
 
@@ -1181,8 +1147,10 @@ def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
         js_optim[attr] = getattr(py_optim, attr)  # Copy the attributes into a dictionary
     weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_optim.weights))]  # WARNING, ABS HACK
     growth = py_optim.growth
+    balanced_optimization = py_optim.balanced_optimization
     js_optim["weightslist"] = weightslist
     js_optim["growth"] = growth
+    js_optim["balanced_optimization"] = balanced_optimization
     js_optim["objective_options"] = obj_labels  # Not modified but used on the FE
     js_optim["programs"] = []
     for prog_name in proj.dataset(py_optim.model_name).prog_names():
@@ -1194,7 +1162,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
     """ Convert a JSON to Python representation of an optimization """
     obj_keys = nu.default_trackers()
     kwargs = sc.odict()
-    attrs = ["name", "model_name", "fix_curr", "filter_progs", "active", "growth"]
+    attrs = ["name", "model_name", "fix_curr", "filter_progs", "active", "growth", "balanced_optimization"]
     for attr in attrs:
         kwargs[attr] = js_optim[attr]
     try:
@@ -1360,6 +1328,8 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
         js_geo[attr] = getattr(py_geo, attr)  # Copy the attributes into a dictionary
     weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_geo.weights))]  # WARNING, ABS HACK
     js_geo["weightslist"] = weightslist
+    growth = py_geo.growth
+    js_geo["growth"] = growth
     js_geo["spec"] = []
     for prog_name in prog_names:
         program = proj.model(key).prog_info.programs[prog_name]
@@ -1380,7 +1350,7 @@ def js_to_py_geo(js_geo):
     """ Convert a JSON to Python representation of an optimization """
     obj_keys = nu.default_trackers()
     json = sc.odict()
-    attrs = ["name", "modelnames", "fix_curr", "fix_regionalspend", "filter_progs"]
+    attrs = ["name", "modelnames", "fix_curr", "fix_regionalspend", "filter_progs", "growth"]
     for attr in attrs:
         json[attr] = js_geo[attr]
     try:

@@ -168,9 +168,12 @@ Last update: 2019jan10
           <b>{{ $t("geospatial.Existing spending") }}</b><br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;{{ $t("common.Can be reallocated") }}<br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;{{ $t("common.Cannot be reallocated") }}<br><br>
-          <b>{{ $t("geospatial.Regional spending") }}</b><br>
+          <b>{{ $t("Regional spending") }}</b><br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">&nbsp;{{ $t("geospatial.Can be reallocated between regions") }}<br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">&nbsp;{{ $t("geospatial.Cannot be reallocated between regions") }}<br><br>
+          <b>{{ $t("Growth type") }}</b><br>
+          <input type="radio" v-model="addEditModal.geoSummary.growth" value="fixed budget">&nbsp;{{ $t("Fixed budget") }}<br>
+          <input type="radio" v-model="addEditModal.geoSummary.growth" value="fixed coverage">&nbsp;{{ $t("Fixed coverage") }}<br><br>
           <b>{{ $t("geospatial.Additional funds to allocate") }}</b><br>
           <input type="text"
                  class="txbox"

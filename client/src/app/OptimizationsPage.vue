@@ -156,7 +156,10 @@ Last update: 2019feb11
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
               </option>
-            </select><br><br></th>
+            </select><br><br></th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <td style="text-align: center">
+              <input type="checkbox" v-model="addEditModal.optimSummary.balanced_optimization"/>&nbsp;{{ $t("Run balanced optimization?") }}
+            </td>
           </tr>
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
