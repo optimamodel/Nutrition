@@ -1,4 +1,5 @@
 import nutrition.ui as nu
+from nutrition.results import reduce_results, write_results
 import sciris as sc
 import sys
 
@@ -41,11 +42,13 @@ if __name__ == "__main__":
     scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3, kwargs2])
     p.add_scens(scen_list)
 
-    p.run_scens(n_samples=3)
+    results = p.run_scens(n_samples=3)
     # p.mean()
 # p.run_scens()
 if doplot:
     p.plot()
 #costeff = p.get_costeff()
-p.write_results("scen_results_test.xlsx")
+#p.write_results("scen_results_test.xlsx")
+all_reduce = reduce_results(results)
+write_results(results=results, reduced_results=all_reduce, filename='scen_results_test.xlsx')
 p.save("test")

@@ -337,7 +337,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     # this is grouped not by program, but by coverage and cost (within each scenario)
 
     for r, res in enumerate(results):
-        if res.name != "Excess budget" and "#" not in res.name:
+        if res.name != "Excess budget" and resampled_key_str not in res.name:
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=True)
@@ -354,7 +354,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                 costcov = res.programs[prog].costtype
                 outputs.append([""] + [prog] + ["Budget"] + [costcov] + list(thisspend))
             outputs.append(nullrow)
-        elif "#" not in res.name:
+        elif resampled_key_str not in res.name:
             spend = res.get_allocs(ref=True)
             thisspend = spend["Excess budget not allocated"]
             outputs.append(["Excess budget not allocated"] + ["N/A"] + ["Budget"] + ["N/A"] + list(thisspend))
