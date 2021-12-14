@@ -266,21 +266,21 @@ def admin_upload_db(pw, filename=None, host=None):
 
 
 @RPC()  # Not usually called as an RPC
-def load_project(project_key, die=None):
-    output = datastore.loadblob(project_key, objtype="project", die=die)
+def load_project(project_key):
+    output = datastore.loadblob(project_key, objtype="project", die=True)
     return output
 
 
 @RPC()  # Not usually called as an RPC
-def load_result(result_key, die=False):
-    output = datastore.loadblob(result_key, objtype="result", die=die)
+def load_result(result_key):
+    output = datastore.loadblob(result_key, objtype="result", die=True)
     return output
 
 
 @RPC()  # Not usually called as an RPC
-def save_project(project, die=None):  # NB, only for saving an existing project
+def save_project(project):  # NB, only for saving an existing project
     project.modified = sc.now(utc=True)
-    output = datastore.saveblob(obj=project, objtype="project", die=die)
+    output = datastore.saveblob(obj=project, objtype="project", die=True)
     return output
 
 
