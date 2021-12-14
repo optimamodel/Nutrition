@@ -1070,10 +1070,15 @@ def set_scen_info(project_id, scenario_jsons, optim_jsons=None):
             scen = js_to_py_scen(js_scen)
             proj.add_scens(scen)
     else:
+        optim_names = [[js_optim["name"], js_optim["name"] + " baseline"] for js_optim in optim_jsons]
+        optim_names = [item for sublist in optim_names for item in sublist]
         for scen in list(proj.scens):
             for js_optim in optim_jsons:
                 if (js_optim["name"] == proj.scens[scen].name) or js_optim["name"] + " baseline" == proj.scens[scen].name:
                     proj.scens[scen].active = js_optim["active"]
+            if proj.scens[scen].name not in optim_names and proj.scens[scen].from_optim:
+                proj.scens[scen].active = False
+
     print("Saving project...")
     save_project(proj)
     return None
