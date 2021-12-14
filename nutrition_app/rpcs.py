@@ -1072,7 +1072,7 @@ def set_scen_info(project_id, scenario_jsons, optim_jsons=None):
     else:
         for scen in list(proj.scens):
             for js_optim in optim_jsons:
-                if js_optim["name"] == proj.scens[scen].name:
+                if (js_optim["name"] == proj.scens[scen].name) or js_optim["name"] + " baseline" == proj.scens[scen].name:
                     proj.scens[scen].active = js_optim["active"]
     print("Saving project...")
     save_project(proj)
