@@ -66,7 +66,7 @@ Last update: 2019feb11
 
         <div>
           <button class="btn __green" :disabled="!optimsLoaded" @click="runScens()">{{ $t("optimization.Plot optimizations") }}</button>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
+          <button class="btn __green" :disabled="!optimsLoaded || calculateCosetEff" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>

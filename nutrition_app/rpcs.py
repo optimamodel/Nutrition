@@ -1410,7 +1410,7 @@ def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
     # Get graphs
     graphs = []
     if doplot:
-        figs = proj.plot("opts")
+        figs = proj.plot("opts", optim=True)
         for f, fig in enumerate(figs.values()):
             for ax in fig.get_axes():
                 ax.set_facecolor("none")
