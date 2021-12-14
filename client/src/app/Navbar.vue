@@ -72,78 +72,99 @@ Last update: 2018sep23
             <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;{{ $t("navbar.Log out") }}</a></li>
           </dropdown>
 
+
+          <li v-if="projectLocale !== uiLocale" class="nav-item">
+            <div class="nav-link">
+              <i class="ti-alert" v-b-tooltip.hover :title="$t('navbar.language_warning')" />
+            </div>
+          </li>
+
+
           <li class="nav-item">
             <div class="nav-link">
-              <LocaleSwitcher />
-              </div>
+              <LocaleSwitcher/>
+            </div>
           </li>
-                  </ul>
 
-        </div>
+        </ul>
 
       </div>
+
+
     </div>
+
   </nav>
 </template>
 
 
 <script>
 
-  import LocaleSwitcher from "./LocaleSwitcher.vue"
+import LocaleSwitcher from "./LocaleSwitcher.vue"
+import i18n from '../i18n'
 
-  export default {
-    name: 'Navbar',
-    components: { LocaleSwitcher },
+export default {
+  name: 'Navbar',
+  components: {LocaleSwitcher},
 
-    data() {
-      return {
-        activePage: 'manage projects'
-      }
-    },
-
-    computed: {
-
-      activeProjectName() { return this.$store.getters.activeProjectName },
-      activeUserName() { return this.$store.getters.activeUserName },
-
-      // Theme function
-      routeName() {
-        const route_name = this.$route.name;
-        return this.capitalizeFirstLetter(route_name)
-      },
-    },
-
-    created() {
-      this.$sciris.getUserInfo(this.$store)
-    },
-
-
-    methods: {
-
-      checkLoggedIn() {
-        this.$sciris.checkLoggedIn
-      },
-
-      checkAdminLoggedIn() {
-        this.$sciris.checkAdminLoggedIn
-      },
-
-      logOut() {
-        this.$sciris.logoutCall();
-        this.$store.commit('logOut');
-        this.$router.push('/login');
-      },
-
-      // Theme functions
-      capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1)
-      },
-
-      toggleSidebar() {
-        this.$sidebar.displaySidebar(!this.$sidebar.showSidebar)
-      },
+  data() {
+    return {
+      activePage: 'manage projects'
     }
+  },
+
+  computed: {
+
+    activeProjectName() {
+      return this.$store.getters.activeProjectName
+    },
+    activeUserName() {
+      return this.$store.getters.activeUserName
+    },
+    projectLocale() {
+      return this.$store.getters.projectLocale
+    },
+    uiLocale() {
+      return i18n.locale
+    },
+
+    // Theme function
+    routeName() {
+      const route_name = this.$route.name;
+      return this.capitalizeFirstLetter(route_name)
+    },
+  },
+
+  created() {
+    this.$sciris.getUserInfo(this.$store)
+  },
+
+
+  methods: {
+
+    checkLoggedIn() {
+      this.$sciris.checkLoggedIn
+    },
+
+    checkAdminLoggedIn() {
+      this.$sciris.checkAdminLoggedIn
+    },
+
+    logOut() {
+      this.$sciris.logoutCall();
+      this.$store.commit('logOut');
+      this.$router.push('/login');
+    },
+
+    // Theme functions
+    capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1)
+    },
+
+    toggleSidebar() {
+      this.$sidebar.displaySidebar(!this.$sidebar.showSidebar)
+    },
   }
+}
 
 </script>
 

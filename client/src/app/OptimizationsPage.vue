@@ -65,8 +65,8 @@ Last update: 2019feb11
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens()">Plot optimizations</button>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(10)">Plot optimizations with uncertainty</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens()">{{ $t("optimization.Plot optimizations") }}</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>
@@ -158,7 +158,7 @@ Last update: 2019feb11
               </option>
             </select><br><br></th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <td style="text-align: center">
-              <input type="checkbox" v-model="addEditModal.optimSummary.balanced_optimization"/>&nbsp;{{ $t("Run balanced optimization?") }}
+              <input type="checkbox" v-model="addEditModal.optimSummary.balanced_optimization"/>&nbsp;{{ $t("optimization.Run balanced optimization?") }}
             </td>
           </tr>
           <div class="scrolltable" style="max-height: 30vh;">
@@ -192,9 +192,9 @@ Last update: 2019feb11
           <b>{{ $t("optimization.Existing spending") }}</b><br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="false">&nbsp;{{ $t("common.Can be reallocated") }}<br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="true">&nbsp;{{ $t("common.Cannot be reallocated") }}<br><br>
-          <b>{{ $t("Growth type") }}</b><br>
-          <input type="radio" v-model="addEditModal.optimSummary.growth" value="fixed budget">&nbsp;{{ $t("Fixed budget") }}<br>
-          <input type="radio" v-model="addEditModal.optimSummary.growth" value="fixed coverage">&nbsp;{{ $t("Fixed coverage") }}<br><br>
+          <b>{{ $t("optimization.Growth type") }}</b><br>
+          <input type="radio" v-model="addEditModal.optimSummary.growth" value="fixed budget">&nbsp;{{ $t("optimization.Fixed budget") }}<br>
+          <input type="radio" v-model="addEditModal.optimSummary.growth" value="fixed coverage">&nbsp;{{ $t("optimization.Fixed coverage") }}<br><br>
           <b>{{ $t("optimization.Additional funds to allocate") }}</b><br>
           <input type="text"
                  class="txbox"
@@ -258,7 +258,7 @@ Last update: 2019feb11
         </div>
         <div style="text-align:justify">
           <button @click="UncertRuns()" class='btn __green' style="display:inline-block">
-            Confirm
+            {{ $t("optimization.Plot optimizations") }}
           </button>
 
           <button @click="$modal.hide('uncert-nruns')" class='btn __red' style="display:inline-block">

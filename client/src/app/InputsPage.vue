@@ -114,9 +114,9 @@ Last update: 2019-02-11
               <table  class="table table-bordered table-hover table-striped" style="width: 100%;">
 
               <tr>
-                <td class="c_head">Program</td>
-                <td class="c_head">Exclusion dependency</td>
-                <td class="c_head">Threshold dependency</td>
+                <td class="c_head">{{ $t("inputs.Program") }}</td>
+                <td class="c_head">{{ $t("inputs.Exclusion dependency") }}</td>
+                <td class="c_head">{{ $t("inputs.Threshold dependency") }}</td>
                 <td />
               </tr>
 
@@ -147,7 +147,7 @@ Last update: 2019-02-11
 
             </table>
 
-            <button class="btn btn-icon" @click="sheetTables['program_dependencies'].push({'program':undefined,'exclusion':undefined,'threshold':undefined})">Add dependency</button>
+            <button class="btn btn-icon" @click="sheetTables['program_dependencies'].push({'program':programOptions[0],'exclusion':undefined,'threshold':undefined})">{{ $t("inputs.Add dependency") }}</button>
 
             </div>
 

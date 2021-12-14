@@ -10,13 +10,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 msgid "Actions"
 msgstr "Actions"
-
-msgid "Active"
-msgstr "Actif"
 
 msgid "Cancel"
 msgstr "Annuler"
@@ -79,7 +76,7 @@ msgid "Status"
 msgstr "État"
 
 msgid "Type"
-msgstr "Taper"
+msgstr "Type"
 
 msgid "Upload"
 msgstr "Télécharger"
@@ -152,10 +149,6 @@ msgstr "Aucun projet n'est chargé"
 msgctxt "footer"
 msgid "Terms and conditions"
 msgstr "Termes et conditions"
-
-msgctxt "geoaptial"
-msgid "Regional spending"
-msgstr "Dépenses régionales"
 
 msgctxt "geospatial"
 msgid "Add geospatial optimization"
@@ -555,3 +548,65 @@ msgstr "E-mail (facultatif)"
 
 msgid "please_wait_spinner"
 msgstr "Veuillez patienter..."
+
+msgctxt "inputs"
+msgid "Add dependency"
+msgstr "Ajouter une dépendance"
+
+msgctxt "inputs"
+msgid "Program"
+msgstr "Programme"
+
+msgctxt "inputs"
+msgid "Exclusion dependency"
+msgstr "Dépendance incompatible"
+
+msgctxt "inputs"
+msgid "Threshold dependency"
+msgstr "Dépendance de seuil"
+
+msgctxt "optimization"
+msgid "Plot optimizations"
+msgstr "Tracer les optimisations"
+
+msgctxt "optimization"
+msgid "Plot optimizations with uncertainty"
+msgstr "Tracer les optimisations avec incertitude"
+
+msgctxt "scenarios"
+msgid "Run scenarios with uncertainty"
+msgstr "Exécuter les scénarios avec incertitude"
+
+msgctxt "uncertainty"
+msgid "Input uncertainty runs"
+msgstr "Exécutions d'incertitude d'entrée"
+
+msgctxt "uncertainty"
+msgid "Number of runs"
+msgstr "Nombre d'exécutions"
+
+msgctxt "geospatial"
+msgid "Regional spending"
+msgstr "Dépenses régionales"
+
+msgctxt "optimization"
+msgid "Growth type"
+msgstr "Type de croissance"
+
+msgctxt "optimization"
+msgid "Fixed budget"
+msgstr "Budget fixe"
+
+msgctxt "optimization"
+msgid "Fixed coverage"
+msgstr "Couverture fixe"
+
+msgctxt "optimization"
+msgid "Run balanced optimization?"
+msgstr "Exécuter une optimisation équilibrée?"
+
+msgctxt "navbar"
+msgid "language_warning"
+msgstr ""
+"La langue sélectionnée ne correspond pas au projet actuel. Certains aspects "
+"de l’interface apparaitront dans la langue originale du projet"

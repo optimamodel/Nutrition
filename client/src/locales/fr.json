@@ -1,6 +1,5 @@
 {
   "Actions": "Actions",
-  "Active": "Actif",
   "Cancel": "Annuler",
   "Copy": "Copier",
   "Could not upload file": "Impossible de télécharger le fichier",
@@ -21,7 +20,7 @@
   "Rename": "Renommer",
   "Save": "Sauvegarder",
   "Status": "État",
-  "Type": "Taper",
+  "Type": "Type",
   "Upload": "Télécharger",
   "Zoom out": "Faire un zoom arrière",
   "common": {
@@ -44,9 +43,6 @@
   "footer": {
     "Terms and conditions": "Termes et conditions"
   },
-  "geoaptial": {
-    "Regional spending": "Dépenses régionales"
-  },
   "geospatial": {
     "Add geospatial optimization": "Ajouter une optimisation géospatiale",
     "Additional funds to allocate": "Fonds supplémentaires à allouer",
@@ -61,7 +57,8 @@
     "Optimization objective": "Objectif de l'optimisation",
     "Optimization/program": "Optimisation/programme",
     "Select regions": "Sélectionner les régions",
-    "Weight": "Poids"
+    "Weight": "Poids",
+    "Regional spending": "Dépenses régionales"
   },
   "inputs": {
     "Current sheet": "Fiche actuelle",
@@ -72,7 +69,11 @@
     "revert": "Revenir en arrière",
     "revert_tooltip": "Revenir aux dernières données enregistrées",
     "save_changes": "Enregistrer les changements",
-    "save_tooltip": "Sauvegarder les données dans le projet"
+    "save_tooltip": "Sauvegarder les données dans le projet",
+    "Add dependency": "Ajouter une dépendance",
+    "Program": "Programme",
+    "Exclusion dependency": "Dépendance incompatible",
+    "Threshold dependency": "Dépendance de seuil"
   },
   "login": {
     "New user?": "Nouvel utilisateur?",
@@ -91,7 +92,8 @@
     "Projects": "Projets",
     "Scenarios": "Scénarios",
     "Toggle navigation": "Basculer la navigation",
-    "User": "Utilisateur"
+    "User": "Utilisateur",
+    "language_warning": "La langue sélectionnée ne correspond pas au projet actuel. Certains aspects de l’interface apparaitront dans la langue originale du projet"
   },
   "optimization": {
     "Add optimization": "Ajouter une optimisation",
@@ -108,7 +110,13 @@
     "Optimization/program": "Optimisation/programme",
     "Weight": "Poids",
     "current budget": "budget actuel",
-    "perform_costeff": "Effectuer une analyse coût-efficacité de l'intervention"
+    "perform_costeff": "Effectuer une analyse coût-efficacité de l'intervention",
+    "Plot optimizations": "Tracer les optimisations",
+    "Plot optimizations with uncertainty": "Tracer les optimisations avec incertitude",
+    "Growth type": "Type de croissance",
+    "Fixed budget": "Budget fixe",
+    "Fixed coverage": "Couverture fixe",
+    "Run balanced optimization?": "Exécuter une optimisation équilibrée?"
   },
   "placeholder": {
     "Enter new password": "Saisissez un nouveau mot de passe",
@@ -162,7 +170,12 @@
     "Program spending": "Dépenses du programme",
     "Run scenarios": "Exécuter des scénarios",
     "Scenario name": "Nom du scénario",
-    "Scenario/program": "Scénario/programme"
+    "Scenario/program": "Scénario/programme",
+    "Run scenarios with uncertainty": "Exécuter les scénarios avec incertitude"
   },
-  "please_wait_spinner": "Veuillez patienter..."
+  "please_wait_spinner": "Veuillez patienter...",
+  "uncertainty": {
+    "Input uncertainty runs": "Exécutions d'incertitude d'entrée",
+    "Number of runs": "Nombre d'exécutions"
+  }
 }

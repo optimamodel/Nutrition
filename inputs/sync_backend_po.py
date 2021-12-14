@@ -10,12 +10,12 @@ import nutrition.ui as nu
 rootdir = Path(__file__).parent
 
 
-def update_messages(target_locale):
+def update_messages(source_po, target_po):
     # Update the .po files with translations from the CSV list, if the English text matches the message ID
     # This requires that the backend po files have already been updated from the backend source
     # This prevents strings that only appear in the databook from cluttering the backend translation
-    source_po = polib.pofile(rootdir/target_locale/'databook.po')
-    target_po = polib.pofile((nu.ONpath / "nutrition" / "locale" / target_locale / "LC_MESSAGES" / "nutrition.po"))
+    # source_po = polib.pofile(source_po_file)
+    # target_po = polib.pofile(target_po_file)
 
     source_entries = {x.msgid:x for x in source_po}
     for entry in target_po:
@@ -28,4 +28,17 @@ def update_messages(target_locale):
 locales = [x.parent.stem for x in rootdir.glob('**/*.po')] # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
 for locale in locales:
-    update_messages(locale)
+    print("Syncing databook -> backend")
+    source_po = polib.pofile(rootdir/locale/'databook.po')
+    target_po = polib.pofile(nu.ONpath / "nutrition" / "locale" / locale / "LC_MESSAGES" / "nutrition.po")
+    update_messages(source_po, target_po)
+
+    print("Syncing databook -> frontend")
+    source_po = polib.pofile(rootdir/locale/'databook.po')
+    target_po = polib.pofile(nu.ONpath / "client" / "src" / "locales" / f"client_{locale}.po")
+    update_messages(source_po, target_po)
+
+    print("Syncing backend -> frontend")
+    source_po = polib.pofile(nu.ONpath / "nutrition" / "locale" / locale / "LC_MESSAGES" / "nutrition.po")
+    target_po = polib.pofile(nu.ONpath / "client" / "src" / "locales" / f"client_{locale}.po")
+    update_messages(source_po, target_po)

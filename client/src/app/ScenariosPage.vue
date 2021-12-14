@@ -25,7 +25,7 @@ Last update: 2019feb11
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th>{{ $t("") }}</th>
+            <th></th>
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Type") }}</th>
             <th>{{ $t("Databook") }}</th>
@@ -63,7 +63,7 @@ Last update: 2019feb11
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">{{ $t("scenarios.Run scenarios") }}</button>
-          <button class="btn __green" :disabled="!scenariosLoaded" @click="UncertScensModal(10)">Run scenarios with uncertainty</button>
+          <button class="btn __green" :disabled="!scenariosLoaded" @click="UncertScensModal(10)">{{ $t("scenarios.Run scenarios with uncertainty") }}</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">{{ $t("scenarios.Add coverage scenario") }}</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">{{ $t("scenarios.Add budget scenario") }}</button>
         </div>
@@ -228,21 +228,21 @@ Last update: 2019feb11
 
       <div class="dialog-content">
         <div class="dialog-c-title">
-          Input uncertainty runs
+          {{ $t("uncertainty.Input uncertainty runs") }}
         </div>
         <div class="dialog-c-text">
-          Number of runs:<br>
+          {{ $t("uncertainty.Number of runs") }}:<br>
           <input type="text"
                  class="txbox"
                  v-model="modalUncertRuns"/><br>
         </div>
         <div style="text-align:justify">
           <button @click="UncertRuns()" class='btn __green' style="display:inline-block">
-            Confirm
+            {{ $t("scenarios.Run scenarios") }}
           </button>
 
           <button @click="$modal.hide('uncert-nruns')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>
@@ -251,8 +251,6 @@ Last update: 2019feb11
     <!-- ### End: input uncertainty runs modal ### -->
   </div>
 
-
-  </div>
 </template>
 
 

@@ -1,6 +1,5 @@
 {
   "Actions": "Actions",
-  "Active": "Active",
   "Cancel": "Cancel",
   "Copy": "Copy",
   "Could not upload file": "Could not upload file",
@@ -44,9 +43,6 @@
   "footer": {
     "Terms and conditions": "Terms and conditions"
   },
-  "geoaptial": {
-    "Regional spending": "Regional spending"
-  },
   "geospatial": {
     "Add geospatial optimization": "Add geospatial optimization",
     "Additional funds to allocate": "Additional funds to allocate",
@@ -61,7 +57,8 @@
     "Optimization objective": "Optimization objective",
     "Optimization/program": "Optimization/program",
     "Select regions": "Select regions",
-    "Weight": "Weight"
+    "Weight": "Weight",
+    "Regional spending": "Regional spending"
   },
   "inputs": {
     "Current sheet": "Current sheet",
@@ -72,7 +69,11 @@
     "revert": "Revert",
     "revert_tooltip": "Revert to last saved data",
     "save_changes": "Save changes",
-    "save_tooltip": "Save data to project"
+    "save_tooltip": "Save data to project",
+    "Add dependency": "Add dependency",
+    "Program": "Program",
+    "Exclusion dependency": "Exclusion dependency",
+    "Threshold dependency": "Threshold dependency"
   },
   "login": {
     "New user?": "New user?",
@@ -91,7 +92,8 @@
     "Projects": "Projects",
     "Scenarios": "Scenarios",
     "Toggle navigation": "Toggle navigation",
-    "User": "User"
+    "User": "User",
+    "language_warning": "The selected language does not match the current project. Some parts of the interface will appear in the project's original language"
   },
   "optimization": {
     "Add optimization": "Add optimization",
@@ -108,7 +110,13 @@
     "Optimization/program": "Optimization/program",
     "Weight": "Weight",
     "current budget": "current budget",
-    "perform_costeff": "Perform intervention cost-effectiveness analysis"
+    "perform_costeff": "Perform intervention cost-effectiveness analysis",
+    "Plot optimizations": "Plot optimizations",
+    "Plot optimizations with uncertainty": "Plot optimizations with uncertainty",
+    "Growth type": "Growth type",
+    "Fixed budget": "Fixed budget",
+    "Fixed coverage": "Fixed coverage",
+    "Run balanced optimization?": "Run balanced optimization?"
   },
   "placeholder": {
     "Enter new password": "Enter new password",
@@ -162,7 +170,12 @@
     "Program spending": "Program spending",
     "Run scenarios": "Run scenarios",
     "Scenario name": "Scenario name",
-    "Scenario/program": "Scenario/program"
+    "Scenario/program": "Scenario/program",
+    "Run scenarios with uncertainty": "Run scenarios with uncertainty"
   },
-  "please_wait_spinner": "Please wait..."
+  "please_wait_spinner": "Please wait...",
+  "uncertainty": {
+    "Input uncertainty runs": "Input uncertainty runs",
+    "Number of runs": "Number of runs"
+  }
 }
