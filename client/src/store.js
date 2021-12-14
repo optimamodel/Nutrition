@@ -62,7 +62,7 @@ const store = new Vuex.Store({
     isLoggedIn: state => !!state.currentUser,
     projectOpen: state => !!state.activeProject,
     activeUserName: state => state.currentUser ?  state.currentUser.displayname || state.currentUser.username : 'none',
-    projectLocale: state => state.activeProject.project.locale,
+    projectLocale: state => state.activeProject?  state.activeProject.project.locale : undefined,
   },
 });
 

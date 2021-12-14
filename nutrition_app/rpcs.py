@@ -461,7 +461,7 @@ def create_new_project(username, proj_name, locale):
 
 @RPC(call_type="download")
 def download_new_databook(project_key):
-    proj = load_project(project_key, die=True)
+    proj = load_project(project_key)
     print(">> download_databook")
     return proj.templateinput.tofile(), "%s databook.xlsx" % proj.name
 
@@ -472,7 +472,7 @@ def copy_project(project_key):
     Given a project UID, creates a copy of the project with a new UID and
     returns that UID.
     """
-    proj = load_project(project_key, die=True)  # Get the Project object for the project to be copied.
+    proj = load_project(project_key)  # Get the Project object for the project to be copied.
     new_project = sc.dcp(proj)  # Make a copy of the project loaded in to work with.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
     key, new_project = save_new_project(new_project, proj.webapp.username)  # Save a DataStore projects record for the copy project.
@@ -506,7 +506,7 @@ def download_project(project_id):
     For the passed in project UID, get the Project on the server, save it in a
     file, minus results, and pass the full path of this file back.
     """
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     return sc.saveobj(None, proj), "%s.prj" % proj.name  # Return the full filename.
 
 
@@ -542,7 +542,7 @@ def download_databook(project_id, key=None):
     if key is None:
         return download_new_databook(project_id)
 
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     if key is not None:
         file_name = "%s_%s_databook.xlsx" % (proj.name, key)  # Create a filename containing the project name followed by the databook name, then a .prj suffix.
     print(">> download_databook %s" % (file_name))  # Display the call information.
@@ -553,7 +553,7 @@ def download_databook(project_id, key=None):
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.load_data(inputspath=databook_filename)  # Reset the project name to a new project name that is unique.
     proj.modified = sc.now(utc=True)
     save_project(proj)  # Save the new project in the DataStore.
@@ -679,7 +679,7 @@ def define_formats(locale):
 @RPC()
 def get_sheet_data(project_id, key=None, verbose=False):
 
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
 
     dataset = proj.dataset(key)
     locale = dataset.locale
@@ -763,7 +763,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     
 
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     if key is None:
         key = proj.datasets.keys()[-1]  # There should always be at least one
 
@@ -849,7 +849,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
 @RPC()
 def get_dataset_keys(project_id):
     print("Returning dataset info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     dataset_names = proj.datasets.keys()
     model_names = proj.models.keys()
     if dataset_names != model_names:
@@ -864,7 +864,7 @@ def get_dataset_keys(project_id):
 @RPC()
 def rename_dataset(project_id, datasetname=None, new_name=None):
     print("Renaming dataset from %s to %s..." % (datasetname, new_name))
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.datasets.rename(datasetname, new_name)
     proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
@@ -885,7 +885,7 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
 @RPC()
 def copy_dataset(project_id, datasetname=None):
     print("Copying dataset %s..." % datasetname)
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     print("Number of datasets before copy: %s" % len(proj.datasets))
     new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
     print("Old name: %s; new name: %s" % (datasetname, new_name))
@@ -901,7 +901,7 @@ def copy_dataset(project_id, datasetname=None):
 @RPC()
 def delete_dataset(project_id, datasetname=None):
     print("Deleting dataset %s..." % datasetname)
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     print("Number of datasets before delete: %s" % len(proj.datasets))
     if len(proj.datasets) > 1:
         proj.datasets.pop(datasetname)
@@ -925,7 +925,7 @@ def download_dataset(project_id, datasetname=None):
     For the passed in project UID, get the Project on the server, save it in a
     file, minus results, and pass the full path of this file back.
     """
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     dataset = proj.datasets[datasetname]
     return sc.saveobj(None, dataset), "%s - %s.par" % (proj.name, datasetname)
 
@@ -937,7 +937,7 @@ def upload_dataset(dataset_filename, project_id):
     For the passed in project UID, get the Project on the server, save it in a
     file, minus results, and pass the full path of this file back.
     """
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     dataset = sc.loadobj(dataset_filename)
     datasetname = sc.uniquename(dataset.name, namelist=proj.datasets.keys())
     dataset.name = datasetname  # Reset the name
@@ -1044,7 +1044,7 @@ def js_to_py_scen(js_scen):
 @RPC()
 def get_scen_info(project_id, verbose=False):
     print("Getting scenario info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     scenario_jsons = []
     for py_scen in proj.scens.values():
         if not py_scen.from_optim:
@@ -1059,7 +1059,7 @@ def get_scen_info(project_id, verbose=False):
 @RPC()
 def set_scen_info(project_id, scenario_jsons, optim_jsons=None):
     print("Setting scenario info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     if optim_jsons is None:
         for scen in list(proj.scens):
             if not proj.scens[scen].from_optim:
@@ -1089,7 +1089,7 @@ def get_default_scen(project_id, scen_type=None, model_name=None):
     print("Creating default scenario...")
     if scen_type is None:
         scen_type = "coverage"
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename="Default scenario (%s)" % scen_type)
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     return js_scen
@@ -1110,7 +1110,7 @@ def scen_switch_dataset(project_id, js_scen: dict) -> dict:
     :return: An optimization summary for the FE
     """
 
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     scen_years = proj.dataset(js_scen["model_name"]).t[1] - proj.dataset(js_scen["model_name"]).t[0]  # First year is baseline
 
     original_progvals = sc.dcp({x["name"]: x for x in js_scen["progvals"]})
@@ -1138,7 +1138,7 @@ def scen_switch_dataset(project_id, js_scen: dict) -> dict:
 @RPC()
 def convert_scen(project_id, scenkey=None):
     print("Converting scenario...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.convert_scen(scenkey)
     save_project(proj)
     return None
@@ -1164,7 +1164,7 @@ def reformat_costeff(costeff):
 def run_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
 
     print("Running scenarios...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
 
     if "scens" in proj.results:
         try:
@@ -1268,7 +1268,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
 @RPC()
 def get_optim_info(project_id):
     print("Getting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     optim_jsons = []
     for py_optim in proj.optims.values():
         js_optim = py_to_js_optim(py_optim, proj)
@@ -1279,7 +1279,7 @@ def get_optim_info(project_id):
 @RPC()
 def set_optim_info(project_id, optim_jsons):
     print("Setting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.optims.clear()
     for j, js_optim in enumerate(optim_jsons):
         optim = js_to_py_optim(js_optim)
@@ -1295,7 +1295,7 @@ def opt_new_optim(project_id, dataset, locale):
     _ = nu.get_translator(locale)
 
     print("Making new optimization...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     py_optim = nu.make_default_optim(modelname=dataset, basename=_("Maximize thrive"), locale=proj.locale)
     prog_set = []
     for program in proj.model(py_optim.model_name).prog_info.programs.values():
@@ -1320,7 +1320,7 @@ def opt_switch_dataset(project_id, js_optim: dict) -> dict:
     :param js_optim: Dict from `py_to_js_optim`
     :return: An optimization summary for the FE
     """
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     included = {x["name"]: x["included"] for x in js_optim["programs"]}
     programs = []
     for program in proj.model(js_optim["model_name"]).prog_info.programs.values():
@@ -1331,7 +1331,7 @@ def opt_switch_dataset(project_id, js_optim: dict) -> dict:
 
 @RPC()
 def plot_optimization(project_id, cache_id, do_costeff=False):
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj = retrieve_results(proj)
 
     figs = proj.plot(key=cache_id, optim=True)  # Only plot allocation
@@ -1356,7 +1356,7 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
 @RPC()
 def opt_to_scen(project_id, js_optims: dict):
     print("Converting optimization to scenario...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     py_optims = sc.odict()
     for js_optim in js_optims:
         id = js_optim["serverDatastoreId"]
@@ -1387,7 +1387,7 @@ def opt_to_scen(project_id, js_optims: dict):
 def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
 
     print("Running optimizations...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
 
     if "opts" in proj.results:
         try:
@@ -1505,7 +1505,7 @@ def js_to_py_geo(js_geo):
 @RPC()
 def get_geo_info(project_id):
     print("Getting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     geo_jsons = []
     for py_geo in proj.geos.values():
         js_geo = py_to_js_geo(py_geo, proj)
@@ -1518,7 +1518,7 @@ def get_geo_info(project_id):
 @RPC()
 def set_geo_info(project_id, geo_jsons):
     print("Setting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.geos.clear()
     for j, js_geo in enumerate(geo_jsons):
         print("Setting optimization %s of %s..." % (j + 1, len(geo_jsons)))
@@ -1534,7 +1534,7 @@ def set_geo_info(project_id, geo_jsons):
 @RPC()
 def get_default_geo(project_id):
     print("Getting default optimization...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     py_geo = nu.make_default_geo(basename="Geospatial optimization", locale=proj.locale)
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print("Created default JavaScript optimization:")
@@ -1544,7 +1544,7 @@ def get_default_geo(project_id):
 
 @RPC()
 def plot_geospatial(project_id, cache_id):
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj = retrieve_results(proj)
     figs = proj.plot(key=cache_id, geo=True)  # Only plot allocation
     graphs = []
@@ -1592,7 +1592,7 @@ def retrieve_results(proj, verbose=True):
 
 @RPC(call_type="download")
 def export_results(project_id, cache_id):
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = "%s outputs.xlsx" % proj.name  # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username)  # Generate the full file name with path.
@@ -1603,7 +1603,7 @@ def export_results(project_id, cache_id):
 
 @RPC(call_type="download")
 def export_graphs(project_id, cache_id):
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = "%s graphs.pdf" % proj.name  # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username)  # Generate the full file name with path.

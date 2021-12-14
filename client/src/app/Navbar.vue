@@ -73,7 +73,7 @@ Last update: 2018sep23
           </dropdown>
 
 
-          <li v-if="projectLocale !== uiLocale" class="nav-item">
+          <li v-if="(projectLocale !== undefined) && (projectLocale !== uiLocale)" class="nav-item">
             <div class="nav-link">
               <i class="ti-alert" v-b-tooltip.hover :title="$t('navbar.language_warning')" />
             </div>
