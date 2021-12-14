@@ -228,3 +228,9 @@ def _add_cost_types(settings):
         new = nutrition.settings.Settings(settings.locale)
         settings.cost_types = new.cost_types
     return settings
+
+@migration("Scen", "1.7.7", "1.7.8", "Add from_optim flag")
+def _add_from_optim_flag(scenario):
+    if not hasattr(scenario, 'from_optim'):
+        scenario.from_optim = False
+    return scenario

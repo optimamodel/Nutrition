@@ -1,12 +1,19 @@
 #
 msgid ""
 msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
 
 msgid "Actions"
 msgstr "Actions"
-
-msgid "Active"
-msgstr "Active"
 
 msgid "Cancel"
 msgstr "Cancel"
@@ -142,10 +149,6 @@ msgstr "No project is loaded"
 msgctxt "footer"
 msgid "Terms and conditions"
 msgstr "Terms and conditions"
-
-msgctxt "geoaptial"
-msgid "Regional spending"
-msgstr "Regional spending"
 
 msgctxt "geospatial"
 msgid "Add geospatial optimization"
@@ -545,3 +548,65 @@ msgstr "Email (optional)"
 
 msgid "please_wait_spinner"
 msgstr "Please wait..."
+
+msgctxt "inputs"
+msgid "Add dependency"
+msgstr "Add dependency"
+
+msgctxt "inputs"
+msgid "Program"
+msgstr "Program"
+
+msgctxt "inputs"
+msgid "Exclusion dependency"
+msgstr "Exclusion dependency"
+
+msgctxt "inputs"
+msgid "Threshold dependency"
+msgstr "Threshold dependency"
+
+msgctxt "optimization"
+msgid "Plot optimizations"
+msgstr "Plot optimizations"
+
+msgctxt "optimization"
+msgid "Plot optimizations with uncertainty"
+msgstr "Plot optimizations with uncertainty"
+
+msgctxt "scenarios"
+msgid "Run scenarios with uncertainty"
+msgstr "Run scenarios with uncertainty"
+
+msgctxt "uncertainty"
+msgid "Input uncertainty runs"
+msgstr "Input uncertainty runs"
+
+msgctxt "uncertainty"
+msgid "Number of runs"
+msgstr "Number of runs"
+
+msgctxt "geospatial"
+msgid "Regional spending"
+msgstr "Regional spending"
+
+msgctxt "optimization"
+msgid "Growth type"
+msgstr "Growth type"
+
+msgctxt "optimization"
+msgid "Fixed budget"
+msgstr "Fixed budget"
+
+msgctxt "optimization"
+msgid "Fixed coverage"
+msgstr "Fixed coverage"
+
+msgctxt "optimization"
+msgid "Run balanced optimization?"
+msgstr "Run balanced optimization?"
+
+msgctxt "navbar"
+msgid "language_warning"
+msgstr ""
+"The selected language does not match the current project. Some parts of the "
+"interface will appear in the project's original language"

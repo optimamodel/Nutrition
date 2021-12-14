@@ -2,7 +2,7 @@ import numpy as np
 import sciris as sc
 from . import utils
 import multiprocessing
-
+from .migration import migrate
 
 
 class Scen(sc.prettyobj):
@@ -41,6 +41,10 @@ class Scen(sc.prettyobj):
     def get_attr(self):
         return self.__dict__
 
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
 def run_scen(scen, model, name=None, obj=None, mult=None, weight=None, setcovs=True, restrictcovs=True):  # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """

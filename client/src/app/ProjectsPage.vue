@@ -95,7 +95,7 @@ Last update: 2019feb18
             <td style="text-align:left">
               {{ projectSummary.project.updatedTimeString ? projectSummary.project.updatedTimeString : 'No modification' }}
             </td>
-            <td style="text-align:left">{{ projectSummary.project.locale }}</td>
+            <td style="text-align:left">{{ projectSummary.project.localeName }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Rename databook")'><i class="ti-pencil"></i></button>
               <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Copy databook")'><i class="ti-files"></i></button>
@@ -262,7 +262,7 @@ Last update: 2019feb18
             theProj.selected = false // Set to not selected.
             theProj.renaming = '' // Set to not being renamed.
             theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
-            theProj.project.locale = this.getLocaleName(theProj.project.locale);
+            theProj.project.localeName = this.getLocaleName(theProj.project.locale);
 
             // Convert times to JS objects
             theProj.project.creationTime = new Date(theProj.project.creationTime);
