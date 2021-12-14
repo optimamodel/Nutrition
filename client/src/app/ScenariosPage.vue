@@ -493,7 +493,7 @@ Last update: 2019feb11
         this.$sciris.start(this)
         this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
           .then(response => {
-            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff]) // Go to the server to get the results
+            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff, 0]) // Go to the server to get the results
               .then(response => {
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table

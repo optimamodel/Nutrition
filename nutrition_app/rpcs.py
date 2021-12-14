@@ -1162,7 +1162,7 @@ def reformat_costeff(costeff):
 
 
 @RPC()
-def run_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
+def run_scens(project_id, doplot=True, do_costeff=False, n_runs=0):
 
     print("Running scenarios...")
     proj = load_project(project_id)
