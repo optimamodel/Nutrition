@@ -1057,14 +1057,23 @@ def get_scen_info(project_id, verbose=False):
 
 
 @RPC()
-def set_scen_info(project_id, scenario_jsons):
+def set_scen_info(project_id, scenario_jsons, optim_jsons=None):
     print("Setting scenario info...")
     proj = load_project(project_id, die=True)
-    #proj.scens.clear()
-    for j, js_scen in enumerate(scenario_jsons):
-        print("Setting scenario %s of %s..." % (j + 1, len(scenario_jsons)))
-        scen = js_to_py_scen(js_scen)
-        proj.add_scens(scen)
+    if optim_jsons is None:
+        for scen in list(proj.scens):
+            if not proj.scens[scen].from_optim:
+                del proj.scens[scen]
+
+        for j, js_scen in enumerate(scenario_jsons):
+            print("Setting scenario %s of %s..." % (j + 1, len(scenario_jsons)))
+            scen = js_to_py_scen(js_scen)
+            proj.add_scens(scen)
+    else:
+        for scen in list(proj.scens):
+            for js_optim in optim_jsons:
+                if (js_optim["name"] == proj.scens[scen].name) or js_optim["name"] + " baseline" == proj.scens[scen].name:
+                    proj.scens[scen].active = js_optim["active"]
     print("Saving project...")
     save_project(proj)
     return None
@@ -1375,11 +1384,11 @@ def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
     print("Running optimizations...")
     proj = load_project(project_id, die=True)
 
-    #if "opts" in proj.results:
-    #    try:
-    #        datastore.delete(key=proj.results["opts"])
-    #    except:
-    #        pass
+    if "opts" in proj.results:
+        try:
+            datastore.delete(key=proj.results["opts"])
+        except:
+            pass
 
     if isinstance(n_runs, str):
         n_runs = int(n_runs)

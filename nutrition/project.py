@@ -403,14 +403,15 @@ class Project(object):
         return
 
     @translate
-    def run_baseline(self, model_name, prog_set, growth, dorun=True):
+    def run_baseline(self, model_name, prog_set, growth, dorun=True, from_optim=False):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
         if _("Excess budget not allocated") in prog_set:
             excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
-        base = Scen(name="Baseline", model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1)
+
+        base = Scen(name="Baseline", model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1, from_optim=from_optim)
 
         if dorun:
             return run_scen(base, model)
@@ -533,7 +534,7 @@ class Project(object):
 
         results = []
         for scen in self.scens.values():
-            if scen.active:
+            if scen.active and not scen.from_optim:
                 results += self.run_scen(scen, n_samples = 0) #best estimate (no random seed relevant)
                 if n_samples > 0:
                     results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
@@ -554,7 +555,7 @@ class Project(object):
 
         results = []
         for scen in self.scens.values():
-            if scen.from_optim:
+            if scen.from_optim and scen.active:
                 results += self.run_scen(scen, n_samples=0)  # best estimate (no random seed relevant)
                 if n_samples > 0:
                     results += self.run_scen(scen, n_samples=n_samples, seed=seed)  # actual samples
@@ -572,13 +573,15 @@ class Project(object):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
             
         
-        results = []
+        results, scens = [], []
         # run baseline
         if runbaseline or runbalanced:
-            base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
+            base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False, from_optim=True)
+            base_scen.name = optim.name + ' baseline'
             base = self.run_scen(scen = base_scen, n_samples = 0)[0] #noting that run_scen returns a list
             if runbaseline: #don't append this to the results if runbaseline=False
                 results.append(base)
+                scens.append(base_scen)
         else:
             base = None
 
@@ -586,9 +589,10 @@ class Project(object):
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-        opt_results = optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
+        opt_results, opt_scens = optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
         
         results += opt_results
+        scens += opt_scens
         
         if n_samples >= 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
             results += self.run_scen(scen = base_scen, n_samples = n_samples, seed=seed)
@@ -602,7 +606,7 @@ class Project(object):
                 
         if dosave:
             self.add_result(results, name=optim.name)
-        return results
+        return results, scens
   
     def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_samples=0, seed=None):
         """Regions cannot be parallelised because daemon processes cannot have children.

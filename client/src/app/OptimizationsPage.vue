@@ -739,7 +739,7 @@ Last update: 2019feb11
         this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
             .then(response => {
               this.$sciris.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
-                [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
+                [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype, optimSummary.balanced_optimization]])
                   .then(response => {
                     this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                     if (!this.pollingTasks) {
@@ -797,8 +797,7 @@ Last update: 2019feb11
       runScens() {
         console.log('runScens() called')
         this.$sciris.start(this)
-        this.getScenSummaries()
-        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries, this.optimSummaries]) // Make sure they're saved first
           .then(response => {
             this.$sciris.rpc('run_opt_scens', [this.projectID, true, this.calculateCostEff, 0]) // Go to the server to get the results
               .then(response => {
@@ -828,8 +827,7 @@ Last update: 2019feb11
         console.log('uncertRuns() called')
         this.$modal.hide('uncert-nruns');
         this.$sciris.start(this)
-        this.getScenSummaries()
-        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries, this.optimSummaries]) // Make sure they're saved first
           .then(response => {
             this.$sciris.rpc('run_opt_scens', [this.projectID, true, this.calculateCostEff, this.modalUncertRuns]) // Go to the server to get the results
               .then(response => {

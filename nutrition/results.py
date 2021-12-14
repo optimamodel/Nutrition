@@ -228,7 +228,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     headers = [[_("Scenario"), _("Outcome")] + years + [""] + [_("Cumulative")]]
 
     for r, res in enumerate(results):
-        if res.name != _("Excess budget"):
+        if res.name != _("Excess budget") and resampled_key_str not in res.name:
             out = res.get_outputs(outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else [""]
@@ -249,7 +249,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     nrows, ncols, formatdata, allformats, outputs, headers = _write_results_costcov(data, allformats, years, locale=results[0].locale)
 
     for r, res in enumerate(results):
-        if res.name != "Excess budget":
+        if res.name != _("Excess budget") and resampled_key_str not in res.name:
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=True)
@@ -287,7 +287,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
 
     estimate_labels = list(reduced_results[list(reduced_results.keys())[0]][list(reduced_results[list(reduced_results.keys())[0]].keys())[0]].keys())
     years = results[0].years
-    rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years)
+    rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years, locale=results[0].locale)
 
     ### Outcomes sheet
     headers = [["Scenario", "Estimate", "Outcome"] + years + ["Cumulative"]]
@@ -314,7 +314,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     data = headers + outputs
     alldata.append(data)
 
-    nrows, ncols, formatdata, allformats, outputs, headers = _write_results_costcov(data, allformats, years)
+    nrows, ncols, formatdata, allformats, outputs, headers = _write_results_costcov(data, allformats, years, locale=results[0].locale)
 
     ### Cost & coverage sheet
     # this is grouped not by program, but by coverage and cost (within each scenario)
