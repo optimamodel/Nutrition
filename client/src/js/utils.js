@@ -167,7 +167,7 @@ function exportGraphs(vm, project_id, cache_id) {
 
 function exportResults(vm, project_id, cache_id) {
   console.log('exportResults()')
-  sciris.download('export_results', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
+  sciris.download('export_results', [project_id, cache_id, vm.withUncert]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
       sciris.fail(vm, 'Could not export results', error)
     })

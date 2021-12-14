@@ -273,13 +273,14 @@ Last update: 2019feb11
           origName: '',
           mode: 'add',
           modalScenarioType: 'coverage',
-          modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
         },
+        modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
         figscale: 1.0,
         hasGraphs: false,
         calculateCostEff: false,
         hasTable: false,
         table: [],
+        withUncert: false,
       }
     },
 
@@ -497,6 +498,7 @@ Last update: 2019feb11
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
+                this.withUncert = false
                 this.$sciris.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {
@@ -527,6 +529,7 @@ Last update: 2019feb11
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
+                this.withUncert = true
                 this.$sciris.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {

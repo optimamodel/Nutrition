@@ -1077,7 +1077,8 @@ def set_scen_info(project_id, scenario_jsons, optim_jsons=None):
                 if (js_optim["name"] == proj.scens[scen].name) or js_optim["name"] + " baseline" == proj.scens[scen].name:
                     proj.scens[scen].active = js_optim["active"]
             if proj.scens[scen].name not in optim_names and proj.scens[scen].from_optim:
-                proj.scens[scen].active = False
+                if "Balanced objectives" not in proj.scens[scen].name:
+                    proj.scens[scen].active = False
 
     print("Saving project...")
     save_project(proj)
@@ -1410,7 +1411,7 @@ def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
     # Get graphs
     graphs = []
     if doplot:
-        figs = proj.plot("opts", optim=True)
+        figs = proj.plot("opts")
         for f, fig in enumerate(figs.values()):
             for ax in fig.get_axes():
                 ax.set_facecolor("none")
@@ -1591,12 +1592,12 @@ def retrieve_results(proj, verbose=True):
 
 
 @RPC(call_type="download")
-def export_results(project_id, cache_id):
+def export_results(project_id, cache_id, with_uncert=False):
     proj = load_project(project_id)  # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = "%s outputs.xlsx" % proj.name  # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username)  # Generate the full file name with path.
-    proj.write_results(full_file_name, key=cache_id)
+    proj.write_results(full_file_name, key=cache_id, reduce=with_uncert)
     blobject = sc.Blobject(full_file_name)
     return blobject.tofile(), file_name
 

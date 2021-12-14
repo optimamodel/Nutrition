@@ -22,7 +22,7 @@ from . import settings
 from .settings import Settings
 import pandas as pd
 import random
-from .results import write_results
+from .results import write_results, reduce_results
 from .plotting import make_plots, get_costeff, plot_costcurve
 from . import settings
 from . import utils as utils
@@ -215,13 +215,16 @@ class Project(object):
             del tmpproject  # Don't need it hanging around any more
         return fullpath
 
-    def write_results(self, filename=None, folder=None, key=None):
+    def write_results(self, filename=None, folder=None, key=None, reduce=False):
         """Blargh, this really needs some tidying
         - This function calls write_results function in results.py"""
         if key is None:
             key = -1
         results = self.result(key)
-        write_results(results, projname=self.name, filename=filename, folder=folder)
+        reduced_results = {}
+        if reduce:
+            reduced_results = reduce_results(results)
+        write_results(results, reduced_results=reduced_results, projname=self.name, filename=filename, folder=folder)
         return
 
     def add(self, name, item, what=None):
