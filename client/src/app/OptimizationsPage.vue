@@ -761,6 +761,11 @@ Last update: 2019feb11
         this.$sciris.rpc('delete_task', ['run_optim'])
       },
 
+      set_optim_active() {
+        console.log('set_optim_active() called for ' + this.currentOptim)
+        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+      },
+
       plotOptimization(optimSummary) {
         console.log('plotOptimization() called')
         this.$sciris.start(this)

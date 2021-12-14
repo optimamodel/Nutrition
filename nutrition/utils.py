@@ -268,7 +268,8 @@ def process_weights(weights, locale=None):
     inv_pretty1 = {v: k for k, v in pretty1.items()}
     pretty2 = pretty_labels(direction=True, locale=locale)
     inv_pretty2 = {v: k for k, v in pretty2.items()}
-    newweights = np.zeros((len(default), len(weights[0])))
+    weight_dims = [len(weights[w]) for w in range(len(weights))]
+    newweights = np.zeros((len(default), max(weight_dims)))
     # if user just enters a string from the pre-defined objectives
     if sc.isstring(weights):
         weights = sc.odict({weights: [1]})
