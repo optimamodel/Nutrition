@@ -410,6 +410,7 @@ class Project(object):
             excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
+
         base = Scen(name="Baseline", model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1, from_optim=from_optim)
 
         if dorun:
@@ -576,6 +577,7 @@ class Project(object):
         # run baseline
         if runbaseline or runbalanced:
             base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False, from_optim=True)
+            base_scen.name = optim.name + ' baseline'
             base = self.run_scen(scen = base_scen, n_samples = 0)[0] #noting that run_scen returns a list
             if runbaseline: #don't append this to the results if runbaseline=False
                 results.append(base)
