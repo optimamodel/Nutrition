@@ -41,7 +41,7 @@ Last update: 2019feb11
               <b>{{ scenSummary.name }}</b>
             </td>
             <td>
-              {{ scenSummary.scen_type }}
+              {{ scenSummary.scen_type === "budget" ? $t("scenarios.budget") : $t("scenarios.coverage") }}
             </td>
             <td>
               {{ scenSummary.model_name }}
@@ -155,7 +155,7 @@ Last update: 2019feb11
                    v-model="addEditModal.scenSummary.name"/><br>
             <b>{{ $t("scenarios.Databook") }}:</b><br>
             <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
-              <option v-for='dataset in datasetOptions'>
+              <option v-for='dataset in datasets'>
                 {{ dataset }}
               </option>
             </select><br><br>		   
@@ -258,6 +258,7 @@ Last update: 2019feb11
 
   import utils from '../js/utils.js'
   import router from '../router.js'
+  import i18n from "../i18n";
 
   export default {
     name: 'ScenariosPage',
@@ -267,7 +268,7 @@ Last update: 2019feb11
         scenSummaries: [],
         defaultScenYears: [],
         scenariosLoaded: false,
-        datasetOptions: [],
+        datasets: [],
         addEditModal: {
           scenSummary: {},
           origName: '',
@@ -355,7 +356,7 @@ Last update: 2019feb11
       addScenModal(scen_type) {
         // Open a model dialog for creating a new scenario
         console.log('addScenModal() called for type ' + scen_type)
-        this.$sciris.rpc('get_default_scen', [this.projectID, scen_type, this.datasetOptions[0]])
+        this.$sciris.rpc('get_default_scen', [this.projectID, this.datasets[0],scen_type, i18n.locale])
           .then(response => {
             let defaultScen = response.data
             this.setScenYears(defaultScen)

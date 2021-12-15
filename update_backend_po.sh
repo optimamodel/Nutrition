@@ -10,7 +10,7 @@ python setup.py extract_messages # Read the backend source code and build the po
 python setup.py update_catalog # Update the backend po files with new entries from the pot file
 
 (cd client && npm run translate ) # vue->json
-(cd client && npm run translate ) # vue->json (not sure why this has to appear twice, but it doesn't work sometimes if not. maybe it needs a delay instead?)
+sleep 3
 
 python client/src/locales/json_to_po.py # json -> po (this will add any new strings in the FE to the po file)
 

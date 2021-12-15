@@ -365,16 +365,16 @@ Last update: 2019feb11
         if (optimSummary.status === 'not started') {
           return ''
         } else if (optimSummary.status === 'queued') {
-          return 'Initializing... '
+          return this.$t('Initializing') + '... '
         } // + this.timeFormatStr(optimSummary.pendingTime)
         else if (optimSummary.status === 'started') {
-          return 'Running for '
+          return this.$t('Running for') + ' '
         } // + this.timeFormatStr(optimSummary.executionTime)
         else if (optimSummary.status === 'completed') {
-          return 'Completed after '
+          return this.$t('Completed after') + ' '
         } // + this.timeFormatStr(optimSummary.executionTime)
         else if (optimSummary.status === 'error') {
-          return 'Error after '
+          return this.$t('Error after') + ' '
         } // + this.timeFormatStr(optimSummary.executionTime)
         else {
           return ''

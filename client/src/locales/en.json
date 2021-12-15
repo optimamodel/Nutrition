@@ -171,11 +171,17 @@
     "Run scenarios": "Run scenarios",
     "Scenario name": "Scenario name",
     "Scenario/program": "Scenario/program",
-    "Run scenarios with uncertainty": "Run scenarios with uncertainty"
+    "Run scenarios with uncertainty": "Run scenarios with uncertainty",
+    "budget": "Budget",
+    "coverage": "Coverage"
   },
   "please_wait_spinner": "Please wait...",
   "uncertainty": {
     "Input uncertainty runs": "Input uncertainty runs",
     "Number of runs": "Number of runs"
-  }
+  },
+  "Initializing": "",
+  "Running for": "",
+  "Completed after": "",
+  "Error after": ""
 }

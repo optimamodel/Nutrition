@@ -610,3 +610,27 @@ msgid "language_warning"
 msgstr ""
 "La langue sélectionnée ne correspond pas au projet actuel. Certains aspects "
 "de l’interface apparaitront dans la langue originale du projet"
+
+msgctxt "scenarios"
+msgid "budget"
+msgstr "Budget"
+
+msgctxt "scenarios"
+msgid "coverage"
+msgstr "Couverture"
+
+msgid "Initializing"
+msgstr ""
+
+msgid "Running for"
+msgstr ""
+
+msgid "Completed after"
+msgstr ""
+
+msgid "Error after"
+msgstr ""
+
+#~ msgctxt "Initializing.."
+#~ msgid " "
+#~ msgstr ""
