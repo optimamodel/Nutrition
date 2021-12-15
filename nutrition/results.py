@@ -118,7 +118,7 @@ class ScenResult(sc.prettyobj):
         return figs
 
 
-def reduce_results(results, point_estimate:str="best", bounds:str = "quantiles", stddevs=None, quantiles=None, keep_raw=False):
+def reduce_results(results, point_estimate:str="median", bounds:str = "quantiles", stddevs=None, quantiles=None, keep_raw=False):
     """Function to reduce a list of results including sampled results to a list of main results with point estimates, and upper and lower bounds
     Should return a subset of results excluding anything that was sampled
     :param results: a list of ScenResult objects
