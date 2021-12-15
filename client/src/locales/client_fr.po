@@ -272,7 +272,7 @@ msgstr "Aide"
 
 msgctxt "navbar"
 msgid "Inputs"
-msgstr "Donnés"
+msgstr "Données"
 
 msgctxt "navbar"
 msgid "Log out"
