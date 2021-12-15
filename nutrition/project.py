@@ -487,10 +487,11 @@ class Project(object):
         NOTE this does not add the scenario to P.scens or save the results to the project
         
         :param scen: a single Scenario
-        :param base_run: run without sampling
-        :param n_sampled_runs: number of times to run with sampling
+        :param n_samples: number of times to run with sampling. n_samples==0 implies run without sampling
         :return a list of Results
         """
+        
+        _ = utils.get_translator(self.locale)
         
         if seed is None:
             seed = 0
