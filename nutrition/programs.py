@@ -118,9 +118,9 @@ class Program(sc.prettyobj):
     def adjust_cov(self, pops, year, growth=False):
         """ " This functions adjust coverage and spending to the annual population growth in each time step
         - First it ensures both restricted and unrestircted population sizes are updated
-        - Then, cost coverage curves are also updaed as per the population size
+        - Then, cost coverage curves are also updated as per the population size
         - "fixed budget" ensures the budget is constant over the period, however, the coverage is slightly decreasing
-        - "fixed coverage"" ensures covergae is constant, however, the budget is adjusted to the population so it is slowly increasing"""
+        - "fixed coverage"" ensures coverage is constant, however, the budget is adjusted to the population so it is slowly increasing"""
         # set unrestricted pop size so coverages account for growing population size
         if growth:
             self._set_unrestrpop(pops)  # ensure population sizes are updated to the current timestep
