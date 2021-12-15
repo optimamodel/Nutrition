@@ -262,7 +262,7 @@ Last update: 2019feb11
           </button>
 
           <button @click="$modal.hide('uncert-nruns')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>

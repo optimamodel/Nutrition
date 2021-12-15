@@ -192,7 +192,7 @@ def plot_prevs_reduce(all_res, all_reduce, locale=None):
         ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
         ax.set_ylim([0, ymax * 1.1])
         ax.set_xlabel(pgettext("plotting", "Years"))
-        ax.set_title(utils.relabel(prev))
+        ax.set_title(utils.relabel(prev, locale=locale))
         ax.legend(lines, [res for res in all_reduce if res != _("Excess budget not allocated")], **legend_loc)
         figs["prevs_%0i" % i] = fig
     return figs
@@ -259,9 +259,9 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
 
             if seq:
                 ax.set_xlabel(pgettext("plotting", "Years"))
-                title = pgettext("plotting", "Annual")
+                seq_str = pgettext("plotting", "annual")
             else:
-                title = pgettext("plotting", "Cumulative")
+                seq_str = pgettext("plotting", "cumulative")
                 ax.set_xticks([])
     
                 # display percentage change above bars
@@ -270,10 +270,9 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     change = perchange[j][0]
                     height = rect.get_height()
                     ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="right", va="bottom", fontsize=10)
+
             # formatting
-
-            title += " %s \n %s-%s" % (utils.relabel(outcome, lower=True), baseres.years[pltstart], baseres.years[-1])
-
+            title = f"{utils.relabel(outcome, locale=locale)} ({seq_str})\n{baseres.years[pltstart]}-{baseres.years[-1]}"
             sc.SIticks(ax=ax, axis="y")
             ax.set_ylim([0, ymax * 1.1])
             if scale == 1:

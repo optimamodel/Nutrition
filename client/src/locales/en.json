@@ -149,7 +149,8 @@
     "Upload databook": "Upload databook",
     "Upload project from file": "Upload project from file",
     "loaded_popup": "Project \"{name}\" loaded",
-    "Language": "Language"
+    "Language": "Language",
+    "Are you sure you want to delete the selected projects?": "Are you sure you want to delete the selected projects?"
   },
   "register": {
     "Already registered?": "Already registered?"
@@ -180,8 +181,9 @@
     "Input uncertainty runs": "Input uncertainty runs",
     "Number of runs": "Number of runs"
   },
-  "Initializing": "",
-  "Running for": "",
-  "Completed after": "",
-  "Error after": ""
+  "Initializing": "Initializing",
+  "Running for": "Running for",
+  "Completed after": "Completed after",
+  "Error after": "Error after",
+  "Delete projects": "Delete projects"
 }

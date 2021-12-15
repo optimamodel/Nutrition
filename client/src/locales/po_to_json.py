@@ -19,7 +19,10 @@ for locale in rootdir.iterdir():
         k = entry.msgctxt.split('.') if entry.msgctxt else []
         k.append(entry.msgid)
         k = tuple(k)
-        sc.setnested(d, k, entry.msgstr)
+        try:
+            sc.setnested(d, k, entry.msgstr)
+        except Exception as E:
+            raise Exception(f'Could not set {entry} ({k}) ({entry.msgstr})') from E
 
     with open(rootdir/f'{locale.stem.replace("client_","")}.json','w', encoding='utf-8') as f:
         json.dump(d,f, indent=2, ensure_ascii=False)

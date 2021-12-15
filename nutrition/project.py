@@ -685,7 +685,7 @@ def demo_scens(locale):
     # stunting reduction
     kwargs1 = {
         "name": _("Stunting example (coverage)"),
-        "model_name": "demo",
+        "model_name": _("demo"),
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
@@ -697,7 +697,7 @@ def demo_scens(locale):
 
     kwargs2 = {
         "name": _("Stunting example (budget)"),
-        "model_name": "demo",
+        "model_name": _("demo"),
         "scen_type": "budget",
         "progvals": sc.odict(
             {
@@ -710,7 +710,7 @@ def demo_scens(locale):
     # wasting reduction
     kwargs3 = {
         "name": _("Wasting example"),
-        "model_name": "demo",
+        "model_name": _("demo"),
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
@@ -722,7 +722,7 @@ def demo_scens(locale):
     # anaemia reduction
     kwargs4 = {
         "name": _("Anaemia example"),
-        "model_name": "demo",
+        "model_name": _("demo"),
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
@@ -743,7 +743,7 @@ def demo_optims(locale):
 
     kwargs1 = {
         "name": _("Maximize thrive"),
-        "model_name": "demo",
+        "model_name": _("demo"),
         "mults": [1],
         "weights": sc.odict({"thrive": [1]}),
         "prog_set": [
@@ -768,7 +768,7 @@ def demo_geos(locale):
 
     kwargs1 = {
         "name": _("Geospatial optimization"),
-        "modelnames": ["demoregion1", "demoregion2", "demoregion3"],
+        "modelnames": [_("demoregion1"), _("demoregion2"), _("demoregion3")],
         "weights": sc.odict({"thrive": [1.0]}),
         "fix_curr": False,
         "fix_regionalspend": False,
@@ -796,6 +796,8 @@ def demo_geos(locale):
 def demo(scens=False, optims=False, geos=False, locale=None):
     """ Create a demo project with demo settings """
 
+    _ = utils.get_translator(locale)
+
     # Parameters
     name = "Demo project"
     country = "demo"
@@ -803,10 +805,10 @@ def demo(scens=False, optims=False, geos=False, locale=None):
 
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name, locale=locale)
-    P.load_data(country, region, name="demo")
-    P.load_data(country, "region1", name="demoregion1")
-    P.load_data(country, "region2", name="demoregion2")
-    P.load_data(country, "region3", name="demoregion3")
+    P.load_data(country, region, name=_("demo"))
+    P.load_data(country, "region1", name=_("demoregion1"))
+    P.load_data(country, "region2", name=_("demoregion2"))
+    P.load_data(country, "region3", name=_("demoregion3"))
 
     # Create demo scenarios and optimizations
     if scens:

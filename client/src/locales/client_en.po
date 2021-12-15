@@ -620,17 +620,20 @@ msgid "coverage"
 msgstr "Coverage"
 
 msgid "Initializing"
-msgstr ""
+msgstr "Initializing"
 
 msgid "Running for"
-msgstr ""
+msgstr "Running for"
 
 msgid "Completed after"
-msgstr ""
+msgstr "Completed after"
 
 msgid "Error after"
-msgstr ""
+msgstr "Error after"
 
-#~ msgctxt "Initializing.."
-#~ msgid " "
-#~ msgstr ""
+msgctxt "projects"
+msgid "Are you sure you want to delete the selected projects?"
+msgstr "Are you sure you want to delete the selected projects?"
+
+msgid "Delete projects"
+msgstr "Delete projects"

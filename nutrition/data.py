@@ -839,7 +839,6 @@ class ProgramData(object):
     @translate
     def get_prog_deps(self):
         deps = utils.read_sheet(self._spreadsheet, _("Program dependencies"), [0])
-        print(deps)
         programDep = sc.odict()
         for program, dependency in deps.iterrows():
             programDep[program] = sc.odict()

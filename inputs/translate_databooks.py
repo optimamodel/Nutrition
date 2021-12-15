@@ -53,7 +53,10 @@ def translate_databook(target_locale: str):
 
                 # Translate the sheet name
                 if sheet.Name == a:
-                    sheet.Name = b
+                    try:
+                        sheet.Name = b
+                    except Exception as E:
+                        raise Exception(f"Could not translate sheet name '{a}' -> '{b}'")
 
                 # Substitute cell content
                 rg.Replace(a, b, LookAt=1, MatchCase=True) # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten

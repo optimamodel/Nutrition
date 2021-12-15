@@ -113,9 +113,9 @@ Last update: 2019feb18
         </table>
 
         <div class="ControlsRow">
-          <button class="btn __red" @click="deleteModal()">{{ $t("Delete selected") }}</button>
+          <button :disabled="!anySelected" class="btn __red" @click="deleteModal()">{{ $t("Delete selected") }}</button>
           &nbsp; &nbsp;
-          <button class="btn" @click="downloadSelectedProjects">{{ $t("Download selected") }}</button>
+          <button :disabled="!anySelected" class="btn" @click="downloadSelectedProjects">{{ $t("Download selected") }}</button>
         </div>
       </div>
     </div>
@@ -213,6 +213,7 @@ Last update: 2019feb18
       filterPlaceholder() { return i18n.t('projects.Type here to filter projects') },
       proj_name() { return i18n.t('projects.New project') },
       projectID()    { return this.$store.getters.activeProjectID },
+      anySelected() { return this.projectSummaries.some(x => x.selected) },
       sortedFilteredProjectSummaries() {
         return this.applyNameFilter(this.applySorting(this.projectSummaries))
       },
@@ -553,10 +554,12 @@ Last update: 2019feb18
           theProj.selected).map(theProj => theProj.project.id)
         if (selectProjectsUIDs.length > 0) { // Only if something is selected...
           var obj = { // Alert object data
-            message: 'Are you sure you want to delete the selected projects?',
+            message: this.$t('projects.Are you sure you want to delete the selected projects?'),
             useConfirmBtn: true,
             customConfirmBtnClass: 'btn __red',
             customCloseBtnClass: 'btn',
+            customConfirmBtnText: this.$t('Delete projects'),
+            customCloseBtnText: this.$t('Cancel'),
             onConfirm: this.deleteSelectedProjects
           }
           this.$Simplert.open(obj)

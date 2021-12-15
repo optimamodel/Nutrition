@@ -452,7 +452,7 @@ msgid "All"
 msgstr "Tous"
 
 msgid "Programs cost and coverage"
-msgstr "Coûts et couvertures des programmes"
+msgstr "Coût et couverture du programme"
 
 msgid "Program"
 msgstr "Programme"

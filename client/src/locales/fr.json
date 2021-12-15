@@ -24,8 +24,8 @@
   "Upload": "Télécharger",
   "Zoom out": "Faire un zoom arrière",
   "common": {
-    "Can be reallocated": "Peut être réaffecté",
-    "Cannot be reallocated": "Ne peut être réaffecté",
+    "Can be reallocated": "Peuvent être réaffectées",
+    "Cannot be reallocated": "Ne peuvent pas être réaffectées",
     "Clear results": "Effacer les résultats",
     "Export data": "Exporter les données",
     "Export plots": "Exporter les graphiques",
@@ -46,8 +46,8 @@
   "geospatial": {
     "Add geospatial optimization": "Ajouter une optimisation géospatiale",
     "Additional funds to allocate": "Fonds supplémentaires à allouer",
-    "Can be reallocated between regions": "Peut être réaffecté entre les régions",
-    "Cannot be reallocated between regions": "Ne peut être réaffecté entre les régions",
+    "Can be reallocated between regions": "Peuvent être réaffectées entre les régions",
+    "Cannot be reallocated between regions": "Ne peuvent pas être réaffectées entre les régions",
     "Copy geospatial optimization": "Copier l'optimisation géospatiale",
     "Define geospatial optimizations": "Définir les optimisations géospatiales",
     "Delete geospatial optimization": "Supprimer l'optimisation géospatiale",
@@ -85,7 +85,7 @@
     "Edit account": "Modifier le compte",
     "Geospatial": "Géospatial",
     "Help": "Aide",
-    "Inputs": "Donnés",
+    "Inputs": "Données",
     "Log out": "Déconnexion",
     "Optimizations": "Optimisations",
     "Project": "Projet",
@@ -149,7 +149,8 @@
     "Upload databook": "Télécharger le recueil de données",
     "Upload project from file": "Télécharger le projet à partir d'un fichier",
     "loaded_popup": "Projet \"{name}\" chargé",
-    "Language": "Langue"
+    "Language": "Langue",
+    "Are you sure you want to delete the selected projects?": "Êtes-vous sûr de vouloir supprimer les projets sélectionnés ?"
   },
   "register": {
     "Already registered?": "Déjà inscrit.e?"
@@ -180,8 +181,9 @@
     "Input uncertainty runs": "Exécutions d'incertitude d'entrée",
     "Number of runs": "Nombre d'exécutions"
   },
-  "Initializing": "",
-  "Running for": "",
-  "Completed after": "",
-  "Error after": ""
+  "Initializing": "Initialisation",
+  "Running for": "Courir pour",
+  "Completed after": "Achevé après",
+  "Error after": "Erreur après",
+  "Delete projects": "Supprimer les projets"
 }
