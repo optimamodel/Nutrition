@@ -75,7 +75,7 @@ class Geospatial:
                 # can distribute between regions
                 # create regions with corrected additional funds
                 regions = self.make_regions(add_funds=total_flexi, weight_ind=w)
-                #NOTE: n_runs = 1 here always - we don't want sampling for determining the cost-curve
+                # NOTE: n_runs = 1 here always - we don't want sampling for determining the cost-curve
                 run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, dosave=True, runbaseline=False, n_samples=0)
                 # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
                 print("Creating BOCs afresh...")
@@ -163,7 +163,6 @@ class Geospatial:
         self.regions = regions
         return regions
 
-    
     def get_bocs(self, boc_optims, totalfunds, weight):
         """Genereates the budget outcome curves for each region
         :param optimized: a list of Optim objects (list of lists)"""

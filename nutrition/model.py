@@ -97,7 +97,7 @@ class Model(sc.prettyobj):
         self.child_sga[self.year] = (NewlyBorns.birth_dist[_("Term SGA")] + NewlyBorns.birth_dist[_("Pre-term SGA")]) * NewlyBorns.totalchild_pop()
         self.child_1_6months[self.year] = Child_1_5_months.totalchild_pop()
         self.child_6_23months[self.year] = Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop()
-        
+
     def _track_wra_outcomes(self):
         # pw
         self.pw_anaemic[self.year] += self.pw.num_anaemic()

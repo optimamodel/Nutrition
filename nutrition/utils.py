@@ -78,10 +78,10 @@ def translate(f):
     def wrapper(*args, **kwargs):
         g = f.__globals__  # use f.func_globals for py < 2.6
 
-        if hasattr(args[0], 'locale') and args[0].locale is not None:
-            g['_'] = get_translator(args[0].locale)
+        if hasattr(args[0], "locale") and args[0].locale is not None:
+            g["_"] = get_translator(args[0].locale)
         else:
-            g['_'] = get_translator()
+            g["_"] = get_translator()
         return f(*args, **kwargs)
 
     return wrapper
@@ -90,6 +90,7 @@ def translate(f):
 # ##############################################################################
 # ### HELPER FUNCTIONS
 # ##############################################################################
+
 
 def default_trackers(prev=None, rate=None):
     """
@@ -100,38 +101,38 @@ def default_trackers(prev=None, rate=None):
     """
     outcomes = [
         "thrive",
-                "child_deaths",
-                "stunted",
-                "wasted",
-                "child_anaemic",
-                "stunted_prev",
-                "wasted_prev",
-                "child_anaemprev",
-                "pw_deaths",
-                "pw_anaemic",
-                "pw_anaemprev",
-                "nonpw_anaemic",
-                "nonpw_anaemprev",
-                "child_mortrate",
-                "child_samprev",
-                "child_mamprev",
-                "child_sam",
-                "child_mam",
-                "child_sga",
-                "child_bfprev",
-                "child_1_6months",
-                "child_6_23months",
-                "child_less_5years",
-                "stunting_cost",
-                "wasting_cost",
-                "child_death_cost",
-                "pw_death_cost",
-                "child_anaemic_cost",
-                "pw_anaemic_cost",
-                "pw_mortrate",
-                "total_popn",
-                "pop_rate",
-                ]
+        "child_deaths",
+        "stunted",
+        "wasted",
+        "child_anaemic",
+        "stunted_prev",
+        "wasted_prev",
+        "child_anaemprev",
+        "pw_deaths",
+        "pw_anaemic",
+        "pw_anaemprev",
+        "nonpw_anaemic",
+        "nonpw_anaemprev",
+        "child_mortrate",
+        "child_samprev",
+        "child_mamprev",
+        "child_sam",
+        "child_mam",
+        "child_sga",
+        "child_bfprev",
+        "child_1_6months",
+        "child_6_23months",
+        "child_less_5years",
+        "stunting_cost",
+        "wasting_cost",
+        "child_death_cost",
+        "pw_death_cost",
+        "child_anaemic_cost",
+        "pw_anaemic_cost",
+        "pw_mortrate",
+        "total_popn",
+        "pop_rate",
+    ]
 
     if prev is not None:
         if prev:
@@ -214,7 +215,6 @@ def pretty_labels(direction=False, locale=None):
     return labs
 
 
-
 def relabel(old, direction=False, lower=False, locale=None):
     """Can be given a string or a list of strings.
     Will return corresponding pretty label as a string or a list of strings"""
@@ -248,7 +248,6 @@ def get_sign(obj):
         return -1
     else:
         return 1
-
 
 
 def process_weights(weights, locale=None):

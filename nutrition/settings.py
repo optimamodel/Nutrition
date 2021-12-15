@@ -6,6 +6,7 @@ from .utils import get_translator
 import pathlib
 from .migration import migrate
 
+
 class Settings(object):
     """Store all the static data for a project that won't change except between Optima versions
     WARNING: Do not change the order of these lists without checking the potential consequences within the code"""
@@ -60,6 +61,7 @@ class Settings(object):
         self.__dict__ = d
         d = migrate(self)
         self.__dict__ = d.__dict__
+
 
 ONpath = pathlib.Path(__file__).parent.parent
 

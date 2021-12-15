@@ -1,4 +1,5 @@
 import time
-print('Hello')
+
+print("Hello")
 time.sleep(5)
-print('World')
+print("World")

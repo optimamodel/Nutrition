@@ -46,6 +46,7 @@ class Scen(sc.prettyobj):
         d = migrate(self)
         self.__dict__ = d.__dict__
 
+
 def run_scen(scen, model, name=None, obj=None, mult=None, weight=None, setcovs=True, restrictcovs=True):  # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """
     from .results import ScenResult  # This is here to avoid a potentially circular import

@@ -124,14 +124,13 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False, locale=None):
     toplot = sc.promotetolist(toplot)
     if all_res is not None:
         all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
-        if len(all_res) > 1: #this avoids generating upper/lower bounds if there is only a single result
+        if len(all_res) > 1:  # this avoids generating upper/lower bounds if there is only a single result
             all_reduce = reduce_results(all_res)
         else:
             all_reduce = sc.odict()
     else:
-        print('WARNING: No results to plot!')
+        print("WARNING: No results to plot!")
         return allplots
-
 
     if "clust_annu_alloc" in toplot:  # optimized allocations
         outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo, locale=locale)
@@ -211,15 +210,14 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
     baseres = all_res[0]
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
-    for i, outcome in enumerate(outcomes): 
-        if ("cost" not in outcome and "pop" not in outcome and seq) or ("mam" not in outcome and "sam" not in outcome and 
-                                                                "sga" not in outcome and "pop" not in outcome and not seq):
+    for i, outcome in enumerate(outcomes):
+        if ("cost" not in outcome and "pop" not in outcome and seq) or ("mam" not in outcome and "sam" not in outcome and "sga" not in outcome and "pop" not in outcome and not seq):
             fig = pl.figure(figsize=fig_size)
             ax = fig.add_axes(ax_size)
             ymax = 0
             perchange = []
             bars = []
-    
+
             baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
             scale = 1e6 if baseout.max() > 1e6 else 1
             baseout /= scale
@@ -237,7 +235,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     output_p = sc.promotetoarray(all_reduce[res][outcome]["point"][1:].sum())
                     output_l = sc.promotetoarray(all_reduce[res][outcome]["low"][1:].sum())
                     output_h = sc.promotetoarray(all_reduce[res][outcome]["high"][1:].sum())
-    
+
                 output_p /= scale
                 output_l /= scale
                 output_h /= scale
@@ -249,7 +247,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     ymax = thimax
                 change = round_elements([utils.get_change(base, out) for out, base in zip(output_p, baseout)], dec=1)
                 perchange.append(change)
-    
+
                 if seq:
                     bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2, **kwargs)
                 if not seq:
@@ -263,7 +261,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
             else:
                 seq_str = pgettext("plotting", "cumulative")
                 ax.set_xticks([])
-    
+
                 # display percentage change above bars
                 for j, bar in enumerate(bars[1:], 1):
                     rect = bar[-1]
@@ -352,12 +350,12 @@ def plot_alloc(results, optim, geo, locale=None):
         else:
             valuestr = valuestr[:2]
         if geo:
-            xlab = pgettext("plotting","Region")
+            xlab = pgettext("plotting", "Region")
         else:
-            xlab = pgettext("plotting","Total available budget (relative to US$%sM)") % valuestr
+            xlab = pgettext("plotting", "Total available budget (relative to US$%sM)") % valuestr
     else:
         xlabs = [res.mult if res.mult is not None else res.name for res in res_list if "#" not in res.name]
-        title = pgettext("plotting","Average annual spending, %s-%s") % (ref.years[pltstart], ref.years[-1])
+        title = pgettext("plotting", "Average annual spending, %s-%s") % (ref.years[pltstart], ref.years[-1])
         xlab = ""  # 'Scenario' # Collides with tick labels
 
     ax.set_title(title)
@@ -367,9 +365,9 @@ def plot_alloc(results, optim, geo, locale=None):
     ax.set_xlim((0, ymax + ymax * 0.1))
 
     if scale == 1e1:
-        ylabel = pgettext("plotting","Spending (US$)")
+        ylabel = pgettext("plotting", "Spending (US$)")
     elif scale == 1e6:
-        ylabel = pgettext("plotting","Spending (US$M)")
+        ylabel = pgettext("plotting", "Spending (US$M)")
     else:
         raise Exception(f"Scale value must be 1e1 or 1e6, not {scale}")
 
@@ -450,7 +448,7 @@ def plot_annu_alloc(results, optim, geo, locale=None):
         ymax = max(bottom)
         if optim or geo:
             xlabs = [res.name for res in results]
-            title = pgettext("plotting","Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
+            title = pgettext("plotting", "Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
             # format x axis
             if valuestr[1] == ".":
@@ -458,12 +456,12 @@ def plot_annu_alloc(results, optim, geo, locale=None):
             else:
                 valuestr = valuestr[:2]
             if geo:
-                xlab = pgettext("plotting","Region")
+                xlab = pgettext("plotting", "Region")
             else:
-                xlab = pgettext("plotting","Total available budget (relative to US$%sM)") % valuestr
+                xlab = pgettext("plotting", "Total available budget (relative to US$%sM)") % valuestr
         else:
             xlabs = [res.mult if res.mult is not None else res.name for res in results if "#" not in res.name]
-            title = pgettext("plotting","Annual spending for year %s") % year[k]
+            title = pgettext("plotting", "Annual spending for year %s") % year[k]
             xlab = ""  # 'Scenario' # Collides with tick labels
         ax.set_title(title)
         ax.set_xticks(x)
@@ -471,9 +469,9 @@ def plot_annu_alloc(results, optim, geo, locale=None):
         ax.set_xlabel(xlab)
         ax.set_ylim((0, ymax + ymax * 0.1))
         if scale == 1e1:
-            ylabel = pgettext("plotting","Spending (US$)")
+            ylabel = pgettext("plotting", "Spending (US$)")
         elif scale == 1e6:
-            ylabel = pgettext("plotting","Spending (US$M)")
+            ylabel = pgettext("plotting", "Spending (US$M)")
         else:
             raise Exception("Scale value must be 1e1 or 1e6, not %s" % scale)
         ax.set_ylabel(ylabel)
@@ -503,7 +501,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
     :param results: a list of ScenResults objects
     :param optim: True if these are optimization results, False if not (a slightly different format of results)
     :param geo: True if these are geospatial results, False if not (a slightly different format of results)
-    
+
     :return a list of figures
     """
 
@@ -522,7 +520,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
     leglabs = []
     fig = pl.figure(figsize=(20, 6))
     ax = fig.add_axes(ax_size)
-    
+
     x_base = np.arange(len(res_list))
     x = np.multiply(x_base, width)
     year_ticks = np.arange(len(year))
@@ -536,11 +534,11 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
             for i, res in enumerate(res_list):
                 _ = utils.get_translator(res.locale)
                 if not (optim or geo) or (res.name != _("Excess budget not allocated")):
-                
+
                     alloc = res.get_allocs(ref=refprogs)  # slightly inefficient to do this for every program
                     try:
                         progav = alloc[prog][k]  # extracting the spend for each year for each program
-    
+
                     except:  # program not in scenario program set
                         progav = 0
                     thisprog[i] = progav
@@ -556,9 +554,9 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
         avspend = np.divide(avspend, scale)
         # Make bar plots
         bars = []
-        
+
         xlabs = [res.name for res in res_list]
-        
+
         bottom = np.zeros(len(res_list))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:  # only want to plot prog if spending is non-zero (solves legend issues)
@@ -568,7 +566,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
                 bottom += spend
         ymax = max(bottom)
         if optim or geo:
-            title = pgettext("plotting","Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
+            title = pgettext("plotting", "Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack TODO almost certainly this is broken now??
             # format x axis
             if valuestr[1] == ".":
@@ -576,21 +574,21 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
             else:
                 valuestr = valuestr[:2]
             if geo:
-                xlab = pgettext("plotting","Region")
+                xlab = pgettext("plotting", "Region")
             else:
-                xlab = pgettext("plotting","Total available budget (relative to US$%sM)") % valuestr
+                xlab = pgettext("plotting", "Total available budget (relative to US$%sM)") % valuestr
         else:
-            title = pgettext("plotting","Annual spending, %s-%s") % (ref.years[pltstart], ref.years[-1])
-            xlab = pgettext("plotting","Years")
+            title = pgettext("plotting", "Annual spending, %s-%s") % (ref.years[pltstart], ref.years[-1])
+            xlab = pgettext("plotting", "Years")
     ax.set_title(title)
     ax.set_xticks(np.array(year[1:]) + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
-    #ax.set_xticklabels(year[1:], fontsize=10)
+    # ax.set_xticklabels(year[1:], fontsize=10)
     ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax + ymax * 0.1))
     if scale == 1e1:
-        ylabel = pgettext("plotting","Spending (US$)")
+        ylabel = pgettext("plotting", "Spending (US$)")
     elif scale == 1e6:
-        ylabel = pgettext("plotting","Spending (US$M)")
+        ylabel = pgettext("plotting", "Spending (US$M)")
     else:
         raise Exception("Scale value must be 1e1 or 1e6, not %s" % scale)
     ax.set_ylabel(ylabel)
@@ -676,7 +674,7 @@ def get_costeff(project, results):
                 childres = run_scen(child, model)
                 children[res.name].append(childres)
     outcomes = utils.default_trackers(prev=False, rate=False)
-    pretty = utils.relabel(outcomes, locale=res.locale) # nb. uses locale from last result in list
+    pretty = utils.relabel(outcomes, locale=res.locale)  # nb. uses locale from last result in list
     costeff = sc.odict()
     for i, parent in enumerate(parents):
         if parent.name != _("Excess budget"):

@@ -6,6 +6,7 @@ import sciris as sc
 from . import settings
 from .utils import solve_quad, solve_quad_bf, restratify, fit_poly, system, check_sol, translate, get_translator
 
+
 class AgeGroup(sc.prettyobj):
     def __init__(self, age, pop_size, anaemia_dist, settings):
         self.age = age
@@ -114,7 +115,6 @@ class PWAgeGroup(AgeGroup):
 
 
 class ChildAgeGroup(AgeGroup):
-
     def __init__(self, age, pop_size, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist, ageingRate, causes_death, data, frac_severe_dia, settings):
 
         AgeGroup.__init__(self, age, pop_size, anaemia_dist, settings)
@@ -183,9 +183,9 @@ class ChildAgeGroup(AgeGroup):
 
     @translate
     def frac_risk(self, risk):
-        if risk in ['stun', "stunting", "Stunting", _("Stunting")]:
+        if risk in ["stun", "stunting", "Stunting", _("Stunting")]:
             return self.frac_stunted()
-        elif risk in ['ma', "mam", 'MAM',_("MAM")]:
+        elif risk in ["ma", "mam", "MAM", _("MAM")]:
             return self.frac_wasted(_("MAM"))
         elif risk in ["sa", "sam", "SAM", _("SAM")]:
             return self.frac_wasted(_("SAM"))
@@ -198,9 +198,9 @@ class ChildAgeGroup(AgeGroup):
 
     @translate
     def num_risk(self, risk):
-        if risk in ['stun',"stunting", "Stunting", _("Stunting")]:
+        if risk in ["stun", "stunting", "Stunting", _("Stunting")]:
             return self.num_stunted()
-        elif risk in ['ma',"mam",  'MAM', _("MAM")]:
+        elif risk in ["ma", "mam", "MAM", _("MAM")]:
             return self.num_wasted(_("MAM"))
         elif risk in ["sa", "sam", "SAM", _("SAM")]:
             return self.num_wasted(_("SAM"))
@@ -333,7 +333,7 @@ class Population(sc.prettyobj):
 
     @translate
     def num_risk(self, risk):
-        if risk in ["an", "anaemia",  "Anaemia", _("Anaemia")]:
+        if risk in ["an", "anaemia", "Anaemia", _("Anaemia")]:
             return self.num_anaemic()
         else:
             raise Exception('::ERROR:: population "{}" does not have "{}" attribute'.format(risk, self.name))
@@ -383,13 +383,13 @@ class Children(Population):
 
     @translate
     def frac_risk(self, risk):
-        if risk in ['stun',"stunting","Stunting", _("Stunting")]:
+        if risk in ["stun", "stunting", "Stunting", _("Stunting")]:
             return self.frac_stunted()
-        elif risk in ['ma', "mam",'MAM',_("MAM")]:
+        elif risk in ["ma", "mam", "MAM", _("MAM")]:
             return self.frac_wasted(_("MAM"))
-        elif risk in ["sa","sam","SAM", _("SAM")]:
+        elif risk in ["sa", "sam", "SAM", _("SAM")]:
             return self.frac_wasted(_("SAM"))
-        elif risk in ["wast", "wasting","Wasting", _("Wasting")]:
+        elif risk in ["wast", "wasting", "Wasting", _("Wasting")]:
             return sum(self.frac_wasted(cat) for cat in self.ss.wasted_list)
         elif risk in ["an", "anaemia", "Anaemia", _("Anaemia")]:
             return self.frac_anaemic()
@@ -398,10 +398,10 @@ class Children(Population):
 
     @translate
     def num_risk(self, risk):
-        if risk in ['stun',"stunting","Stunting", _("Stunting")]:
+        if risk in ["stun", "stunting", "Stunting", _("Stunting")]:
             return self.num_stunted()
-        elif risk in ['ma', "mam", 'MAM',_("MAM")]:
-                return self.num_wasted(_("MAM"))
+        elif risk in ["ma", "mam", "MAM", _("MAM")]:
+            return self.num_wasted(_("MAM"))
         elif risk in ["sa", "sam", "SAM", _("SAM")]:
             return self.num_wasted(_("SAM"))
         elif risk in ["wast", "wasting", "Wasting", _("Wasting")]:
@@ -973,4 +973,3 @@ class NonPregnantWomen(Population):
         trend = self.data.time_trends[risk]
         for age_group in self.age_groups:
             age_group.trends[risk] = fit_poly(1, trend)
-

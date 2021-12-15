@@ -3,8 +3,7 @@ from .utils import default_trackers, pretty_labels, translate, get_translator
 import numpy as np
 import math as mt
 
-resampled_key_str = " __resampled__#" #constant string imported elsewhere
-
+resampled_key_str = " __resampled__#"  # constant string imported elsewhere
 
 
 class ScenResult(sc.prettyobj):
@@ -114,11 +113,12 @@ class ScenResult(sc.prettyobj):
 
     def plot(self, toplot=None):
         from .plotting import make_plots  # This is here to avoid a circular import
+
         figs = make_plots(self, toplot=toplot, locale=self.locale)
         return figs
 
 
-def reduce_results(results, point_estimate:str="median", bounds:str = "quantiles", stddevs=None, quantiles=None, keep_raw=False):
+def reduce_results(results, point_estimate: str = "median", bounds: str = "quantiles", stddevs=None, quantiles=None, keep_raw=False):
     """Function to reduce a list of results including sampled results to a list of main results with point estimates, and upper and lower bounds
     Should return a subset of results excluding anything that was sampled
     :param results: a list of ScenResult objects
@@ -127,14 +127,14 @@ def reduce_results(results, point_estimate:str="median", bounds:str = "quantiles
     :param stddevs: number of standard deviations away from the mean to return, only used if bounds == stddevs
     :param quantiles: the lower and upper quantiles to return, as a dict or tuple, only used if bounds == quantiles
     :param keep_raw: also keep all of the individual sampled results (troubleshooting or alternative plot methods might use this)
-    
+
     :return results dict of the key outcomes for each main result, not the full results
-    """    
+    """
     years = results[0].years
     estimate_keys = ["point", "low", "high"]
     outcomes = default_trackers()
     if bounds == "stddevs":
-        assert point_estimate == "mean", 'If bounds are stddevs, point_estimate should be mean'
+        assert point_estimate == "mean", "If bounds are stddevs, point_estimate should be mean"
         if stddevs is None:
             stddevs = 2
     elif bounds == "quantiles":
@@ -146,44 +146,43 @@ def reduce_results(results, point_estimate:str="median", bounds:str = "quantiles
             except Exception as E:
                 errormsg = f"Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})"
                 raise ValueError(errormsg)
-    
-    res_unc = sc.odict() #this will be the returned results with uncertainty and without sampled results
+
+    res_unc = sc.odict()  # this will be the returned results with uncertainty and without sampled results
 
     for res in results:
-        if resampled_key_str not in res.name: #e.g. it's a "real" point estimate result
+        if resampled_key_str not in res.name:  # e.g. it's a "real" point estimate result
             # print ('Evaluating', res.name)
             res_unc[res.name] = {o: {es: np.zeros(len(years)) for es in estimate_keys} for o in outcomes}
-            
+
             sampled_results = [sr for sr in results if res.name + resampled_key_str in sr.name]
             n_sampled_runs = len(sampled_results)
 
-
             raw = {o: {n: np.zeros(len(years)) for n in range(n_sampled_runs)} for o in outcomes}
-            
+
             for sr, sampled_result in enumerate(sampled_results):
                 sampled_out = sampled_result.get_outputs(outcomes, seq=True, pretty=True)
                 for out_key in outcomes:
                     raw[out_key][sr] = sampled_out[out_key]
-                    
+
             # for default tracker outcomes
             # note that if there are no sampled runs it uses the 'best' (non-sampled) result for all estimates
             best_estimates = res.get_outputs(outcomes, seq=True, pretty=True)
-            
+
             for out_key in outcomes:
                 best_estimate = best_estimates[out_key]
                 axis = 0
-                #Choose a method for the point estimate
+                # Choose a method for the point estimate
                 if point_estimate == "best" or n_sampled_runs == 0:
                     res_unc[res.name][out_key]["point"] = sc.dcp(best_estimate)
-                elif point_estimate == "mean": 
+                elif point_estimate == "mean":
                     r_mean = np.mean(list(raw[out_key].values()), axis=axis)
                     res_unc[res.name][out_key]["point"] = r_mean
                 elif point_estimate == "median":
                     res_unc[res.name][out_key]["point"] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
                 else:
                     raise Exception(f'Point estimate must be "best" (non-sampled), "mean" (from samples), or "median" (from samples), {point_estimate} not a valid choice.')
-                
-                 #Choose a method for the lower and upper bounds
+
+                # Choose a method for the lower and upper bounds
                 if bounds == "best" or n_sampled_runs == 0:
                     res_unc[res.name][out_key]["low"] = sc.dcp(best_estimate)
                     res_unc[res.name][out_key]["high"] = sc.dcp(best_estimate)
@@ -197,11 +196,11 @@ def reduce_results(results, point_estimate:str="median", bounds:str = "quantiles
                     res_unc[res.name][out_key]["high"] = np.quantile(list(raw[out_key].values()), q=quantiles["high"], axis=axis)
                 else:
                     raise Exception(f'Bounds must be "best" (non-sampled), "stddevs" (from samples, using stddevs for number), or "quantiles" (from samples, using quantiles), {bounds} not a valid choice.')
-                
+
                 if keep_raw:
                     res_unc[res.name][out_key]["raw"] = [sc.dcp(best_estimate)] + raw[out_key]
-                
-    # import pandas as pd   
+
+    # import pandas as pd
     # df = pd.DataFrame(res_unc)
     # df.to_excel('reduce_test.xlsx')
     return res_unc
@@ -241,7 +240,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
                     cumul = "N/A"
                 else:
                     cumul = sum(thisout)
-                outputs.append(name + [outcome] + list(thisout) + [""] +  [cumul])
+                outputs.append(name + [outcome] + list(thisout) + [""] + [cumul])
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)

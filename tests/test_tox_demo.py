@@ -9,6 +9,7 @@ tempdir = testdir / "temp"
 if not tempdir.exists():
     tempdir.mkdir(exist_ok=True, parents=True)
 
+
 @pytest.fixture(scope="module", params=nu.available_locales)
 def project(request):
     return nu.demo(scens=True, optims=True, geos=True, locale=request.param)
@@ -18,15 +19,15 @@ def test_scens(project):
     P = sc.dcp(project)
     P.run_scens()
     P.plot()
-    plt.close('all')
-    P.write_results(tempdir/f"{P.locale}_scen_results.xlsx")
+    plt.close("all")
+    P.write_results(tempdir / f"{P.locale}_scen_results.xlsx")
 
 
 def test_optims(project):
     P = sc.dcp(project)
     P.run_optim(parallel=False, maxtime=1, maxiter=1)
     P.plot(-1, optim=True)
-    plt.close('all')
+    plt.close("all")
 
 
 def test_geos(project):
@@ -34,11 +35,11 @@ def test_geos(project):
     P = sc.dcp(project)
     P.run_geo(parallel=False, maxtime=1, maxiter=1)
     P.plot(-1, geo=True)
-    plt.close('all')
+    plt.close("all")
 
 
 if __name__ == "__main__":
-    nu.available_locales = ['fr']
+    nu.available_locales = ["fr"]
 
     for locale in nu.available_locales:
         project = nu.demo(scens=True, optims=True, geos=True, locale=locale)

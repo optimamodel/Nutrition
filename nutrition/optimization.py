@@ -122,14 +122,12 @@ class Optim(sc.prettyobj):
                 res_balanced[i].name = res_balanced[i].obj + f" {mult_str}Balanced objectives"
                 scen_balanced[i].name = res_balanced[i].obj + f" {mult_str}Balanced objectives"
 
-
         for r, result in enumerate(res):
             if len(self.mults) > 1 or result.mult != 1:  # add clarity on multiplier only if necessary
                 result.name = result.obj + f" (budget x{result.mult})"
             else:
                 result.name = result.obj
             scen[r].name = result.name
-
 
         if runbalanced and len(self.weights) > 1:
             res += res_balanced

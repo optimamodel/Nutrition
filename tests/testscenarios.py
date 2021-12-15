@@ -47,8 +47,8 @@ if __name__ == "__main__":
 # p.run_scens()
 if doplot:
     p.plot()
-#costeff = p.get_costeff()
-#p.write_results("scen_results_test.xlsx")
+# costeff = p.get_costeff()
+# p.write_results("scen_results_test.xlsx")
 all_reduce = reduce_results(results)
-write_results(results=results, reduced_results=all_reduce, filename='scen_results_test.xlsx')
+write_results(results=results, reduced_results=all_reduce, filename="scen_results_test.xlsx")
 p.save("test")

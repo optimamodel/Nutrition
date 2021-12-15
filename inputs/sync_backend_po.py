@@ -17,7 +17,7 @@ def update_messages(source_po, target_po):
     # source_po = polib.pofile(source_po_file)
     # target_po = polib.pofile(target_po_file)
 
-    source_entries = {x.msgid:x for x in source_po}
+    source_entries = {x.msgid: x for x in source_po}
     for entry in target_po:
         if entry.msgid in source_entries:
             entry.msgstr = source_entries[entry.msgid].msgstr
@@ -25,16 +25,16 @@ def update_messages(source_po, target_po):
     target_po.save()
 
 
-locales = [x.parent.stem for x in rootdir.glob('**/*.po')] # List of all locales (folders containing a `.po` file) e.g. ['fr']
+locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
 for locale in locales:
     print("Syncing databook -> backend")
-    source_po = polib.pofile(rootdir/locale/'databook.po')
+    source_po = polib.pofile(rootdir / locale / "databook.po")
     target_po = polib.pofile(nu.ONpath / "nutrition" / "locale" / locale / "LC_MESSAGES" / "nutrition.po")
     update_messages(source_po, target_po)
 
     print("Syncing databook -> frontend")
-    source_po = polib.pofile(rootdir/locale/'databook.po')
+    source_po = polib.pofile(rootdir / locale / "databook.po")
     target_po = polib.pofile(nu.ONpath / "client" / "src" / "locales" / f"client_{locale}.po")
     update_messages(source_po, target_po)
 

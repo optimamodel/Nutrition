@@ -590,7 +590,7 @@ def define_formats(locale):
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats['breastfeeding_distribution'] = [
+    formats["breastfeeding_distribution"] = [
         ["head", "head", "head", "head", "head", "head", "head"],
         ["name", "name", "edit", "edit", "edit", "edit", "edit"],
         ["blnk", "name", "edit", "edit", "edit", "edit", "edit"],
@@ -598,7 +598,7 @@ def define_formats(locale):
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats['iycf_packages'] = [
+    formats["iycf_packages"] = [
         ["head", "head", "head", "head", "head"],
         ["head", "name", "tick", "tick", "blnk"],
         ["blnk", "name", "tick", "tick", "blnk"],
@@ -622,13 +622,13 @@ def define_formats(locale):
         ["blnk", "name", "blnk", "blnk", "tick"],
     ]
 
-    formats['treat_sam'] = [
+    formats["treat_sam"] = [
         ["blnk", "head", "head", "head"],
         ["head", "name", "name", "tick"],
         ["head", "name", "name", "tick"],
     ]
 
-    formats['program_cost_cov'] = [
+    formats["program_cost_cov"] = [
         ["head", "head", "head", "head", "head", "head", "head"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
@@ -670,7 +670,6 @@ def define_formats(locale):
         ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
     ]
 
-
     formats["program_dependencies"] = None
 
     return formats
@@ -686,13 +685,13 @@ def get_sheet_data(project_id, key=None, verbose=False):
     _ = nu.get_translator(locale)
 
     sheets = {
-        'nutritional_status': _("Nutritional status distribution"),
-        'breastfeeding_distribution': _("Breastfeeding distribution"),
-        'iycf_packages': _("IYCF packages"),
-        'treat_sam': _("Treatment of SAM"),
-        'program_cost_cov': _("Programs cost and coverage"),
+        "nutritional_status": _("Nutritional status distribution"),
+        "breastfeeding_distribution": _("Breastfeeding distribution"),
+        "iycf_packages": _("IYCF packages"),
+        "treat_sam": _("Treatment of SAM"),
+        "program_cost_cov": _("Programs cost and coverage"),
     }
-    
+
     wb = proj.inputsheet(key)  # Get the spreadsheet
     calcscache = dataset.calcscache  # Get the calculation cells cache
     sheetdata = sc.odict()
@@ -735,33 +734,27 @@ def get_sheet_data(project_id, key=None, verbose=False):
                 cellinfo = {"format": cellformat, "value": cellval}
                 tables[key][r].append(cellinfo)
 
-
     output = {}
-    output['tables'] = tables
+    output["tables"] = tables
 
     # Handle program dependencies
-    output['prog_names'] = dataset.prog_names
+    output["prog_names"] = dataset.prog_names
 
-    print( wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False))
-    output['tables']['program_dependencies'] = [tuple(x.values()) for x in wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False)] # List of tuples [(program,exclusion,threshold)]
-    output['tables']['program_dependencies'] = [{'program':x[0], 'exclusion': x[1], 'threshold': x[2]} for x in output['tables']['program_dependencies']]
+    print(wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False))
+    output["tables"]["program_dependencies"] = [tuple(x.values()) for x in wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False)]  # List of tuples [(program,exclusion,threshold)]
+    output["tables"]["program_dependencies"] = [{"program": x[0], "exclusion": x[1], "threshold": x[2]} for x in output["tables"]["program_dependencies"]]
 
-
-    sheets['program_dependencies'] = _("Program dependencies")
+    sheets["program_dependencies"] = _("Program dependencies")
     # Get cost types
-    output['cost_types'] = list(dataset.prog_data.settings.cost_types.keys())
+    output["cost_types"] = list(dataset.prog_data.settings.cost_types.keys())
 
-    output['sheet_names'] = list(sheets.items())
+    output["sheet_names"] = list(sheets.items())
 
-    return  sc.sanitizejson(output)
-
-
-
+    return sc.sanitizejson(output)
 
 
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
-    
 
     proj = load_project(project_id)
     if key is None:
@@ -771,11 +764,11 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     _ = nu.get_translator(dataset.locale)
 
     sheetnames = {
-        'nutritional_status': _("Nutritional status distribution"),
-        'breastfeeding_distribution': _("Breastfeeding distribution"),
-        'iycf_packages': _("IYCF packages"),
-        'treat_sam': _("Treatment of SAM"),
-        'program_cost_cov': _("Programs cost and coverage"),
+        "nutritional_status": _("Nutritional status distribution"),
+        "breastfeeding_distribution": _("Breastfeeding distribution"),
+        "iycf_packages": _("IYCF packages"),
+        "treat_sam": _("Treatment of SAM"),
+        "program_cost_cov": _("Programs cost and coverage"),
     }
 
     wb = proj.inputsheet(key)  # CK: Warning, might want to change
@@ -815,30 +808,29 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                         print("  Cell (%s,%s) = %s" % (r + 1, c + 1, cellval))
         wb.writecells(sheetname=sheetnames[sheet], cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
 
-
     # Write program dependencies
     cells = []
     vals = []
 
-    existing = wb.readcells(sheetname=_('Program dependencies'))
+    existing = wb.readcells(sheetname=_("Program dependencies"))
     print(existing)
 
-    for i, entry in enumerate(sheetdata['program_dependencies']):
+    for i, entry in enumerate(sheetdata["program_dependencies"]):
 
-        cells.append([i+2,1]) # 1-based indexing, plus skipping header row
-        vals.append(entry['program'])
+        cells.append([i + 2, 1])  # 1-based indexing, plus skipping header row
+        vals.append(entry["program"])
 
-        cells.append([i+2,2])
-        vals.append(entry['exclusion'])
+        cells.append([i + 2, 2])
+        vals.append(entry["exclusion"])
 
-        cells.append([i+2,3])
-        vals.append(entry['threshold'])
+        cells.append([i + 2, 3])
+        vals.append(entry["threshold"])
 
-    for i in range(len(sheetdata['program_dependencies']), len(existing)):
-        cells.extend([[i+2,1], [i+2,2], [i+2,3]])
-        vals.extend([None,None,None])
+    for i in range(len(sheetdata["program_dependencies"]), len(existing)):
+        cells.extend([[i + 2, 1], [i + 2, 2], [i + 2, 3]])
+        vals.extend([None, None, None])
 
-    wb.writecells(sheetname=_('Program dependencies'), cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+    wb.writecells(sheetname=_("Program dependencies"), cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
 
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
     print("Saving project...")
@@ -1089,12 +1081,12 @@ def set_scen_info(project_id, scenario_jsons, optim_jsons=None):
 def get_default_scen(project_id, model_name, scen_type, locale=None):
     print("Creating default scenario...")
     _ = nu.get_translator(locale)
-    if scen_type == 'coverage':
-        scen_name = _('Default scenario (coverage)')
-    elif scen_type == 'budget':
-        scen_name = _('Default scenario (budget)')
+    if scen_type == "coverage":
+        scen_name = _("Default scenario (coverage)")
+    elif scen_type == "budget":
+        scen_name = _("Default scenario (budget)")
     else:
-        raise Exception('Unknown scenario type')
+        raise Exception("Unknown scenario type")
     proj = load_project(project_id)
     py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename=scen_name)
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
@@ -1209,7 +1201,6 @@ def run_scens(project_id, doplot=True, do_costeff=False, n_runs=0):
     save_project(proj)
     output = {"graphs": graphs, "table": table}
     return output
-
 
 
 ##################################################################################
@@ -1359,6 +1350,7 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
 
     return {"graphs": graphs, "table": table}
 
+
 @RPC()
 def opt_to_scen(project_id, js_optims: dict):
     print("Converting optimization to scenario...")
@@ -1380,14 +1372,14 @@ def opt_to_scen(project_id, js_optims: dict):
 
             optim_alloc = res[0].get_allocs()
 
-            py_scen = nu.Scen(name=py_optim[1].name, model_name=py_optim[1].model_name, scen_type="budget", progvals=optim_alloc,
-                        enforce_constraints_year=0, growth=py_optim[1].growth)
+            py_scen = nu.Scen(name=py_optim[1].name, model_name=py_optim[1].model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=py_optim[1].growth)
             py_scen.from_optim = True
 
             scens.append(py_to_js_scen(py_base_scen, proj))
             scens.append(py_to_js_scen(py_scen, proj))
 
     return scens
+
 
 @RPC()
 def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
@@ -1432,8 +1424,6 @@ def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
     save_project(proj)
     output = {"graphs": graphs, "table": table}
     return output
-
-
 
 
 ##################################################################################

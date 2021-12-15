@@ -12,6 +12,7 @@ import nutrition.ui as nu
 rootdir = Path(__file__).parent
 source = "en"
 
+
 def translate_databook(target_locale: str):
     """
 
@@ -21,7 +22,7 @@ def translate_databook(target_locale: str):
 
     """
 
-    po = polib.pofile(rootdir/target_locale/'databook.po')
+    po = polib.pofile(rootdir / target_locale / "databook.po")
 
     source_dir = Path(source)
     dest = Path(target_locale)
@@ -59,7 +60,7 @@ def translate_databook(target_locale: str):
                         raise Exception(f"Could not translate sheet name '{a}' -> '{b}'")
 
                 # Substitute cell content
-                rg.Replace(a, b, LookAt=1, MatchCase=True) # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
+                rg.Replace(a, b, LookAt=1, MatchCase=True)  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
             sheet.Protect("nick")  # Restore protection
             sheet.Visible = visible
@@ -79,11 +80,10 @@ def translate_databook(target_locale: str):
         wb.Close(True)
 
 
-locales = [x.parent.stem for x in rootdir.glob('**/*.po')] # List of all locales (folders containing a `.po` file) e.g. ['fr']
+locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
 excel = win32com.client.Dispatch("Excel.Application")
 excel.Visible = True
 for locale in locales:
     translate_databook(locale)
 excel.Quit()
-

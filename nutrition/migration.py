@@ -204,33 +204,35 @@ def migrate(obj, registry=migrations, version=version, gitinfo=gitinfo):
 
 @migration("Project", "1.7.2", "1.7.6", "Add locale")
 def _add_project_locale(proj):
-    if not hasattr(proj, 'locale'):
+    if not hasattr(proj, "locale"):
         proj.locale = "en"
     return proj
 
 
 @migration("InputData", "1.7.2", "1.7.6", "Add locale")
 def _add_inputdata_locale(inputdata):
-    if not hasattr(inputdata, 'locale'):
+    if not hasattr(inputdata, "locale"):
         inputdata.locale = "en"
     return inputdata
 
 
 @migration("ProgData", "1.7.2", "1.7.6", "Add locale")
 def _add_progdata_locale(progdata):
-    if not hasattr(progdata, 'locale'):
+    if not hasattr(progdata, "locale"):
         progdata.locale = "en"
     return progdata
 
+
 @migration("Settings", "1.7.6", "1.7.7", "Add cost types")
 def _add_cost_types(settings):
-    if not hasattr(settings, 'cost_types'):
+    if not hasattr(settings, "cost_types"):
         new = nutrition.settings.Settings(settings.locale)
         settings.cost_types = new.cost_types
     return settings
 
+
 @migration("Scen", "1.7.7", "1.7.8", "Add from_optim flag")
 def _add_from_optim_flag(scenario):
-    if not hasattr(scenario, 'from_optim'):
+    if not hasattr(scenario, "from_optim"):
         scenario.from_optim = False
     return scenario

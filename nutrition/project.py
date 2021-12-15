@@ -485,14 +485,14 @@ class Project(object):
         """Function for running a single scenario that may or may not be saved in P.scens
         NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
         NOTE this does not add the scenario to P.scens or save the results to the project
-        
+
         :param scen: a single Scenario
         :param n_samples: number of times to run with sampling. n_samples==0 implies run without sampling
         :return a list of Results
         """
-        
+
         _ = utils.get_translator(self.locale)
-        
+
         if seed is None:
             seed = 0
 
@@ -502,12 +502,12 @@ class Project(object):
 
         def _add_excess_budget(scen, model):
             # unclear why this is needed?
-            if _("Excess budget not allocated") in scen.prog_set: #add a dummy program to the model
+            if _("Excess budget not allocated") in scen.prog_set:  # add a dummy program to the model
                 excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated", self.locale)}
                 model.prog_info.add_prog(excess_spend, model.pops)
                 model.prog_info.prog_data = excess_spend["prog_data"]
 
-        dataset = self.dataset(scen.model_name) # WARNING - assumes that model names are always the same as dataset names
+        dataset = self.dataset(scen.model_name)  # WARNING - assumes that model names are always the same as dataset names
 
         if n_samples == 0:
             model = Model(dataset, dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
@@ -517,14 +517,13 @@ class Project(object):
             results.append(res)
         else:
             for i in range(n_samples):
-                model = Model(dataset.resample(seed=seed+i), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+                model = Model(dataset.resample(seed=seed + i), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
                 result_name = scen.name + resampled_key_str + str(i)
                 _add_excess_budget(scen, model)
                 res = run_scen(scen, model, name=result_name)
                 results.append(res)
 
         return results
-
 
     def run_scens(self, scens=None, n_samples=0, seed=None):
         """Function for running scenarios
@@ -539,9 +538,9 @@ class Project(object):
         results = []
         for scen in self.scens.values():
             if scen.active and not scen.from_optim:
-                results += self.run_scen(scen, n_samples = 0) #best estimate (no random seed relevant)
+                results += self.run_scen(scen, n_samples=0)  # best estimate (no random seed relevant)
                 if n_samples > 0:
-                    results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
+                    results += self.run_scen(scen, n_samples=n_samples, seed=seed)  # actual samples
 
         self.add_result(results, name="scens")
         return results
@@ -575,15 +574,14 @@ class Project(object):
         optim = self.optim(key)
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
-            
-        
+
         results, scens = [], []
         # run baseline
         if runbaseline or runbalanced:
             base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False, from_optim=True)
-            base_scen.name = optim.name + ' baseline'
-            base = self.run_scen(scen = base_scen, n_samples = 0)[0] #noting that run_scen returns a list
-            if runbaseline: #don't append this to the results if runbaseline=False
+            base_scen.name = optim.name + " baseline"
+            base = self.run_scen(scen=base_scen, n_samples=0)[0]  # noting that run_scen returns a list
+            if runbaseline:  # don't append this to the results if runbaseline=False
                 results.append(base)
                 scens.append(base_scen)
         else:
@@ -594,38 +592,38 @@ class Project(object):
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
         opt_results, opt_scens = optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
-        
+
         results += opt_results
         scens += opt_scens
-        
-        if n_samples >= 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
-            results += self.run_scen(scen = base_scen, n_samples = n_samples, seed=seed)
-            
+
+        if n_samples >= 1:  # we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
+            results += self.run_scen(scen=base_scen, n_samples=n_samples, seed=seed)
+
             for opt_result in opt_results:
                 optim_alloc = opt_result.get_allocs()
                 scen_name = opt_result.name
                 scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
-                
-                results += self.run_scen(scen = scen, n_samples = n_samples, seed=seed)
-                
+
+                results += self.run_scen(scen=scen, n_samples=n_samples, seed=seed)
+
         if dosave:
             self.add_result(results, name=optim.name)
         return results, scens
-  
+
     def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_samples=0, seed=None):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""
-        
+
         if geo is not None:
             self.add_geos(geo)
             key = geo.name  # this to handle parallel calls of this function
         geo = self.geo(key)
-        
+
         results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_samples=n_samples)
-        
-        #TODO needs to do sampling here?
-                   
+
+        # TODO needs to do sampling here?
+
         if dosave:
             self.add_result(results, name="geospatial")
         return results
@@ -675,6 +673,7 @@ class Project(object):
 
     def __bool__(self):
         return True
+
 
 ### DEMO VALUES
 

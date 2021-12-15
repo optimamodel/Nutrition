@@ -773,10 +773,8 @@ class ProgramInfo(sc.prettyobj):
 
             # new_year_spend[i] = sc.dcp(prog.annual_spend[year])
 
-        
         return True
 
-    
     def adjust_covs(self, pops, year, growth, enforce_constraints_year=0):
         """
         Called every year to adjust the intended coverages/spendings based on population growth and ramping constraints
@@ -804,7 +802,6 @@ class ProgramInfo(sc.prettyobj):
         for prog in self.programs.values():
             prog.year = year
 
-    
     def get_ann_covs(self, year):
         """ This is called in model.py to compute population coverage probabilities"""
         # covs = {}

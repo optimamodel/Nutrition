@@ -61,12 +61,12 @@ def parallel_optim(region, path=None, n_samples=2):
 
 
 # """run non optimization scenarios"""
-#scen_list = nu.make_scens([kwargs1])
-#p1.run_scens(scens = scen_list, n_samples=n_samples)
-#p1.write_results(filename=output_path + 'non_optimized.xlsx')
+# scen_list = nu.make_scens([kwargs1])
+# p1.run_scens(scens = scen_list, n_samples=n_samples)
+# p1.write_results(filename=output_path + 'non_optimized.xlsx')
 
-#p1.plot(optim=False, save_plots_folder=output_path)
-#raise Exception()
+# p1.plot(optim=False, save_plots_folder=output_path)
+# raise Exception()
 
 """run optimization scenarios"""
 if __name__ == "__main__":
@@ -85,11 +85,11 @@ if __name__ == "__main__":
             for scenres in p.results[res]:
                 if scenres.name == "Baseline":
                     scenres.name = scenres.model_name + " " + scenres.name
-                #else:
-                     #scenres.name = scenres.model_name
+                # else:
+                # scenres.name = scenres.model_name
                 results.append(scenres)
     write_results(results, filename=output_path + "optimized.xlsx")
-    p.write_results(filename=output_path + 'optimized.xlsx')
+    p.write_results(filename=output_path + "optimized.xlsx")
     if doplot:
         for p in proj_list:
             # p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
