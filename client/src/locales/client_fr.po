@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 
 msgid "Actions"
 msgstr "Actions"
@@ -613,33 +613,27 @@ msgstr ""
 
 msgctxt "scenarios"
 msgid "budget"
-msgstr "Budget"
+msgstr "budget"
 
 msgctxt "scenarios"
 msgid "coverage"
-msgstr "Couverture"
+msgstr "couverture"
 
-#, fuzzy
 msgid "Initializing"
 msgstr "Initialisation"
 
-#, fuzzy
 msgid "Running for"
-msgstr "Courir pour"
+msgstr "Temps d'exécution :"
 
-#, fuzzy
 msgid "Completed after"
 msgstr "Achevé après"
 
-#, fuzzy
 msgid "Error after"
 msgstr "Erreur après"
 
-#, fuzzy
 msgctxt "projects"
 msgid "Are you sure you want to delete the selected projects?"
-msgstr "Êtes-vous sûr de vouloir supprimer les projets sélectionnés ?"
+msgstr "Voulez-vous vraiment supprimer les projets sélectionnés ?"
 
-#, fuzzy
 msgid "Delete projects"
 msgstr "Supprimer les projets"

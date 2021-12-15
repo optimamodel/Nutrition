@@ -8,15 +8,16 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2021-12-15 23:33+1100\n"
-"PO-Revision-Date: 2021-12-15 23:32+1100\n"
+"PO-Revision-Date: 2021-12-16 09:45+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.9.0\n"
+"X-Generator: Poedit 3.0\n"
 
 #: nutrition/data.py:196 nutrition/data.py:204 nutrition/data.py:207
 #: nutrition/data.py:210 nutrition/data.py:227 nutrition/data.py:241
@@ -699,8 +700,8 @@ msgid ""
 "be used."
 msgstr ""
 "Attention, le recueil de données en cours de lecture n'est pas à jour et ne "
-"comprend pas les prévalences de base de l'éclampsie et de la pré-éclampsie ;"
-" des moyennes mondiales seront donc utilisées."
+"comprend pas les prévalences de base de l'éclampsie et de la pré-"
+"éclampsie ; des moyennes mondiales seront donc utilisées."
 
 #: nutrition/data.py:749
 msgid "Prevalence of pre-eclampsia"
@@ -1638,12 +1639,10 @@ msgid "Demo project"
 msgstr "Projet démo"
 
 #: nutrition_app/rpcs.py:1093
-#, fuzzy
 msgid "Default scenario (coverage)"
 msgstr "Scénario par défaut (couverture)"
 
 #: nutrition_app/rpcs.py:1095
-#, fuzzy
 msgid "Default scenario (budget)"
 msgstr "Scénario par défaut (budget)"
 
