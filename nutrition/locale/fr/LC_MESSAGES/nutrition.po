@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2021-12-15 23:33+1100\n"
-"PO-Revision-Date: 2021-12-16 09:45+1100\n"
+"PO-Revision-Date: 2021-12-16 10:46+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -578,7 +578,7 @@ msgstr "Risques des rés. des naissances"
 
 #: nutrition/data.py:554 nutrition/data.py:1446
 msgid "Odds ratios for conditions"
-msgstr "Rapport des cote pour des conditions"
+msgstr "Rapport des cotes pour des conditions"
 
 #: nutrition/data.py:555 nutrition/data.py:1136
 msgid "Stunting (HAZ-score < -2)"
@@ -892,7 +892,7 @@ msgstr "Rapport des cotes pour l'allaitement maternelle correct - supérieur"
 
 #: nutrition/data.py:1427
 msgid "Odds ratio for stunting - upper"
-msgstr "Rapport de cotes pour le retard de croissance - supérieur"
+msgstr "Rapport des cotes pour le retard de croissance - supérieur"
 
 #: nutrition/data.py:1437
 msgid "Odds ratios for conditions - lower"
