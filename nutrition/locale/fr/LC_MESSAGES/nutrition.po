@@ -8,15 +8,16 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2021-12-14 13:54+1100\n"
-"PO-Revision-Date: 2021-12-14 08:58+1100\n"
+"PO-Revision-Date: 2021-12-15 14:30+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.9.0\n"
+"X-Generator: Poedit 3.0\n"
 
 #: nutrition/data.py:196 nutrition/data.py:204 nutrition/data.py:207
 #: nutrition/data.py:210 nutrition/data.py:227 nutrition/data.py:241
@@ -170,7 +171,7 @@ msgstr "Dist. de l'état nutritionnel"
 #: nutrition/data.py:271 nutrition/data.py:275 nutrition/data.py:278
 #: nutrition/data.py:291
 msgid "Stunting (height-for-age)"
-msgstr "Retard de croissance (taille-pour-l'âge)"
+msgstr "Retard de croissance (taille-pour-âge)"
 
 #: nutrition/data.py:275
 msgid "Normal (HAZ-score > -1)"
@@ -183,7 +184,7 @@ msgstr "Léger (score HAZ entre -2 et -1)"
 #: nutrition/data.py:280 nutrition/data.py:283 nutrition/data.py:286
 #: nutrition/data.py:291 nutrition/data.py:369 nutrition/data.py:370
 msgid "Wasting (weight-for-height)"
-msgstr "Amaigrissement (poids-pour-taille)"
+msgstr "Émaciation (poids-pour-taille)"
 
 #: nutrition/data.py:283
 msgid "Normal (WHZ-score > -1)"
@@ -227,7 +228,7 @@ msgstr "Retard de croissance"
 #: nutrition/populations.py:484 nutrition/populations.py:710
 #: nutrition/populations.py:758 nutrition/settings.py:44
 msgid "Wasting"
-msgstr "Amaigrissement"
+msgstr "Émaciation"
 
 #: nutrition/data.py:306 nutrition/data.py:309 nutrition/data.py:313
 #: nutrition/data.py:322 nutrition/data.py:323 nutrition/data.py:324
@@ -307,7 +308,7 @@ msgstr "Enfants âgés de 0 à 59 mois"
 
 #: nutrition/data.py:343
 msgid "Wasting prevalence (%)"
-msgstr "Prévalence de l'amaigrissement (%)"
+msgstr "Prévalence de l'émaciation (%)"
 
 #: nutrition/data.py:344
 msgid "Anaemia prevalence (%)"
@@ -323,7 +324,7 @@ msgstr "Perte économique"
 
 #: nutrition/data.py:351
 msgid "Child wasting episode"
-msgstr "Épisode d'amaigrissement d'un enfant"
+msgstr "Épisode d'émaciation d'un enfant"
 
 #: nutrition/data.py:352
 msgid "Child turning age 5 stunted (over lifetime)"
@@ -550,7 +551,7 @@ msgstr "Rapports des cotes de l'anémie en étant couverte par l'intervention"
 #: nutrition/data.py:536 nutrition/data.py:1401 nutrition/data.py:1404
 #: nutrition/data.py:1408
 msgid "Programs wasting"
-msgstr "Programmes-amaigrissement"
+msgstr "Programmes-émaciation"
 
 #: nutrition/data.py:537 nutrition/data.py:1409
 msgid "Odds ratio of SAM when covered by program"
@@ -581,7 +582,7 @@ msgstr "Rapport des cote pour des conditions"
 
 #: nutrition/data.py:555 nutrition/data.py:1137
 msgid "Stunting (HAZ-score < -2)"
-msgstr "Amaigrissement (score-HAZ < -2)"
+msgstr "Émaciation (score-HAZ < -2)"
 
 #: nutrition/data.py:558 nutrition/data.py:1448
 msgid "Relative risk by birth spacing"
@@ -599,7 +600,7 @@ msgstr "Risques relatifs des causes du décès néonatales"
 #: nutrition/data.py:564 nutrition/data.py:1422 nutrition/data.py:1426
 #: nutrition/data.py:1430
 msgid "IYCF odds ratios"
-msgstr "Rapport des cotes IYCF"
+msgstr "Rapport des cotes ANJE"
 
 #: nutrition/data.py:565 nutrition/data.py:1431
 msgid "Odds ratio for correct breastfeeding"
@@ -612,7 +613,7 @@ msgstr "Rapport des cotes pour le retard de croissance"
 #: nutrition/data.py:593 nutrition/data.py:905 nutrition/data.py:1185
 #: nutrition_app/rpcs.py:691 nutrition_app/rpcs.py:776
 msgid "IYCF packages"
-msgstr "Paquets IYCF"
+msgstr "Paquets ANJE"
 
 #: nutrition/data.py:601 nutrition/data.py:913 nutrition/data.py:1193
 msgid "Mass media"
@@ -699,8 +700,8 @@ msgid ""
 "be used."
 msgstr ""
 "Attention, le recueil de données en cours de lecture n'est pas à jour et ne "
-"comprend pas les prévalences de base de l'éclampsie et de la pré-éclampsie ;"
-" des moyennes mondiales seront donc utilisées."
+"comprend pas les prévalences de base de l'éclampsie et de la pré-"
+"éclampsie ; des moyennes mondiales seront donc utilisées."
 
 #: nutrition/data.py:749
 msgid "Prevalence of pre-eclampsia"
@@ -738,7 +739,7 @@ msgstr "Fourniture publique d'aliments complémentaires"
 
 #: nutrition/data.py:778 nutrition/geospatial.py:334 nutrition/project.py:779
 msgid "Zinc for treatment + ORS"
-msgstr "Zinc pour le traitement + SRO"
+msgstr "SRO+Zn pour le traitement de la diarrhée"
 
 #: nutrition/data.py:781 nutrition/optimization.py:285
 #: nutrition/project.py:745
@@ -751,7 +752,7 @@ msgstr "SFAF pour les femmes enceintes (établissement de santé)"
 
 #: nutrition/data.py:787
 msgid "IPTp"
-msgstr "IPTp"
+msgstr "TPIg"
 
 #: nutrition/data.py:790 nutrition/geospatial.py:333 nutrition/project.py:778
 msgid "Mg for eclampsia"
@@ -974,7 +975,7 @@ msgstr "Budget excédentaire"
 #: nutrition/project.py:684 nutrition/project.py:696 nutrition/project.py:743
 #: nutrition/project.py:770
 msgid "IYCF 1"
-msgstr "IYCF 1"
+msgstr "ANJE 1"
 
 #: nutrition/geospatial.py:327 nutrition/project.py:772
 msgid "Multiple micronutrient supplementation"
@@ -987,7 +988,7 @@ msgstr "Poudres de micronutriments"
 
 #: nutrition/geospatial.py:329 nutrition/project.py:774
 msgid "Kangaroo mother care"
-msgstr "Méthode mère kangourou"
+msgstr "Soins maternals kangourou"
 
 #: nutrition/geospatial.py:332 nutrition/optimization.py:282
 #: nutrition/project.py:685 nutrition/project.py:697 nutrition/project.py:742
@@ -1017,11 +1018,11 @@ msgstr "Femmes non-enceintes"
 
 #: nutrition/model.py:248
 msgid "Wasting prevention"
-msgstr "Prévention de l'amaigrissement"
+msgstr "Prévention de l'émaciation"
 
 #: nutrition/model.py:250 nutrition/model.py:273 nutrition/populations.py:633
 msgid "Wasting treatment"
-msgstr "Traitement de l'amaigrissement"
+msgstr "Traitement de l'émaciation"
 
 #: nutrition/model.py:260
 msgid "Birth number"
@@ -1046,7 +1047,7 @@ msgstr "Annuel"
 #: nutrition/plotting.py:263
 msgctxt "plotting"
 msgid "Cumulative"
-msgstr "Cumulé"
+msgstr "Cumulatif"
 
 #: nutrition/plotting.py:279
 msgctxt "plotting"
@@ -1214,7 +1215,7 @@ msgstr "Exemple du retard de croissance (budget)"
 
 #: nutrition/project.py:704
 msgid "Wasting example"
-msgstr "Exemple de l'amaigrissement"
+msgstr "Exemple de l'émaciation"
 
 #: nutrition/project.py:716
 msgid "Anaemia example"
@@ -1242,7 +1243,7 @@ msgstr "Résultat"
 
 #: nutrition/results.py:228
 msgid "Cumulative"
-msgstr "Cumulé"
+msgstr "Cumulatif"
 
 #: nutrition/results.py:237 nutrition/results.py:239 nutrition/results.py:272
 msgid "N/A"
@@ -1388,7 +1389,7 @@ msgstr "Minimiser le nombre d'enfants souffrant d'un retard de croissance"
 #: nutrition/utils.py:165
 msgctxt "plotting"
 msgid "Minimize the number of wasted children"
-msgstr "Minimiser le nombre d'enfants souffrant de l'amaigrissement"
+msgstr "Minimiser le nombre d'enfants souffrant de l'émaciation"
 
 #: nutrition/utils.py:166
 msgctxt "plotting"
@@ -1403,7 +1404,7 @@ msgstr "Minimiser la prévalence du retard de croissance chez les enfants"
 #: nutrition/utils.py:168
 msgctxt "plotting"
 msgid "Minimize the prevalence of wasting in children"
-msgstr "Minimiser la prévalence de l'amaigrissement chez les enfants"
+msgstr "Minimiser la prévalence de l'émaciation chez les enfants"
 
 #: nutrition/utils.py:169
 msgctxt "plotting"
@@ -1465,7 +1466,7 @@ msgstr "Nombre d'enfants souffrant d'un retard de croissance qui auront 5 ans"
 #: nutrition/utils.py:183
 msgctxt "plotting"
 msgid "Number of wasted children turning age 5"
-msgstr "Nombre d'enfants souffrant de l'amaigrissement qui auront 5 ans"
+msgstr "Nombre d'enfants souffrant de l'émaciation qui auront 5 ans"
 
 #: nutrition/utils.py:184
 msgctxt "plotting"
@@ -1480,7 +1481,7 @@ msgstr "Prévalence du retard de croissance chez les enfants"
 #: nutrition/utils.py:186
 msgctxt "plotting"
 msgid "Prevalence of wasting in children"
-msgstr "Prévalence de l'amaigrissement chez les enfants"
+msgstr "Prévalence de l'émaciation chez les enfants"
 
 #: nutrition/utils.py:187
 msgctxt "plotting"
@@ -1570,7 +1571,7 @@ msgstr "Coût économique du retard de croissance"
 #: nutrition/utils.py:204
 msgctxt "plotting"
 msgid "Economic cost of wasting"
-msgstr "Coût économique de l'amaigrissement"
+msgstr "Coût économique de l'émaciation"
 
 #: nutrition/utils.py:205
 msgctxt "plotting"
@@ -1618,7 +1619,7 @@ msgstr ""
 
 #: nutrition_app/rpcs.py:447
 msgid "Demo project"
-msgstr "Démo projet"
+msgstr "Projet démo"
 
 #~ msgid "Error in creating populations, check data and defaults books"
 #~ msgstr ""
