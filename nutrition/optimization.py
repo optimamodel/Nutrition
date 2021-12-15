@@ -119,7 +119,8 @@ class Optim(sc.prettyobj):
             # Prettier names
             for i, mult in enumerate(self.mults):
                 mult_str = f"(mult={res_balanced[i].mult}) " if len(self.mults) > 1 or res_balanced[i].mult != 1 else ""
-                res_balanced[i].name = f"{mult_str}Balanced objectives"
+                res_balanced[i].name = res_balanced[i].obj + f" {mult_str}Balanced objectives"
+                scen_balanced[i].name = res_balanced[i].obj + f" {mult_str}Balanced objectives"
 
 
         for r, result in enumerate(res):

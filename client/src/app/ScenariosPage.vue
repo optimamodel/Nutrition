@@ -63,7 +63,7 @@ Last update: 2019feb11
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">{{ $t("scenarios.Run scenarios") }}</button>
-          <button class="btn __green" :disabled="!scenariosLoaded" @click="UncertScensModal(10)">{{ $t("scenarios.Run scenarios with uncertainty") }}</button>
+          <button class="btn __green" :disabled="!scenariosLoaded || calculateCostEff" @click="UncertScensModal(10)">{{ $t("scenarios.Run scenarios with uncertainty") }}</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">{{ $t("scenarios.Add coverage scenario") }}</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">{{ $t("scenarios.Add budget scenario") }}</button>
         </div>
@@ -274,13 +274,14 @@ Last update: 2019feb11
           origName: '',
           mode: 'add',
           modalScenarioType: 'coverage',
-          modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
         },
+        modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
         figscale: 1.0,
         hasGraphs: false,
         calculateCostEff: false,
         hasTable: false,
         table: [],
+        withUncert: false,
       }
     },
 
@@ -493,11 +494,12 @@ Last update: 2019feb11
         this.$sciris.start(this)
         this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
           .then(response => {
-            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff]) // Go to the server to get the results
+            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff, 0]) // Go to the server to get the results
               .then(response => {
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
+                this.withUncert = false
                 this.$sciris.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {
@@ -528,6 +530,7 @@ Last update: 2019feb11
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
+                this.withUncert = true
                 this.$sciris.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {

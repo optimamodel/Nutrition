@@ -321,7 +321,7 @@ msgid "<1 month"
 msgstr "<1 mois"
 
 msgid "Stunting (height-for-age)"
-msgstr "Retard de croissance (taille-pour-l'âge)"
+msgstr "Retard de croissance (taille-pour-âge)"
 
 msgid "Normal (HAZ-score > -1)"
 msgstr "Normal (score HAZ > -1)"
@@ -336,7 +336,7 @@ msgid "High (HAZ-score < -3)"
 msgstr "Élevé (score HAZ < -3)"
 
 msgid "Wasting (weight-for-height)"
-msgstr "Amaigrissement (poids-pour-taille)"
+msgstr "Émaciation (poids-pour-taille)"
 
 msgid "Normal (WHZ-score > -1)"
 msgstr "Normal (score WHZ > -1)"
@@ -407,7 +407,7 @@ msgid "Stunting prevalence (%)"
 msgstr "Prévalence du retard de croissance (%)"
 
 msgid "Wasting prevalence (%)"
-msgstr "Prévalence de l'amaigrissement (%)"
+msgstr "Prévalence de l'émaciation (%)"
 
 msgid "Anaemia prevalence (%)"
 msgstr "Prévalence de l'anémie (%)"
@@ -431,10 +431,10 @@ msgid "Maternal (deaths per 1,000 births)"
 msgstr "Maternelle (décès pour 1 000 naissances)"
 
 msgid "IYCF packages"
-msgstr "Paquets IYCF"
+msgstr "Paquets ANJE"
 
 msgid "IYCF package"
-msgstr "Paquet IYCF"
+msgstr "Paquet ANJE"
 
 msgid "Target population"
 msgstr "Population cible"
@@ -452,7 +452,7 @@ msgid "All"
 msgstr "Tous"
 
 msgid "Programs cost and coverage"
-msgstr "Coût et couverture du programme"
+msgstr "Coûts et couvertures des programmes"
 
 msgid "Program"
 msgstr "Programme"
@@ -512,22 +512,22 @@ msgid "IFAS for pregnant women (health facility)"
 msgstr "SFAF pour les femmes enceintes (établissement de santé)"
 
 msgid "IPTp"
-msgstr "IPTp"
+msgstr "TPIg"
 
 msgid "Iron and iodine fortification of salt"
 msgstr "Enrichissement du sel en fer et en iode"
 
 msgid "IYCF 1"
-msgstr "IYCF 1"
+msgstr "ANJE 1"
 
 msgid "IYCF 2"
-msgstr "IYCF 2"
+msgstr "ANJE 2"
 
 msgid "IYCF 3"
-msgstr "IYCF 3"
+msgstr "ANJE 3"
 
 msgid "Kangaroo mother care"
-msgstr "Méthode mère kangourou"
+msgstr "Soins maternals kangourou"
 
 msgid "Lipid-based nutrition supplements"
 msgstr "Supplémentation en nutriments à base de lipides"
@@ -575,7 +575,7 @@ msgid "WASH: Piped water"
 msgstr "WASH: Eau courante"
 
 msgid "Zinc for treatment + ORS"
-msgstr "Zinc pour le traitement + SRO"
+msgstr "SRO+Zn pour le traitement de la diarrhée"
 
 msgid "Zinc supplementation"
 msgstr "Supplémentation en zinc"
@@ -624,8 +624,8 @@ msgstr "Prévalence de la pré-éclampsie"
 
 msgid "Percentage of deaths in baseline year (2017) attributable to cause"
 msgstr ""
-"Pourcentage des morts pendant l'année de référence (2017) imputable à chaque"
-" cause"
+"Pourcentage des morts pendant l'année de référence (2017) imputable à "
+"chaque cause"
 
 msgid "Percentage of population in each category in baseline year (2017)"
 msgstr ""
@@ -666,7 +666,7 @@ msgid "Population risk areas"
 msgstr "Population des sect. à risque"
 
 msgid "IYCF odds ratios"
-msgstr "Rapport des cotes IYCF"
+msgstr "Rapport des cotes ANJE"
 
 msgid "Birth outcome risks"
 msgstr "Risques des rés. des naissances"
@@ -684,7 +684,7 @@ msgid "Programs anaemia"
 msgstr "Programmes-anémie"
 
 msgid "Programs wasting"
-msgstr "Programmes-amaigrissement"
+msgstr "Programmes-émaciation"
 
 msgid "Programs for children"
 msgstr "Programmes pour les enfants"
@@ -696,10 +696,10 @@ msgid "Stunting"
 msgstr "Retard de croissance"
 
 msgid "Wasting prevention"
-msgstr "Prévention de l'amaigrissement"
+msgstr "Prévention de l'émaciation"
 
 msgid "Wasting treatment"
-msgstr "Traitement de l'amaigrissement"
+msgstr "Traitement de l'émaciation"
 
 msgid "Birth outcomes"
 msgstr "Résultats des naissances"
@@ -738,7 +738,7 @@ msgid "Odds ratios for conditions"
 msgstr "Rapport des cote pour des conditions"
 
 msgid "Stunting (HAZ-score < -2)"
-msgstr "Amaigrissement (score-HAZ < -2)"
+msgstr "Émaciation (score-HAZ < -2)"
 
 msgid "Relative risks of neonatal causes of death"
 msgstr "Risques relatifs des causes du décès néonatales"
@@ -746,8 +746,8 @@ msgstr "Risques relatifs des causes du décès néonatales"
 msgid ""
 "Relative risk of causes of death by height-for-age (stunting) distribution"
 msgstr ""
-"Risque relatif des causes du décès par la distribution de la taille-"
-"pour-l'àge (retard de croissance)"
+"Risque relatif des causes du décès par la distribution de la taille-pour-"
+"âge (retard de croissance)"
 
 msgid "Cause of death"
 msgstr "Cause du décès"
@@ -860,7 +860,7 @@ msgid ""
 "Relative risk of causes of death by weight-for-height (wasting) distribution"
 msgstr ""
 "Risque relatif des causes du décès par la distribution du poids-pour-taille "
-"(amaigrissement)"
+"(émaciation)"
 
 msgid "Odds ratios for women with maternal anaemia"
 msgstr "Rapport des cotes pour les femmes avec l'anémie maternelle"
@@ -893,8 +893,8 @@ msgstr ""
 "référence (\"&start_year&\")\""
 
 msgid ""
-"=\"Percentage of children in each category in baseline year "
-"(\"&start_year&\")\""
+"=\"Percentage of children in each category in baseline year (\"&start_year&"
+"\")\""
 msgstr ""
 "=\"Pourcentage des enfants dans chaque catégorie pendant l'année de "
 "référence (\"&start_year&\")\""
@@ -903,7 +903,7 @@ msgid "Odds ratios of being anaemic when covered by intervention"
 msgstr "Rapports des cotes de l'anémie en étant couverte par l'intervention"
 
 msgid "Wasting"
-msgstr "Amaigrissement"
+msgstr "Émaciation"
 
 msgid "year"
 msgstr "année"
@@ -963,7 +963,7 @@ msgid "Type"
 msgstr "Type"
 
 msgid "Child wasting episode"
-msgstr "Épisode d'amaigrissement d'un enfant"
+msgstr "Épisode d'émaciation d'un enfant"
 
 msgid "Child turning 5 stunted (over lifetime)"
 msgstr ""
@@ -1068,7 +1068,7 @@ msgid "Odds ratios for correct breastfeeding by program - lower"
 msgstr "Rapport des cotes pour allaitement correct par programme - inférieur"
 
 msgid "Kangaroo mother care - lower"
-msgstr "Méthode mère kangourou - inférieur"
+msgstr "Soins maternals kangourou - inférieur"
 
 msgid "For SAM per additional episode of diarrhoea - lower"
 msgstr "Pour MAS par épisode supplémentaire de la diarrhée - inférieur"
@@ -1112,7 +1112,7 @@ msgid "Odds ratios for correct breastfeeding by program - upper"
 msgstr "Rapport des cotes pour allaitement correct par programme - supérieur"
 
 msgid "Kangaroo mother care - upper"
-msgstr "Méthode mère kangourou - supérieur"
+msgstr "Soins maternals kangourou - supérieur"
 
 msgid "For SAM per additional episode of diarrhoea - upper"
 msgstr "Pour MAS par épisode supplémentaire de la diarrhée - supérieur"

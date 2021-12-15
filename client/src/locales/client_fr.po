@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 
 msgid "Actions"
 msgstr "Actions"
@@ -86,11 +86,11 @@ msgstr "Faire un zoom arrière"
 
 msgctxt "common"
 msgid "Can be reallocated"
-msgstr "Peut être réaffecté"
+msgstr "Peuvent être réaffectées"
 
 msgctxt "common"
 msgid "Cannot be reallocated"
-msgstr "Ne peut être réaffecté"
+msgstr "Ne peuvent pas être réaffectées"
 
 msgctxt "common"
 msgid "Clear results"
@@ -160,11 +160,11 @@ msgstr "Fonds supplémentaires à allouer"
 
 msgctxt "geospatial"
 msgid "Can be reallocated between regions"
-msgstr "Peut être réaffecté entre les régions"
+msgstr "Peuvent être réaffectées entre les régions"
 
 msgctxt "geospatial"
 msgid "Cannot be reallocated between regions"
-msgstr "Ne peut être réaffecté entre les régions"
+msgstr "Ne peuvent pas être réaffectées entre les régions"
 
 msgctxt "geospatial"
 msgid "Copy geospatial optimization"
@@ -272,7 +272,7 @@ msgstr "Aide"
 
 msgctxt "navbar"
 msgid "Inputs"
-msgstr "Donnés"
+msgstr "Données"
 
 msgctxt "navbar"
 msgid "Log out"

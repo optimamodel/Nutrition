@@ -46,7 +46,7 @@ class Geospatial:
         self.growth = growth
         self.balanced_optimization = balanced_optimization
 
-    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel, runbalanced=False, n_samples=1):
+    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel, runbalanced=False, n_samples=0):
         """Runs geospatial optimization for a given project via the following steps:
         - Calculates the total flexible spending available for distribution across regions.
         Total flexible spending is a function of additional funds, `fix_curr` and `fix_regionalspend`.

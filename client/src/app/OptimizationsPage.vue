@@ -66,7 +66,7 @@ Last update: 2019feb11
 
         <div>
           <button class="btn __green" :disabled="!optimsLoaded" @click="runScens()">{{ $t("optimization.Plot optimizations") }}</button>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
+          <button class="btn __green" :disabled="!optimsLoaded || calculateCostEff" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>
@@ -308,6 +308,7 @@ Last update: 2019feb11
         calculateCostEff: false,
         hasTable: false,
         table: [],
+        withUncert: false,
       }
     },
 
@@ -809,6 +810,7 @@ Last update: 2019feb11
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
+                this.withUncert = false
                 this.$sciris.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {
@@ -839,6 +841,7 @@ Last update: 2019feb11
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
+                this.withUncert = true
                 this.$sciris.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {
