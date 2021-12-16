@@ -306,17 +306,17 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years, locale=results[0].locale)
 
     ### Outcomes sheet
-    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Cumulative"]]
+    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Cumulative"]] #TODO these should have a locale?
     for r, res in enumerate(reduced_results):
 
-        _ = get_translator(res.locale)
+        # _ = get_translator(res.locale)
+        _ = get_translator(results[0].locale) #TODO fix this - reduced results don't have a locale just using (possibly unrelated) .
 
         for esti in estimate_labels:
             if res != _("Excess budget"):
                 out = []
                 for measure in list(reduced_results[res].keys()):
                     out.append(reduced_results[res][measure][esti])
-                    # print(out)
                 for o, outcome in enumerate(rows):
                     name = [res] if o == 0 else [""]
                     thisout = out[o]
