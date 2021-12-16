@@ -50,7 +50,7 @@ Last update: 2019feb11
             <td style="white-space: nowrap">
               <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">{{ $t("common.Run") }}</button>
               <button class="btn" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'test')">{{ $t("common.Test run") }}</button>
-              <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">{{ $t("common.Clear results") }}</button>
+              <button class="btn __red" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">{{ $t("common.Clear results") }}</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" :data-tooltip='$t("optimization.Edit optimization")'><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" :data-tooltip='$t("optimization.Copy optimization")'><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteOptim(optimSummary)" :data-tooltip='$t("optimization.Delete optimization")'><i class="ti-trash"></i></button>
@@ -65,8 +65,8 @@ Last update: 2019feb11
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens()">{{ $t("optimization.Plot optimizations") }}</button>
-          <button class="btn __green" :disabled="!optimsLoaded || calculateCostEff" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
+          <button class="btn __green" :disabled="!optimsLoaded || !anySelected" @click="runScens()">{{ $t("optimization.Plot optimizations") }}</button>
+          <button class="btn __green" :disabled="!optimsLoaded || calculateCostEff || !anySelected" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>
@@ -322,6 +322,7 @@ Last update: 2019feb11
       placeholders() {
         return utils.placeholders()
       },
+      anySelected() { return this.optimSummaries.some(x => x.active) },
     },
 
     created() {

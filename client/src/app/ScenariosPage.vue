@@ -62,8 +62,8 @@ Last update: 2019feb11
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">{{ $t("scenarios.Run scenarios") }}</button>
-          <button class="btn __green" :disabled="!scenariosLoaded || calculateCostEff" @click="UncertScensModal(10)">{{ $t("scenarios.Run scenarios with uncertainty") }}</button>
+          <button class="btn __green" :disabled="!scenariosLoaded || !anySelected" @click="runScens()">{{ $t("scenarios.Run scenarios") }}</button>
+          <button class="btn __green" :disabled="!scenariosLoaded || calculateCostEff || !anySelected" @click="UncertScensModal(10)">{{ $t("scenarios.Run scenarios with uncertainty") }}</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">{{ $t("scenarios.Add coverage scenario") }}</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">{{ $t("scenarios.Add budget scenario") }}</button>
         </div>
@@ -289,6 +289,7 @@ Last update: 2019feb11
       projectID()    { return this.$store.getters.activeProjectID },
       hasData()      { return utils.hasData(this) },
       placeholders() { return utils.placeholders() },
+      anySelected() { return this.scenSummaries.some(x => x.active) },
     },
 
     created() {
