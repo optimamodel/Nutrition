@@ -43,7 +43,7 @@ Last update: 2019jan10
               <button class="btn __green" :disabled="!canRunTask(geoSummary)"     @click="runGeo(geoSummary, 'full')">{{ $t("common.Run") }}</button>
               <button class="btn" :disabled="!canRunTask(geoSummary)"             @click="runGeo(geoSummary, 'test')">{{ $t("common.Test run") }}</button>
               <button class="btn __green" :disabled="!canPlotResults(geoSummary)" @click="plotGeospatial(geoSummary)">{{ $t("common.Plot results") }}</button>
-              <button class="btn" :disabled="!canCancelTask(geoSummary)"          @click="clearTask(geoSummary)">{{ $t("common.Clear results") }}</button>
+              <button class="btn __red" :disabled="!canCancelTask(geoSummary)"          @click="clearTask(geoSummary)">{{ $t("common.Clear results") }}</button>
               <button class="btn btn-icon" @click="editGeoModal(geoSummary)" :data-tooltip='$t("geospatial.Edit geospatial optimization")'><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyGeo(geoSummary)" :data-tooltip='$t("geospatial.Copy geospatial optimization")'><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteGeo(geoSummary)" :data-tooltip='$t("geospatial.Delete geospatial optimization")'><i class="ti-trash"></i></button>
