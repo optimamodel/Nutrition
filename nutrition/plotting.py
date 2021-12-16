@@ -661,7 +661,7 @@ def get_costeff(project, results):
         model = project.model(res.model_name)
         parents.append(res)
         # generate a baseline for each scenario
-        baseline = make_default_scen(res.model_name, model)
+        baseline = make_default_scen(name=_("Baseline"), modelname=res.model_name, model=model)
         baseres = run_scen(baseline, model)
         baselines.append(baseres)
         # get all the 'child' results for each scenario

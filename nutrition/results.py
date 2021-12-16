@@ -308,8 +308,11 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     ### Outcomes sheet
     headers = [["Scenario", "Estimate", "Outcome"] + years + ["Cumulative"]]
     for r, res in enumerate(reduced_results):
+
+        _ = utils.get_translator(res.locale)
+
         for esti in estimate_labels:
-            if res != "Excess budget":
+            if res != _("Excess budget"):
                 out = []
                 for measure in list(reduced_results[res].keys()):
                     out.append(reduced_results[res][measure][esti])
@@ -321,7 +324,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                         cumul = "N/A"
                     elif "mortality" in outcome.lower():
                         cumul = "N/A"
-                    elif "Number of SAM children" in outcome or "Number of MAM children" in outcome:
+                    elif _("Number of SAM children") in outcome or _("Number of MAM children") in outcome:
                         cumul = "N/A"
                     else:
                         cumul = sum(thisout)
@@ -336,7 +339,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     # this is grouped not by program, but by coverage and cost (within each scenario)
 
     for r, res in enumerate(results):
-        if res.name != "Excess budget" and resampled_key_str not in res.name:
+        if res.name != _("Excess budget") and resampled_key_str not in res.name:
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=True)
@@ -346,17 +349,17 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                 name = [res.name] if p == 0 else [""]
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
-                outputs.append(name + [prog] + ["Coverage"] + [costcov] + list(thiscov))
+                outputs.append(name + [prog] + [_("Coverage")] + [costcov] + list(thiscov))
             # collate spending second
             for p, prog in enumerate(rows):
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
-                outputs.append([""] + [prog] + ["Budget"] + [costcov] + list(thisspend))
+                outputs.append([""] + [prog] + [_("Budget")] + [costcov] + list(thisspend))
             outputs.append(nullrow)
         elif resampled_key_str not in res.name:
             spend = res.get_allocs(ref=True)
-            thisspend = spend["Excess budget not allocated"]
-            outputs.append(["Excess budget not allocated"] + ["N/A"] + ["Budget"] + ["N/A"] + list(thisspend))
+            thisspend = spend[_("Excess budget not allocated")]
+            outputs.append([_("Excess budget not allocated")] + ["N/A"] + [_("Budget")] + ["N/A"] + list(thisspend))
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
@@ -387,7 +390,7 @@ def _write_results_outcomes(projname, filename, folder, years, locale):
     # print(results[1])
     nullrow = [""] * len(years)
     ### Version sheet
-    data = [["Version", "Date"], [version, date.today()]]
+    data = [[_("Version"), _("Date")], [version, date.today()]]
     alldata.append(data)
 
     # Formatting

@@ -355,6 +355,7 @@ class Project(object):
         self.add_geos(geos)
         return geos
 
+    @translate
     def add_model(self, name=None, growth=False):
         """Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
@@ -370,9 +371,9 @@ class Project(object):
         #         defaults = make_default_scen(name, model, self.scens[scen_name].scen_type, scen_name)
         #         self.add_scens(defaults)
         # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
-        basename = "Baseline"
+        basename = _("Baseline")
         if basename not in self.scens.keys():
-            defaults = make_default_scen(name, model, "coverage", basename)
+            defaults = make_default_scen(modelname=name, model=model, scen_type="coverage", name=basename)
             self.add_scens(defaults)
 
         self.modified = sc.now(utc=True)
@@ -414,7 +415,7 @@ class Project(object):
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
 
-        base = Scen(name="Baseline", model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1, from_optim=from_optim)
+        base = Scen(name=_("Baseline"), model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1, from_optim=from_optim)
 
         if dorun:
             return run_scen(base, model)
@@ -503,7 +504,7 @@ class Project(object):
         def _add_excess_budget(scen, model):
             # unclear why this is needed?
             if _("Excess budget not allocated") in scen.prog_set:  # add a dummy program to the model
-                excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated", self.locale)}
+                excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
                 model.prog_info.add_prog(excess_spend, model.pops)
                 model.prog_info.prog_data = excess_spend["prog_data"]
 

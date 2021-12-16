@@ -219,10 +219,11 @@ def relabel(old, direction=False, lower=False, locale=None):
     """Can be given a string or a list of strings.
     Will return corresponding pretty label as a string or a list of strings"""
 
+    _ = get_translator(locale)
     pgettext = get_translator(locale, context=True)
 
     pretty = pretty_labels(direction=direction, locale=locale)
-    pretty["Baseline"] = pgettext("plotting", "Est. spending \n baseline year")  # this is for allocation
+    pretty[_("Baseline")] = pgettext("plotting", "Est. spending \n baseline year")  # this is for allocation
     if isinstance(old, list):
         new = []
         for lab in old:
