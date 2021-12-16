@@ -150,7 +150,7 @@
     "Upload project from file": "Télécharger le projet à partir d'un fichier",
     "loaded_popup": "Projet \"{name}\" chargé",
     "Language": "Langue",
-    "Are you sure you want to delete the selected projects?": "Êtes-vous sûr de vouloir supprimer les projets sélectionnés ?"
+    "Are you sure you want to delete the selected projects?": "Voulez-vous vraiment supprimer les projets sélectionnés ?"
   },
   "register": {
     "Already registered?": "Déjà inscrit.e?"
@@ -173,8 +173,8 @@
     "Scenario name": "Nom du scénario",
     "Scenario/program": "Scénario/programme",
     "Run scenarios with uncertainty": "Exécuter les scénarios avec incertitude",
-    "budget": "Budget",
-    "coverage": "Couverture"
+    "budget": "budget",
+    "coverage": "couverture"
   },
   "please_wait_spinner": "Veuillez patienter...",
   "uncertainty": {
@@ -182,7 +182,7 @@
     "Number of runs": "Nombre d'exécutions"
   },
   "Initializing": "Initialisation",
-  "Running for": "Courir pour",
+  "Running for": "Temps d'exécution: ",
   "Completed after": "Achevé après",
   "Error after": "Erreur après",
   "Delete projects": "Supprimer les projets"
