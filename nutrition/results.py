@@ -67,7 +67,7 @@ class ScenResult(sc.prettyobj):
                 covs[name] = prog.annual_restr_cov
         return covs
 
-    def get_allocs(self, ref=True, current=False): 
+    def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
 
         for name, prog in self.programs.items():

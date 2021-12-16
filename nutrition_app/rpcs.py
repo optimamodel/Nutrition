@@ -1176,7 +1176,7 @@ def run_scens(project_id, scens_to_run, do_costeff=False, n_runs=0):
     if isinstance(n_runs, str):
         n_runs = int(n_runs)
 
-    proj.run_scens(scens_to_run=scens_to_run, n_samples=n_runs, name='scens')
+    proj.run_scens(scens_to_run=scens_to_run, n_samples=n_runs, name="scens")
 
     if do_costeff:
         # Get cost-effectiveness table
@@ -1221,7 +1221,7 @@ def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_optim.weights))]  # WARNING, ABS HACK
     growth = py_optim.growth
     balanced_optimization = py_optim.balanced_optimization
-    js_optim['uid'] = py_optim.uid
+    js_optim["uid"] = py_optim.uid
     js_optim["weightslist"] = weightslist
     js_optim["growth"] = growth
     js_optim["balanced_optimization"] = balanced_optimization
@@ -1280,31 +1280,34 @@ def get_optim_info(project_id):
 def set_optim_info(project_id, optim_jsons):
     print("Setting optimization info...")
     proj = load_project(project_id)
-    optim_uids = {x['uid'] for x in optim_jsons}
+    optim_uids = {x["uid"] for x in optim_jsons}
 
     proj.optims.clear()
     for j, js_optim in enumerate(optim_jsons):
         optim = js_to_py_optim(js_optim)
         proj.add_optims(optim)
 
-    proj.scens = {k:v for k,v in proj.scens.items() if v._optim_uid is None or v._optim_uid in optim_uids}
+    proj.scens = {k: v for k, v in proj.scens.items() if v._optim_uid is None or v._optim_uid in optim_uids}
     save_project(proj)
+
 
 @RPC()
 def delete_optim(project_id, optim_uid):
     proj = load_project(project_id)
-    proj.scens = {k:v for k,v in proj.scens.items() if v._optim_uid != optim_uid}
-    proj.optims = {k:v for k,v in proj.optims.items() if v.uid != optim_uid}
+    proj.scens = {k: v for k, v in proj.scens.items() if v._optim_uid != optim_uid}
+    proj.optims = {k: v for k, v in proj.optims.items() if v.uid != optim_uid}
     save_project(proj)
+
 
 @RPC()
 def create_optim(project_id, js_optim):
     proj = load_project(project_id)
-    js_optim['uid'] = sc.uuid()
+    js_optim["uid"] = sc.uuid()
     optim = js_to_py_optim(js_optim)
     proj.add_optims(optim)
     save_project(proj)
     return optim.uid
+
 
 @RPC()
 def opt_new_optim(project_id, dataset, locale):
@@ -1320,14 +1323,15 @@ def opt_new_optim(project_id, dataset, locale):
             prog_set.append(program.name)
     py_optim.prog_set = prog_set
     js_optim = py_to_js_optim(py_optim, proj)
-    js_optim['uid'] = None
+    js_optim["uid"] = None
     return js_optim
+
 
 @RPC()
 def clear_optim_scens(project_id, uid):
     # Remove the scenarios associated with a project
     proj = load_project(project_id)
-    proj.scens = {k:v for k,v in proj.scens.items() if v._optim_uid != uid}
+    proj.scens = {k: v for k, v in proj.scens.items() if v._optim_uid != uid}
     save_project(proj)
 
 
@@ -1378,6 +1382,7 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
 
     return {"graphs": graphs, "table": table}
 
+
 @RPC()
 def run_opt_scens(project_id, uids, do_costeff=False, n_runs=1):
 
@@ -1391,7 +1396,7 @@ def run_opt_scens(project_id, uids, do_costeff=False, n_runs=1):
 
     n_runs = int(n_runs) if sc.isstring(n_runs) else n_runs
 
-    scens_to_run = [k for k,v in proj.scens.items() if v._optim_uid in uids]
+    scens_to_run = [k for k, v in proj.scens.items() if v._optim_uid in uids]
 
     proj.run_scens(scens_to_run=scens_to_run, n_samples=n_runs, name="opts")
 

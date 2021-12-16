@@ -5,6 +5,7 @@ from . import pso, utils
 from .scenarios import Scen, run_scen
 from .migration import migrate
 
+
 class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
@@ -250,6 +251,7 @@ class Optim(sc.prettyobj):
         self.__dict__ = d
         d = migrate(self)
         self.__dict__ = d.__dict__
+
 
 def obj_func(allocation, model, free, fixed, keep_inds, weights):
     """

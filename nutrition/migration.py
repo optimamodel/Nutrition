@@ -237,17 +237,20 @@ def _add_optim_uid(optim):
         optim.uid = sc.uuid()
     return optim
 
+
 @migration("Scen", "1.7.9", "1.7.10", "Add optim UUID to scen")
 def _add_scen_optim_uid(scen):
     if not hasattr(scen, "_optim_uid"):
         scen._optim_uid = None
     return scen
 
+
 @migration("Scen", "1.7.10", "1.7.11", "Remove active")
 def _scen_remove_active(scen):
     if hasattr(scen, "active"):
         delattr(scen, "active")
     return scen
+
 
 @migration("Optim", "1.7.10", "1.7.11", "Remove active")
 def _optim_remove_active(optim):

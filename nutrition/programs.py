@@ -30,7 +30,7 @@ class Program(sc.prettyobj):
         self.base_cov = progdata.base_cov[name]
 
         self.annual_cov = np.zeros(len(all_years))  # this is the unrestr_cov
-        self.annual_restr_cov = np.zeros(len(all_years)) # np.ones(len(all_years)) * self.base_cov  # only calculated in adjust_cov
+        self.annual_restr_cov = np.zeros(len(all_years))  # np.ones(len(all_years)) * self.base_cov  # only calculated in adjust_cov
         self.annual_spend = np.zeros(len(all_years))
         self.excl_deps = progdata.prog_deps[name][_("Exclusion dependency")]
         self.thresh_deps = progdata.prog_deps[name][_("Threshold dependency")]
@@ -116,7 +116,7 @@ class Program(sc.prettyobj):
         self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year, growth=False):
-        """ This functions adjust coverage and spending to the annual population growth in each time step
+        """This functions adjust coverage and spending to the annual population growth in each time step
         - First it ensures both restricted and unrestricted population sizes are updated
         - Then, cost coverage curves are also updated as per the population size
         - "fixed budget" ensures the budget is constant over the period, however, the coverage may change (typically decreasing)
@@ -651,12 +651,12 @@ class ProgramInfo(sc.prettyobj):
         """If scen is a budget scenario, convert it to unrestricted coverage.
         If scen is a coverage object, assumed to be restricted cov and converted
         Return: list of lists"""
-        covs = self.check_cov(covs, years) #these are entered as restricted covs (coverage of the eligible population)
-        
+        covs = self.check_cov(covs, years)  # these are entered as restricted covs (coverage of the eligible population)
+
         unrestr_covs = np.zeros(shape=(len(self.programs), len(years)))
-        restr_covs   = np.zeros(shape=(len(self.programs), len(years)))
-        spends       = np.zeros(shape=(len(self.programs), len(years)))
-        
+        restr_covs = np.zeros(shape=(len(self.programs), len(years)))
+        spends = np.zeros(shape=(len(self.programs), len(years)))
+
         for i, prog in self.programs.enumvals():
             unrestr_covs[i], restr_covs[i], spends[i] = prog.interp_scen(covs[i], years, scentype, prog.name)
         return unrestr_covs, restr_covs, spends

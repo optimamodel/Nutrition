@@ -44,12 +44,12 @@ if __name__ == "__main__":
     # zero_budget_kwargs = {"name": 'Zero spending exc FP', "model_name": mod, "scen_type": "budget", "progvals": sc.odict([(prog, [0]) for prog in progs])}
     # inf_budget_kwargs = {"name": 'Infinite spending exc FP', "model_name": mod, "scen_type": "budget", "progvals": sc.odict([(prog, [0 if prog=='Family planning' else 9999999999]) for prog in progs])}
     # scen_list = nu.make_scens([zero_budget_kwargs, inf_budget_kwargs])
-    
+
     scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3, kwargs2])
     p.add_scens(scen_list)
 
     results = p.run_scens(n_samples=3)
-    
+
 if doplot:
     p.plot()
 # costeff = p.get_costeff()

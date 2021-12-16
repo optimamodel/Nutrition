@@ -22,7 +22,7 @@ class Scen(sc.prettyobj):
         self.scen_type = scen_type
         self.vals = list(progvals.values())
         self.prog_set = list(progvals.keys())
-        self._optim_uid = optim_uid # Link this scenario to an Optim - for FE use
+        self._optim_uid = optim_uid  # Link this scenario to an Optim - for FE use
 
         if growth is None:
             if "budget" in self.scen_type:

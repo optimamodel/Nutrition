@@ -30,6 +30,7 @@ def test_optims(project):
     plt.close("all")
     return P
 
+
 def test_geos(project):
     return True  # Skip this test for now - it's slow
     P = sc.dcp(project)

@@ -550,7 +550,6 @@ class Project(object):
         self.add_result(results, name=name)
         return results
 
-
     @translate
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=False, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
         if optim is not None:
@@ -564,7 +563,7 @@ class Project(object):
         # run baseline
         if runbaseline or runbalanced:
             base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
-            base_scen.name = optim.name + " (" + _('baseline') + ')'
+            base_scen.name = optim.name + " (" + _("baseline") + ")"
             base_scen._optim_uid = optim.uid
             base = self.run_scen(scen=base_scen, n_samples=0)[0]  # noting that run_scen returns a list
             if runbaseline:  # don't append this to the results if runbaseline=False
