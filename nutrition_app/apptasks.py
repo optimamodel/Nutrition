@@ -46,10 +46,8 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None, runbalanced=F
     else:
         results, scens = proj.run_optim(key=optim_name, dosave=False, parallel=False, runbalanced=runbalanced)
     newproj = rpcs.load_project(project_id)
-    newproj.results[cache_id] = results
     newproj.add_scens(scens)
-    rpcs.cache_results(newproj)
-    return None
+    rpcs.save_project(newproj)
 
 
 @async_task

@@ -65,7 +65,7 @@ Last update: 2019feb11
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!optimsLoaded || !anySelected" @click="runScens()">{{ $t("optimization.Plot optimizations") }}</button>
+          <button class="btn __green" :disabled="!optimsLoaded || !anySelected" @click="plotOptims(0)">{{ $t("optimization.Plot optimizations") }}</button>
           <button class="btn __green" :disabled="!optimsLoaded || calculateCostEff || !anySelected" @click="UncertScensModal(10)">{{ $t("optimization.Plot optimizations with uncertainty") }}</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
@@ -257,7 +257,7 @@ Last update: 2019feb11
                  v-model="modalUncertRuns"/><br>
         </div>
         <div style="text-align:justify">
-          <button @click="UncertRuns()" class='btn __green' style="display:inline-block">
+          <button @click="plotOptims(modalUncertRuns)" class='btn __green' style="display:inline-block">
             {{ $t("optimization.Plot optimizations") }}
           </button>
 
@@ -299,7 +299,6 @@ Last update: 2019feb11
         growthOptions: [],
         addEditModal: {
           optimSummary: {},
-          origName: '',
           mode: 'add',
         },
         modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
@@ -569,7 +568,7 @@ Last update: 2019feb11
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
           console.log('clearTask() called for ' + this.currentOptim)
-          this.$sciris.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
+          this.$sciris.rpc('clear_optim_scens', [this.projectID, optimSummary.uid]) // Delete cached result.
               .then(response => {
                 this.$sciris.rpc('delete_task', [datastoreId])
                     .then(response => {
@@ -594,13 +593,14 @@ Last update: 2019feb11
         this.$sciris.start(this);
         try {
           let response = await this.$sciris.rpc('get_optim_info', [this.projectID]);
-          this.optimSummaries = response.data; // Set the optimizations to what we received.
-          this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+          response.data.forEach(optimSum => { // For each of the optimization summaries...
             optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name; // Build a task and results cache ID from the project's hex UID and the optimization name.
             optimSum.status = 'not started'; // Set the status to 'not started' by default, and the pending and execution times to '--'.
             optimSum.pendingTime = '--';
-            optimSum.executionTime = '--'
+            optimSum.executionTime = '--';
+            optimSum.active = true;
           })
+          this.optimSummaries = response.data; // Set the optimizations to what we received.
           this.doTaskPolling(true);  // start task polling, kicking off with running check_task() for all optimizations
           this.optimsLoaded = true;
           this.$sciris.succeed(this)
@@ -615,7 +615,6 @@ Last update: 2019feb11
         this.$sciris.rpc('opt_new_optim', [this.projectID, this.datasetOptions[0], i18n.locale])
             .then(response => {
               this.addEditModal.optimSummary = response.data
-              this.addEditModal.origName = this.addEditModal.optimSummary.name
               this.addEditModal.mode = 'add'
               this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
               this.$modal.show('add-optim')
@@ -633,7 +632,6 @@ Last update: 2019feb11
         this.addEditModal.optimSummary = _.cloneDeep(optimSummary);
         console.log('Editing optimization:');
         console.log(this.addEditModal.optimSummary);
-        this.addEditModal.origName = this.addEditModal.optimSummary.name;
         this.addEditModal.mode = 'edit';
         this.$modal.show('add-optim')
       },
@@ -654,47 +652,29 @@ Last update: 2019feb11
         })
       },
 
-      modalSave() {
+      async modalSave() {
         console.log('modalSave() called')
         this.$modal.hide('add-optim')
         this.$sciris.start(this)
+
         let newOptim = _.cloneDeep(this.addEditModal.optimSummary)
-        let optimNames = [] // Get the list of all of the current optimization names.
-        this.optimSummaries.forEach(optimSum => {
-          optimNames.push(optimSum.name)
-        })
+        newOptim.name = utils.getUniqueName(newOptim.name, this.optimSummaries.filter(x => x.uid !== newOptim.uid).map(x => x.name)) // Force it to have a unique name
+
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
-          let index = optimNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
-          if (index > -1) {
-            this.optimSummaries[index].name = newOptim.name // hack to make sure Vue table updated
-            this.optimSummaries[index] = newOptim
-          } else {
-            console.log('Error: a mismatch in editing keys')
-          }
+          let index = this.optimSummaries.map(x => x.uid).indexOf(newOptim.uid) // Get the index of the original (pre-edited) name
+          this.optimSummaries[index] = newOptim
+          await this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         } else { // Else (we are adding a new optimization)...
-          newOptim.name = utils.getUniqueName(newOptim.name, optimNames)
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
+          let response = await this.$sciris.rpc('create_optim', [this.projectID, newOptim])
+          newOptim.uid = response.data;
           this.optimSummaries.push(newOptim)
-          this.getOptimTaskState(newOptim)
-              .then(result => {
-                // Hack to get the Vue display of optimSummaries to update
-                this.optimSummaries.push(this.optimSummaries[0])
-                this.optimSummaries.pop()
-              })
         }
-        console.log('Saved optimization:')
-        console.log(newOptim);
-        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-            .then(response => {
-              this.$sciris.succeed(this, 'Optimization added')
-              this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
-            })
-            .catch(error => {
-              this.$sciris.fail(this, 'Could not add optimization', error)
-            })
+        this.$sciris.succeed(this, 'Optimization added')
+        this.getOptimSummaries()  // Reload all optimizations so Vue state is correct
       },
 
-      copyOptim(optimSummary) {
+      async copyOptim(optimSummary) {
         console.log('copyOptim() called')
         this.$sciris.start(this)
         var newOptim = _.cloneDeep(optimSummary);
@@ -704,15 +684,11 @@ Last update: 2019feb11
         })
         newOptim.name = utils.getUniqueName(newOptim.name, otherNames)
         newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
+        let response = await this.$sciris.rpc('create_optim', [this.projectID, newOptim])
+        newOptim.uid = response.data;
         this.optimSummaries.push(newOptim)
         this.getOptimTaskState(newOptim)
-        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-            .then(response => {
-              this.$sciris.succeed(this, 'Optimization copied')
-            })
-            .catch(error => {
-              this.$sciris.fail(this, 'Could not copy optimization', error)
-            })
+        this.$sciris.succeed(this, 'Optimization copied')
       },
 
       deleteOptim(optimSummary) {
@@ -763,97 +739,19 @@ Last update: 2019feb11
         this.$sciris.rpc('delete_task', ['run_optim'])
       },
 
-      set_optim_active() {
-        console.log('set_optim_active() called for ' + this.currentOptim)
-        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-      },
 
-      plotOptimization(optimSummary) {
-        console.log('plotOptimization() called')
+      async plotOptims(n_uncert_runs) {
         this.$sciris.start(this)
-        this.$sciris.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId, this.calculateCostEff])
-            .then(response => {
-              this.hasTable = this.calculateCostEff
-              this.table = response.data.table
-              this.makeGraphs(response.data.graphs)
-              this.displayResultName = optimSummary.name
-              this.displayResultDatastoreId = optimSummary.serverDatastoreId
-              this.$sciris.succeed(this, 'Graphs created')
-            })
-            .catch(error => {
-              this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
-            })
-      },
-
-      getScenSummaries() {
-        console.log('getScenSummaries() called')
-        this.$sciris.start(this)
-        this.$sciris.rpc('opt_to_scen', [this.projectID, this.optimSummaries])
-          .then(response => {
-            this.scenSummaries = response.data // Set the scenarios to what we received.
-            console.log('Scenario summaries:')
-            console.log(this.scenSummaries)
-            this.scenariosLoaded = true
-            this.$sciris.succeed(this, 'Scenarios loaded')
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not get scenarios', error)
-          })
-      },
-
-      runScens() {
-        console.log('runScens() called')
-        this.$sciris.start(this)
-        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries, this.optimSummaries]) // Make sure they're saved first
-          .then(response => {
-            this.$sciris.rpc('run_opt_scens', [this.projectID, true, this.calculateCostEff, 0]) // Go to the server to get the results
-              .then(response => {
-                this.hasTable = this.calculateCostEff
-                this.table = response.data.table
-                this.makeGraphs(response.data.graphs)
-                this.withUncert = false
-                this.$sciris.succeed(this, '') // Success message in graphs function
-              })
-              .catch(error => {
-                console.log('There was an error', error) // Pull out the error message.
-                this.$sciris.fail(this, 'Could not run scenarios', error) // Indicate failure.
-              })
-          })
-          .catch(error => {
-            this.response = 'There was an error', error
-            this.$sciris.fail(this, 'Could not set scenarios', error)
-          })
-      },
-
-      UncertScensModal(nruns) {
-        console.log('UncertScensModal() called');
-        this.modalUncertRuns = nruns
-        this.$modal.show('uncert-nruns');
-      },
-
-      UncertRuns() {
-        console.log('uncertRuns() called')
-        this.$modal.hide('uncert-nruns');
-        this.$sciris.start(this)
-        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries, this.optimSummaries]) // Make sure they're saved first
-          .then(response => {
-            this.$sciris.rpc('run_opt_scens', [this.projectID, true, this.calculateCostEff, this.modalUncertRuns]) // Go to the server to get the results
-              .then(response => {
-                this.hasTable = this.calculateCostEff
-                this.table = response.data.table
-                this.makeGraphs(response.data.graphs)
-                this.withUncert = true
-                this.$sciris.succeed(this, '') // Success message in graphs function
-              })
-              .catch(error => {
-                console.log('There was an error', error) // Pull out the error message.
-                this.$sciris.fail(this, 'Could not run scenarios', error) // Indicate failure.
-              })
-          })
-          .catch(error => {
-            this.response = 'There was an error', error
-            this.$sciris.fail(this, 'Could not set scenarios', error)
-          })
+        try{
+          let response = await this.$sciris.rpc('run_opt_scens', [this.projectID, this.optimSummaries.filter(x => x.active).map(x => x.uid), this.calculateCostEff, n_uncert_runs]) // Go to the server to get the results
+          this.hasTable = this.calculateCostEff
+          this.table = response.data.table
+          this.makeGraphs(response.data.graphs)
+          this.withUncert = n_uncert_runs > 0
+          this.$sciris.succeed(this, '')
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not plot optimization scenarios', error)
+        }
       },
     }
   }

@@ -407,7 +407,7 @@ class Project(object):
         return
 
     @translate
-    def run_baseline(self, model_name, prog_set, growth, dorun=True, from_optim=False):
+    def run_baseline(self, model_name, prog_set, growth, dorun=True):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
         if _("Excess budget not allocated") in prog_set:
@@ -415,7 +415,7 @@ class Project(object):
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
 
-        base = Scen(name=_("Baseline"), model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1, from_optim=from_optim)
+        base = Scen(name=_("Baseline"), model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1)
 
         if dorun:
             return run_scen(base, model)
@@ -526,46 +526,30 @@ class Project(object):
 
         return results
 
-    def run_scens(self, scens=None, n_samples=0, seed=None):
-        """Function for running scenarios
-        - If scens is specified, they are added to self.scens
-        - The first run happens with default parameters (point estimates)
-        - The subsequent runs consider resampling
-
+    def run_scens(self, scens_to_run=None, n_samples=0, seed=None, name="scens"):
         """
-        if scens is not None:
-            self.add_scens(scens)
+        Run scenarios
+
+        :param scens_to_run: Optionally specify a collection of scenario names to run (default is to run all scenarios)
+        :param n_samples: Set to 0 to do no sampling, otherwise, the number of sampled runs to perform
+        :param seed:
+        :return:
+        """
+
+        if scens_to_run is None:
+            scens_to_run = self.scens.keys()
 
         results = []
-        for scen in self.scens.values():
-            if scen.active and not scen.from_optim:
+
+        for scen_name, scen in self.scens.items():
+            if scen_name in scens_to_run:
                 results += self.run_scen(scen, n_samples=0)  # best estimate (no random seed relevant)
                 if n_samples > 0:
                     results += self.run_scen(scen, n_samples=n_samples, seed=seed)  # actual samples
 
-        self.add_result(results, name="scens")
+        self.add_result(results, name=name)
         return results
 
-    def run_opt_scens(self, scens=None, n_samples=0, seed=None):
-        """Function for running scenarios
-        - If scens is specified, they are added to self.scens
-        - The first run happens with default parameters (point estimates)
-        - The subsequent runs consider resampling
-
-        """
-
-        if scens is not None:
-            self.add_scens(scens)
-
-        results = []
-        for scen in self.scens.values():
-            if scen.from_optim and scen.active:
-                results += self.run_scen(scen, n_samples=0)  # best estimate (no random seed relevant)
-                if n_samples > 0:
-                    results += self.run_scen(scen, n_samples=n_samples, seed=seed)  # actual samples
-
-        self.add_result(results, name="opts")
-        return results
 
     @translate
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=False, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
@@ -579,8 +563,9 @@ class Project(object):
         results, scens = [], []
         # run baseline
         if runbaseline or runbalanced:
-            base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False, from_optim=True)
-            base_scen.name = optim.name + " baseline"
+            base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
+            base_scen.name = optim.name + " (" + _('baseline') + ')'
+            base_scen._optim_uid = optim.uid
             base = self.run_scen(scen=base_scen, n_samples=0)[0]  # noting that run_scen returns a list
             if runbaseline:  # don't append this to the results if runbaseline=False
                 results.append(base)
@@ -604,7 +589,6 @@ class Project(object):
                 optim_alloc = opt_result.get_allocs()
                 scen_name = opt_result.name
                 scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
-
                 results += self.run_scen(scen=scen, n_samples=n_samples, seed=seed)
 
         if dosave:
@@ -799,13 +783,12 @@ def demo(scens=False, optims=False, geos=False, locale=None):
     _ = utils.get_translator(locale)
 
     # Parameters
-    name = "Demo project"
+    name = _("Demo project")
     country = "demo"
-    region = "national"
 
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name, locale=locale)
-    P.load_data(country, region, name=_("demo"))
+    P.load_data(country, "national", name=_("demo"))
     P.load_data(country, "region1", name=_("demoregion1"))
     P.load_data(country, "region2", name=_("demoregion2"))
     P.load_data(country, "region3", name=_("demoregion3"))

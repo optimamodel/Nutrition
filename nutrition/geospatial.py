@@ -41,7 +41,6 @@ class Geospatial:
         self.fix_curr = fix_curr
         self.fix_regionalspend = fix_curr if fix_curr else fix_regionalspend
         self.filter_progs = filter_progs
-        self.active = active
         self.bocs = sc.odict()
         self.growth = growth
         self.balanced_optimization = balanced_optimization
