@@ -30,7 +30,7 @@ class Program(sc.prettyobj):
         self.base_cov = progdata.base_cov[name]
 
         self.annual_cov = np.zeros(len(all_years))  # this is the unrestr_cov
-        self.annual_restr_cov = np.ones(len(all_years)) * self.base_cov  # only calculated in adjust_cov
+        self.annual_restr_cov = np.zeros(len(all_years)) # np.ones(len(all_years)) * self.base_cov  # only calculated in adjust_cov
         self.annual_spend = np.zeros(len(all_years))
         self.excl_deps = progdata.prog_deps[name][_("Exclusion dependency")]
         self.thresh_deps = progdata.prog_deps[name][_("Threshold dependency")]
@@ -116,10 +116,12 @@ class Program(sc.prettyobj):
         self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year, growth=False):
-        - First it ensures both restricted and unrestircted population sizes are updated
+        """ This functions adjust coverage and spending to the annual population growth in each time step
+        - First it ensures both restricted and unrestricted population sizes are updated
         - Then, cost coverage curves are also updated as per the population size
-        - "fixed budget" ensures the budget is constant over the period, however, the coverage is slightly decreasing
-        - "fixed coverage"" ensures coverage is constant, however, the budget is adjusted to the population so it is slowly increasing"""
+        - "fixed budget" ensures the budget is constant over the period, however, the coverage may change (typically decreasing)
+        - "fixed coverage"" ensures coverage is constant, however, the budget is adjusted to the population (typically increasing)
+        """
         # set unrestricted pop size so coverages account for growing population size
         if growth:
             self._set_unrestrpop(pops)  # ensure population sizes are updated to the current timestep
@@ -129,19 +131,17 @@ class Program(sc.prettyobj):
             old_restr_cov = sc.dcp(self.annual_restr_cov[year])
             old_spend = sc.dcp(self.annual_spend[year])
 
-        # work out what we want the coverage to be
-        if growth == "fixed budget":
-            self.annual_spend[year] = old_spend
-            self.annual_cov[year] = self.func(self.annual_spend)[year]
-            self.annual_restr_cov[year] = self.annual_cov[year] * self.unrestr_popsize / self.restr_popsize
-        elif growth == "fixed coverage":
-            self.annual_restr_cov[year] = old_restr_cov  # note: maintaining fixed restricted coverage rather than overall coverage
-            self.annual_cov[year] = old_restr_cov * self.restr_popsize / self.unrestr_popsize
-            self.annual_spend[year] = self.get_spending(self.annual_cov)[year]  # note that we have updated the cost curve so this should be correct for all scenarios
-        elif not growth:  # no changes will be necessary
-            pass
-        else:
-            raise Exception("Growth type '%s' is not valid, must be False, 'fixed budget' or 'fixed coverage'" % growth)
+            # work out what we want the coverage to be
+            if growth == "fixed budget":
+                self.annual_spend[year] = old_spend
+                self.annual_cov[year] = self.func(self.annual_spend)[year]
+                self.annual_restr_cov[year] = self.annual_cov[year] * self.unrestr_popsize / self.restr_popsize
+            elif growth == "fixed coverage":
+                self.annual_restr_cov[year] = old_restr_cov  # note: maintaining fixed restricted coverage rather than overall coverage
+                self.annual_cov[year] = old_restr_cov * self.restr_popsize / self.unrestr_popsize
+                self.annual_spend[year] = self.get_spending(self.annual_cov)[year]  # note that we have updated the cost curve so this should be correct for all scenarios
+            else:
+                raise Exception("Growth type '%s' is not valid, must be False, 'fixed budget' or 'fixed coverage'" % growth)
 
     def _set_target_ages(self):
         """
@@ -651,10 +651,12 @@ class ProgramInfo(sc.prettyobj):
         """If scen is a budget scenario, convert it to unrestricted coverage.
         If scen is a coverage object, assumed to be restricted cov and converted
         Return: list of lists"""
+        covs = self.check_cov(covs, years) #these are entered as restricted covs (coverage of the eligible population)
+        
         unrestr_covs = np.zeros(shape=(len(self.programs), len(years)))
-        spends = np.zeros(shape=(len(self.programs), len(years)))
-        covs = self.check_cov(covs, years)
-        restr_covs = self.check_cov(covs, years)
+        restr_covs   = np.zeros(shape=(len(self.programs), len(years)))
+        spends       = np.zeros(shape=(len(self.programs), len(years)))
+        
         for i, prog in self.programs.enumvals():
             unrestr_covs[i], restr_covs[i], spends[i] = prog.interp_scen(covs[i], years, scentype, prog.name)
         return unrestr_covs, restr_covs, spends
