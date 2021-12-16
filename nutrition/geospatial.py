@@ -117,14 +117,14 @@ class Geospatial:
             _ = utils.get_translator(res.locale)
 
             res.mult = None
-            if res.name == "Baseline":
-                if res.model_name + ": Baseline" in track_names:
+            if res.name == _("Baseline"):
+                if res.model_name + ": " + _("Baseline") in track_names:
                     track_del_ind.append(r)
-                res.name = res.model_name + ": Baseline"
+                res.name = res.model_name + ": " + _("Baseline")
                 track_names.append(res.name)
             else:
                 res.name = res.model_name + ": " + res.name
-            if _("Excess budget not allocated") in res.prog_info.programs and "Baseline" not in res.name:
+            if _("Excess budget not allocated") in res.prog_info.programs and _("Baseline") not in res.name:
                 excess_budget += res.prog_info.programs[_("Excess budget not allocated")].annual_spend[-1]
                 res.prog_info.programs[_("Excess budget not allocated")].annual_spend = np.zeros(len(res.years))
 
