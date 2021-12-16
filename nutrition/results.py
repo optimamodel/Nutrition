@@ -309,7 +309,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     headers = [["Scenario", "Estimate", "Outcome"] + years + ["Cumulative"]]
     for r, res in enumerate(reduced_results):
 
-        _ = utils.get_translator(res.locale)
+        _ = get_translator(res.locale)
 
         for esti in estimate_labels:
             if res != _("Excess budget"):
