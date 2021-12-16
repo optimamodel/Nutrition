@@ -58,21 +58,21 @@ class ScenResult(sc.prettyobj):
                 output = prettyvals
         return output
 
-    def get_covs(self, ref=True, unrestr=True):
+    def get_covs(self, unrestr=True):
         covs = sc.odict()
 
         for name, prog in self.programs.iteritems():
-            if self.growth:
-                covs[name] = prog.annual_restr_cov
-            else:
+            if unrestr:
                 covs[name] = prog.annual_cov
+            else:
+                covs[name] = prog.annual_restr_cov
         return covs
 
-    def get_allocs(self, ref=True, current=False):
+    def get_allocs(self, ref=True, current=False): 
         allocs = sc.odict()
 
         for name, prog in self.programs.items():
-            prog_cov = prog.get_cov(unrestr=True)
+            # prog_cov = prog.get_cov(unrestr=True)
             allocs[name] = prog.annual_spend
 
         return allocs
