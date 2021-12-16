@@ -231,8 +231,26 @@ def _add_cost_types(settings):
     return settings
 
 
-@migration("Scen", "1.7.7", "1.7.8", "Add from_optim flag")
-def _add_from_optim_flag(scenario):
-    if not hasattr(scenario, "from_optim"):
-        scenario.from_optim = False
-    return scenario
+@migration("Optim", "1.7.9", "1.7.10", "Add optim UUID")
+def _add_optim_uid(optim):
+    if not hasattr(optim, "uid"):
+        optim.uid = sc.uuid()
+    return optim
+
+@migration("Scen", "1.7.9", "1.7.10", "Add optim UUID to scen")
+def _add_scen_optim_uid(scen):
+    if not hasattr(scen, "_optim_uid"):
+        scen._optim_uid = None
+    return scen
+
+@migration("Scen", "1.7.10", "1.7.11", "Remove active")
+def _scen_remove_active(scen):
+    if hasattr(scen, "active"):
+        delattr(scen, "active")
+    return scen
+
+@migration("Optim", "1.7.10", "1.7.11", "Remove active")
+def _optim_remove_active(optim):
+    if hasattr(optim, "active"):
+        delattr(optim, "active")
+    return optim

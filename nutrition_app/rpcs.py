@@ -956,7 +956,7 @@ def py_to_js_scen(py_scen, proj, default_included=False):
     key = py_scen.model_name
     prog_names = proj.dataset(key).prog_names
     scen_years = proj.dataset(key).t[1] - proj.dataset(key).t[0]  # First year is baseline
-    attrs = ["name", "active", "scen_type", "model_name", "from_optim"]
+    attrs = ["name", "scen_type", "model_name", "_optim_uid"]
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr)  # Copy the attributes into a dictionary
@@ -1008,7 +1008,7 @@ def js_to_py_scen(js_scen):
     # WARNING - this is a destructive operation because the Python scenario doesn't record whether an intervention is included or not
     # Therefore, any interventions that aren't included are dropped and the text box values are discarded entirely
     py_json = sc.odict()
-    for attr in ["name", "scen_type", "model_name", "active", "from_optim"]:  # Copy these directly
+    for attr in ["name", "scen_type", "model_name", "_optim_uid"]:  # Copy these directly
         py_json[attr] = js_scen[attr]
     py_json["progvals"] = sc.odict()  # These require more TLC
     for js_spec in js_scen["progvals"]:
@@ -1039,9 +1039,11 @@ def get_scen_info(project_id, verbose=False):
     proj = load_project(project_id)
     scenario_jsons = []
     for py_scen in proj.scens.values():
-        if not py_scen.from_optim:
-            js_scen = py_to_js_scen(py_scen, proj)
-            scenario_jsons.append(js_scen)
+        if py_scen._optim_uid:
+            # Skip listing scenarios that are linked to optimizations
+            continue
+        js_scen = py_to_js_scen(py_scen, proj)
+        scenario_jsons.append(js_scen)
     if verbose:
         print("JavaScript scenario info:")
         sc.pp(scenario_jsons)
@@ -1049,32 +1051,24 @@ def get_scen_info(project_id, verbose=False):
 
 
 @RPC()
-def set_scen_info(project_id, scenario_jsons, optim_jsons=None):
-    print("Setting scenario info...")
+def set_scen_info(project_id, scenario_jsons):
+    # Set scenario info from scenarios page
     proj = load_project(project_id)
-    if optim_jsons is None:
-        for scen in list(proj.scens):
-            if not proj.scens[scen].from_optim:
-                del proj.scens[scen]
 
-        for j, js_scen in enumerate(scenario_jsons):
-            print("Setting scenario %s of %s..." % (j + 1, len(scenario_jsons)))
-            scen = js_to_py_scen(js_scen)
-            proj.add_scens(scen)
-    else:
-        optim_names = [[js_optim["name"], js_optim["name"] + " baseline"] for js_optim in optim_jsons]
-        optim_names = [item for sublist in optim_names for item in sublist]
-        for scen in list(proj.scens):
-            for js_optim in optim_jsons:
-                if (js_optim["name"] == proj.scens[scen].name) or js_optim["name"] + " baseline" == proj.scens[scen].name:
-                    proj.scens[scen].active = js_optim["active"]
-            if proj.scens[scen].name not in optim_names and proj.scens[scen].from_optim:
-                if "Balanced objectives" not in proj.scens[scen].name:
-                    proj.scens[scen].active = False
+    _ = nu.get_translator(proj.locale)
 
-    print("Saving project...")
+    # Delete all not-optim related scenarios
+    for scen in list(proj.scens):
+        if not proj.scens[scen]._optim_uid:
+            del proj.scens[scen]
+
+    # Add all scenarios by JSON
+    for j, js_scen in enumerate(scenario_jsons):
+        print("Setting scenario %s of %s..." % (j + 1, len(scenario_jsons)))
+        scen = js_to_py_scen(js_scen)
+        proj.add_scens(scen)
+
     save_project(proj)
-    return None
 
 
 @RPC()
@@ -1088,7 +1082,7 @@ def get_default_scen(project_id, model_name, scen_type, locale=None):
     else:
         raise Exception("Unknown scenario type")
     proj = load_project(project_id)
-    py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename=scen_name)
+    py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, name=scen_name)
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     return js_scen
 
@@ -1159,7 +1153,16 @@ def reformat_costeff(costeff):
 
 
 @RPC()
-def run_scens(project_id, doplot=True, do_costeff=False, n_runs=0):
+def run_scens(project_id, scens_to_run, do_costeff=False, n_runs=0):
+    """
+
+    :param project_id:
+    :param scens_to_run: Collection of scenario names to run
+    :param doplot:
+    :param do_costeff:
+    :param n_runs:
+    :return:
+    """
 
     print("Running scenarios...")
     proj = load_project(project_id)
@@ -1173,7 +1176,7 @@ def run_scens(project_id, doplot=True, do_costeff=False, n_runs=0):
     if isinstance(n_runs, str):
         n_runs = int(n_runs)
 
-    proj.run_scens(n_samples=n_runs)
+    proj.run_scens(scens_to_run=scens_to_run, n_samples=n_runs, name='scens')
 
     if do_costeff:
         # Get cost-effectiveness table
@@ -1184,15 +1187,14 @@ def run_scens(project_id, doplot=True, do_costeff=False, n_runs=0):
 
     # Get graphs
     graphs = []
-    if doplot:
-        figs = proj.plot("scens")
-        for f, fig in enumerate(figs.values()):
-            for ax in fig.get_axes():
-                ax.set_facecolor("none")
-            graph_dict = sw.mpld3ify(fig, jsonify=False)
-            graphs.append(graph_dict)
-            pl.close(fig)
-            print("Converted figure %s of %s" % (f + 1, len(figs)))
+    figs = proj.plot("scens")
+    for f, fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor("none")
+        graph_dict = sw.mpld3ify(fig, jsonify=False)
+        graphs.append(graph_dict)
+        pl.close(fig)
+        print("Converted figure %s of %s" % (f + 1, len(figs)))
 
     # Store results in cache
     proj = cache_results(proj)
@@ -1213,12 +1215,13 @@ def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     locale = proj.locale
     obj_labels = nu.pretty_labels(direction=True, locale=locale).values()
     js_optim = {}
-    attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs", "active"]
+    attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs", "uid"]
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr)  # Copy the attributes into a dictionary
     weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_optim.weights))]  # WARNING, ABS HACK
     growth = py_optim.growth
     balanced_optimization = py_optim.balanced_optimization
+    js_optim['uid'] = py_optim.uid
     js_optim["weightslist"] = weightslist
     js_optim["growth"] = growth
     js_optim["balanced_optimization"] = balanced_optimization
@@ -1233,7 +1236,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
     """ Convert a JSON to Python representation of an optimization """
     obj_keys = nu.default_trackers()
     kwargs = sc.odict()
-    attrs = ["name", "model_name", "fix_curr", "filter_progs", "active", "growth", "balanced_optimization"]
+    attrs = ["name", "model_name", "fix_curr", "filter_progs", "growth", "balanced_optimization", "uid"]
     for attr in attrs:
         kwargs[attr] = js_optim[attr]
     try:
@@ -1277,14 +1280,31 @@ def get_optim_info(project_id):
 def set_optim_info(project_id, optim_jsons):
     print("Setting optimization info...")
     proj = load_project(project_id)
+    optim_uids = {x['uid'] for x in optim_jsons}
+
     proj.optims.clear()
     for j, js_optim in enumerate(optim_jsons):
         optim = js_to_py_optim(js_optim)
         proj.add_optims(optim)
-    print("Saving project...")
-    save_project(proj)
-    return None
 
+    proj.scens = {k:v for k,v in proj.scens.items() if v._optim_uid is None or v._optim_uid in optim_uids}
+    save_project(proj)
+
+@RPC()
+def delete_optim(project_id, optim_uid):
+    proj = load_project(project_id)
+    proj.scens = {k:v for k,v in proj.scens.items() if v._optim_uid != optim_uid}
+    proj.optims = {k:v for k,v in proj.optims.items() if v.uid != optim_uid}
+    save_project(proj)
+
+@RPC()
+def create_optim(project_id, js_optim):
+    proj = load_project(project_id)
+    js_optim['uid'] = sc.uuid()
+    optim = js_to_py_optim(js_optim)
+    proj.add_optims(optim)
+    save_project(proj)
+    return optim.uid
 
 @RPC()
 def opt_new_optim(project_id, dataset, locale):
@@ -1300,7 +1320,15 @@ def opt_new_optim(project_id, dataset, locale):
             prog_set.append(program.name)
     py_optim.prog_set = prog_set
     js_optim = py_to_js_optim(py_optim, proj)
+    js_optim['uid'] = None
     return js_optim
+
+@RPC()
+def clear_optim_scens(project_id, uid):
+    # Remove the scenarios associated with a project
+    proj = load_project(project_id)
+    proj.scens = {k:v for k,v in proj.scens.items() if v._optim_uid != uid}
+    save_project(proj)
 
 
 @RPC()
@@ -1350,41 +1378,9 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
 
     return {"graphs": graphs, "table": table}
 
-
 @RPC()
-def opt_to_scen(project_id, js_optims: dict):
-    print("Converting optimization to scenario...")
-    proj = load_project(project_id)
-    py_optims = sc.odict()
-    for js_optim in js_optims:
-        id = js_optim["serverDatastoreId"]
-        py_optims[id] = js_to_py_optim(js_optim)
+def run_opt_scens(project_id, uids, do_costeff=False, n_runs=1):
 
-    proj = retrieve_results(proj)
-    scens = [scen for scen in proj.scens.values()]
-
-    for py_optim in py_optims.items():
-        if py_optim[1].active:
-
-            res = proj.results[py_optim[0]]
-            py_base_scen = proj.run_baseline(py_optim[1].model_name, py_optim[1].prog_set, growth=py_optim[1].growth, dorun=False)
-            py_base_scen.from_optim = True
-
-            optim_alloc = res[0].get_allocs()
-
-            py_scen = nu.Scen(name=py_optim[1].name, model_name=py_optim[1].model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=py_optim[1].growth)
-            py_scen.from_optim = True
-
-            scens.append(py_to_js_scen(py_base_scen, proj))
-            scens.append(py_to_js_scen(py_scen, proj))
-
-    return scens
-
-
-@RPC()
-def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
-
-    print("Running optimizations...")
     proj = load_project(project_id)
 
     if "opts" in proj.results:
@@ -1393,10 +1389,11 @@ def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
         except:
             pass
 
-    if isinstance(n_runs, str):
-        n_runs = int(n_runs)
+    n_runs = int(n_runs) if sc.isstring(n_runs) else n_runs
 
-    proj.run_opt_scens(n_samples=n_runs)
+    scens_to_run = [k for k,v in proj.scens.items() if v._optim_uid in uids]
+
+    proj.run_scens(scens_to_run=scens_to_run, n_samples=n_runs, name="opts")
 
     if do_costeff:
         # Get cost-effectiveness table
@@ -1407,15 +1404,14 @@ def run_opt_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
 
     # Get graphs
     graphs = []
-    if doplot:
-        figs = proj.plot("opts")
-        for f, fig in enumerate(figs.values()):
-            for ax in fig.get_axes():
-                ax.set_facecolor("none")
-            graph_dict = sw.mpld3ify(fig, jsonify=False)
-            graphs.append(graph_dict)
-            pl.close(fig)
-            print("Converted figure %s of %s" % (f + 1, len(figs)))
+    figs = proj.plot("opts")
+    for f, fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor("none")
+        graph_dict = sw.mpld3ify(fig, jsonify=False)
+        graphs.append(graph_dict)
+        pl.close(fig)
+        print("Converted figure %s of %s" % (f + 1, len(figs)))
 
     # Store results in cache
     proj = cache_results(proj)

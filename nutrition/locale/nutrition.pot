@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: nutrition 1.7.9\n"
+"Project-Id-Version: nutrition 1.7.10\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-12-16 11:22+1100\n"
+"POT-Creation-Date: 2021-12-16 16:18+1100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -426,8 +426,8 @@ msgid "Pregnant women"
 msgstr ""
 
 #: nutrition/data.py:417 nutrition/data.py:541 nutrition/data.py:751
-#: nutrition/data.py:774 nutrition/data.py:925 nutrition/geospatial.py:330
-#: nutrition/project.py:717 nutrition/project.py:784 nutrition_app/rpcs.py:691
+#: nutrition/data.py:774 nutrition/data.py:925 nutrition/geospatial.py:329
+#: nutrition/project.py:701 nutrition/project.py:768 nutrition_app/rpcs.py:691
 #: nutrition_app/rpcs.py:770
 msgid "Treatment of SAM"
 msgstr ""
@@ -703,7 +703,7 @@ msgstr ""
 msgid "Cash transfers"
 msgstr ""
 
-#: nutrition/data.py:759 nutrition/geospatial.py:325 nutrition/project.py:779
+#: nutrition/data.py:759 nutrition/geospatial.py:324 nutrition/project.py:763
 msgid "Lipid-based nutrition supplements"
 msgstr ""
 
@@ -715,17 +715,17 @@ msgstr ""
 msgid "Oral rehydration salts"
 msgstr ""
 
-#: nutrition/data.py:767 nutrition/geospatial.py:329
-#: nutrition/optimization.py:290 nutrition/project.py:754
-#: nutrition/project.py:783
+#: nutrition/data.py:767 nutrition/geospatial.py:328
+#: nutrition/optimization.py:294 nutrition/project.py:738
+#: nutrition/project.py:767
 msgid "Public provision of complementary foods"
 msgstr ""
 
-#: nutrition/data.py:777 nutrition/geospatial.py:333 nutrition/project.py:787
+#: nutrition/data.py:777 nutrition/geospatial.py:332 nutrition/project.py:771
 msgid "Zinc for treatment + ORS"
 msgstr ""
 
-#: nutrition/data.py:780 nutrition/optimization.py:289 nutrition/project.py:753
+#: nutrition/data.py:780 nutrition/optimization.py:293 nutrition/project.py:737
 msgid "Balanced energy-protein supplementation"
 msgstr ""
 
@@ -737,7 +737,7 @@ msgstr ""
 msgid "IPTp"
 msgstr ""
 
-#: nutrition/data.py:789 nutrition/geospatial.py:332 nutrition/project.py:786
+#: nutrition/data.py:789 nutrition/geospatial.py:331 nutrition/project.py:770
 msgid "Mg for eclampsia"
 msgstr ""
 
@@ -749,7 +749,7 @@ msgstr ""
 msgid "Family planning"
 msgstr ""
 
-#: nutrition/data.py:800 nutrition/project.py:730
+#: nutrition/data.py:800 nutrition/project.py:714
 msgid "IFAS (community)"
 msgstr ""
 
@@ -757,17 +757,17 @@ msgstr ""
 msgid "IFAS (health facility)"
 msgstr ""
 
-#: nutrition/data.py:810 nutrition/project.py:731
+#: nutrition/data.py:810 nutrition/project.py:715
 msgid "IFAS (retailer)"
 msgstr ""
 
-#: nutrition/data.py:813 nutrition/project.py:732
+#: nutrition/data.py:813 nutrition/project.py:716
 msgid "IFAS (school)"
 msgstr ""
 
-#: nutrition/data.py:816 nutrition/geospatial.py:323
-#: nutrition/optimization.py:288 nutrition/project.py:752
-#: nutrition/project.py:777
+#: nutrition/data.py:816 nutrition/geospatial.py:322
+#: nutrition/optimization.py:292 nutrition/project.py:736
+#: nutrition/project.py:761
 msgid "IFA fortification of maize"
 msgstr ""
 
@@ -917,24 +917,24 @@ msgstr ""
 msgid "Odds ratios for optimal birth spacing by program - upper"
 msgstr ""
 
-#: nutrition/geospatial.py:62
+#: nutrition/geospatial.py:61
 msgid "Less than 2 regions selected for geospatial analysis."
 msgstr ""
 
-#: nutrition/geospatial.py:96
+#: nutrition/geospatial.py:95
 msgid "No funds to distribute between or within regions."
 msgstr ""
 
-#: nutrition/geospatial.py:120 nutrition/geospatial.py:121
-#: nutrition/geospatial.py:123 nutrition/geospatial.py:127
+#: nutrition/geospatial.py:119 nutrition/geospatial.py:120
+#: nutrition/geospatial.py:122 nutrition/geospatial.py:126
 #: nutrition/plotting.py:664 nutrition/project.py:374 nutrition/project.py:418
 #: nutrition/utils.py:226
 msgid "Baseline"
 msgstr ""
 
-#: nutrition/geospatial.py:127 nutrition/geospatial.py:128
-#: nutrition/geospatial.py:129 nutrition/geospatial.py:138
-#: nutrition/geospatial.py:140 nutrition/optimization.py:222
+#: nutrition/geospatial.py:126 nutrition/geospatial.py:127
+#: nutrition/geospatial.py:128 nutrition/geospatial.py:137
+#: nutrition/geospatial.py:139 nutrition/optimization.py:222
 #: nutrition/optimization.py:225 nutrition/optimization.py:235
 #: nutrition/optimization.py:236 nutrition/plotting.py:195
 #: nutrition/plotting.py:283 nutrition/plotting.py:536
@@ -945,39 +945,39 @@ msgstr ""
 msgid "Excess budget not allocated"
 msgstr ""
 
-#: nutrition/geospatial.py:137 nutrition/plotting.py:671
+#: nutrition/geospatial.py:136 nutrition/plotting.py:671
 #: nutrition/plotting.py:680 nutrition/results.py:230 nutrition/results.py:251
 #: nutrition/results.py:315 nutrition/results.py:342
 msgid "Excess budget"
 msgstr ""
 
-#: nutrition/geospatial.py:324 nutrition/optimization.py:287
-#: nutrition/project.py:692 nutrition/project.py:704 nutrition/project.py:751
-#: nutrition/project.py:778
+#: nutrition/geospatial.py:323 nutrition/optimization.py:291
+#: nutrition/project.py:676 nutrition/project.py:688 nutrition/project.py:735
+#: nutrition/project.py:762
 msgid "IYCF 1"
 msgstr ""
 
-#: nutrition/geospatial.py:326 nutrition/project.py:780
+#: nutrition/geospatial.py:325 nutrition/project.py:764
 msgid "Multiple micronutrient supplementation"
 msgstr ""
 
-#: nutrition/geospatial.py:327 nutrition/project.py:729
-#: nutrition/project.py:781
+#: nutrition/geospatial.py:326 nutrition/project.py:713
+#: nutrition/project.py:765
 msgid "Micronutrient powders"
 msgstr ""
 
-#: nutrition/geospatial.py:328 nutrition/project.py:782
+#: nutrition/geospatial.py:327 nutrition/project.py:766
 msgid "Kangaroo mother care"
 msgstr ""
 
-#: nutrition/geospatial.py:331 nutrition/optimization.py:286
-#: nutrition/project.py:693 nutrition/project.py:705 nutrition/project.py:750
-#: nutrition/project.py:785
+#: nutrition/geospatial.py:330 nutrition/optimization.py:290
+#: nutrition/project.py:677 nutrition/project.py:689 nutrition/project.py:734
+#: nutrition/project.py:769
 msgid "Vitamin A supplementation"
 msgstr ""
 
-#: nutrition/geospatial.py:334 nutrition/optimization.py:291
-#: nutrition/project.py:755 nutrition/project.py:788
+#: nutrition/geospatial.py:333 nutrition/optimization.py:295
+#: nutrition/project.py:739 nutrition/project.py:772
 msgid "Iron and iodine fortification of salt"
 msgstr ""
 
@@ -1185,45 +1185,53 @@ msgstr ""
 msgid "effectiveness"
 msgstr ""
 
-#: nutrition/project.py:687
+#: nutrition/project.py:567
+msgid "baseline"
+msgstr ""
+
+#: nutrition/project.py:671
 msgid "Stunting example (coverage)"
 msgstr ""
 
-#: nutrition/project.py:688 nutrition/project.py:700 nutrition/project.py:713
-#: nutrition/project.py:725 nutrition/project.py:746 nutrition/project.py:808
+#: nutrition/project.py:672 nutrition/project.py:684 nutrition/project.py:697
+#: nutrition/project.py:709 nutrition/project.py:730 nutrition/project.py:791
 msgid "demo"
 msgstr ""
 
-#: nutrition/project.py:699
+#: nutrition/project.py:683
 msgid "Stunting example (budget)"
 msgstr ""
 
-#: nutrition/project.py:712
+#: nutrition/project.py:696
 msgid "Wasting example"
 msgstr ""
 
-#: nutrition/project.py:724
+#: nutrition/project.py:708
 msgid "Anaemia example"
 msgstr ""
 
-#: nutrition/project.py:745 nutrition_app/rpcs.py:1296
+#: nutrition/project.py:729 nutrition_app/rpcs.py:1300
 msgid "Maximize thrive"
 msgstr ""
 
-#: nutrition/project.py:770
+#: nutrition/project.py:754
 msgid "Geospatial optimization"
 msgstr ""
 
-#: nutrition/project.py:771 nutrition/project.py:809
+#: nutrition/project.py:755 nutrition/project.py:792
 msgid "demoregion1"
 msgstr ""
 
-#: nutrition/project.py:771 nutrition/project.py:810
+#: nutrition/project.py:755 nutrition/project.py:793
 msgid "demoregion2"
 msgstr ""
 
-#: nutrition/project.py:771 nutrition/project.py:811
+#: nutrition/project.py:755 nutrition/project.py:794
 msgid "demoregion3"
+msgstr ""
+
+#: nutrition/project.py:786 nutrition_app/rpcs.py:447
+msgid "Demo project"
 msgstr ""
 
 #: nutrition/results.py:103
@@ -1613,15 +1621,11 @@ msgid ""
 " baseline year"
 msgstr ""
 
-#: nutrition_app/rpcs.py:447
-msgid "Demo project"
-msgstr ""
-
-#: nutrition_app/rpcs.py:1085
+#: nutrition_app/rpcs.py:1079
 msgid "Default scenario (coverage)"
 msgstr ""
 
-#: nutrition_app/rpcs.py:1087
+#: nutrition_app/rpcs.py:1081
 msgid "Default scenario (budget)"
 msgstr ""
 

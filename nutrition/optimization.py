@@ -3,12 +3,12 @@ import multiprocessing
 import sciris as sc
 from . import pso, utils
 from .scenarios import Scen, run_scen
-
+from .migration import migrate
 
 class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
-    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True, add_funds=0, fix_curr=False, rem_curr=False, growth="fixed budget", filter_progs=True, balanced_optimization=False, locale=None):
+    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True, add_funds=0, fix_curr=False, rem_curr=False, growth="fixed budget", filter_progs=True, balanced_optimization=False, locale=None, uid=None):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
@@ -26,6 +26,7 @@ class Optim(sc.prettyobj):
         """
 
         self.name = name
+        self.uid = uid or sc.uuid()
         self.model_name = model_name
         proc_weights = utils.process_weights(weights, locale=locale)
         self.weights = np.transpose(proc_weights)
@@ -36,7 +37,6 @@ class Optim(sc.prettyobj):
         self.rem_curr = rem_curr if not fix_curr else False  # can't remove if fixed
         self.filter_progs = filter_progs
         self.num_cpus = multiprocessing.cpu_count()
-        self.active = active
         self.num_procs = None
         self.optim_allocs = sc.odict()
         self.growth = growth
@@ -119,12 +119,12 @@ class Optim(sc.prettyobj):
             # Prettier names
             for i, mult in enumerate(self.mults):
                 mult_str = f"(mult={res_balanced[i].mult}) " if len(self.mults) > 1 or res_balanced[i].mult != 1 else ""
-                res_balanced[i].name = res_balanced[i].obj + f" {mult_str}Balanced objectives"
-                scen_balanced[i].name = res_balanced[i].obj + f" {mult_str}Balanced objectives"
+                res_balanced[i].name = res_balanced[i].obj + f" {mult_str}{_('Balanced objectives')}"
+                scen_balanced[i].name = res_balanced[i].obj + f" {mult_str}{_('Balanced objectives')}"
 
         for r, result in enumerate(res):
             if len(self.mults) > 1 or result.mult != 1:  # add clarity on multiplier only if necessary
-                result.name = result.obj + f" (budget x{result.mult})"
+                result.name = result.obj + f" ({_('budget')} x{result.mult})"
             else:
                 result.name = result.obj
             scen[r].name = result.name
@@ -230,7 +230,7 @@ class Optim(sc.prettyobj):
         # generate results
         name = "%s (x%s) (w%s)" % (self.name, mult, weight)
         progvals = {prog: spend for prog, spend in zip(self.prog_set, best_alloc)}
-        scen = Scen(name=name, model_name=self.model_name, scen_type="budget", progvals=progvals, enforce_constraints_year=0, growth=self.growth, from_optim=True)
+        scen = Scen(name=name, model_name=self.model_name, scen_type="budget", progvals=progvals, enforce_constraints_year=0, growth=self.growth, optim_uid=self.uid)
         res = run_scen(scen, model, obj=self.name, mult=mult, weight=weight, restrictcovs=False)
         if _("Excess budget not allocated") in self.prog_set:
             self.prog_set.remove(_("Excess budget not allocated"))
@@ -246,6 +246,10 @@ class Optim(sc.prettyobj):
         print("Finished optimization for %s for objective %s and multiple %s" % (self.name, objective, multiple))
         print("The reason is %s and it took %0.1f s \n" % (exitreason, sc.toc(now, output=True)))
 
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
 def obj_func(allocation, model, free, fixed, keep_inds, weights):
     """

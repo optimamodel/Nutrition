@@ -6,7 +6,7 @@ from .migration import migrate
 
 
 class Scen(sc.prettyobj):
-    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, active=True, from_optim=False):
+    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, optim_uid=None):
         """
         Structure to define a scenario which can be used to fully instantiate a model instance in the project class.
         :param name: The name of the scenario (string)
@@ -22,7 +22,8 @@ class Scen(sc.prettyobj):
         self.scen_type = scen_type
         self.vals = list(progvals.values())
         self.prog_set = list(progvals.keys())
-        self.from_optim = from_optim
+        self._optim_uid = optim_uid # Link this scenario to an Optim - for FE use
+
         if growth is None:
             if "budget" in self.scen_type:
                 self.growth = "fixed budget"
@@ -32,7 +33,6 @@ class Scen(sc.prettyobj):
                 self.growth = "fixed budget"  # False?
         else:
             self.growth = growth
-        self.active = active
         if enforce_constraints_year is None:
             self.enforce_constraints_year = max([len(sv) if sv else 0.0 for sv in self.vals])  # e.g. by default for a scenario, if it is defined for 3 years only enforce constraints like fixed spending after that
         else:
@@ -94,7 +94,7 @@ def convert_scen(scen, model):
     return converted
 
 
-def make_default_scen(modelname=None, model=None, scen_type=None, basename="Baseline"):
+def make_default_scen(name, modelname, model, scen_type=None):
     """
     Creates and returns a prototype / default scenario for a particular Model.
     """
@@ -107,7 +107,7 @@ def make_default_scen(modelname=None, model=None, scen_type=None, basename="Base
     progset = model.prog_info.base_progset()
     progvals = sc.odict([(prog, []) for prog in progset])
 
-    kwargs1 = {"name": basename, "model_name": modelname, "scen_type": scen_type, "progvals": progvals}
+    kwargs1 = {"name": name, "model_name": modelname, "scen_type": scen_type, "progvals": progvals}
 
     default = Scen(**kwargs1)
     return default

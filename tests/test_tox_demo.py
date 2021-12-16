@@ -28,7 +28,7 @@ def test_optims(project):
     P.run_optim(parallel=False, maxtime=1, maxiter=1)
     P.plot(-1, optim=True)
     plt.close("all")
-
+    return P
 
 def test_geos(project):
     return True  # Skip this test for now - it's slow
@@ -43,6 +43,6 @@ if __name__ == "__main__":
 
     for locale in nu.available_locales:
         project = nu.demo(scens=True, optims=True, geos=True, locale=locale)
-        test_scens(project)
-        # test_optims(project)
+        # test_scens(project)
+        P = test_optims(project)
         # test_geos(project)
