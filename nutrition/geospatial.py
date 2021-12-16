@@ -79,7 +79,7 @@ class Geospatial:
                 run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, dosave=True, runbaseline=False, n_samples=0)
                 # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
                 print("Creating BOCs afresh...")
-                boc_optims = sc.odict([(region.name + "objective #" + str(w + 1), run_optim(optim=region)) for region in regions])
+                boc_optims = sc.odict([(region.name + "objective #" + str(w + 1), run_optim(optim=region)[0]) for region in regions])
 
                 # Get the actual BOCs (storing them in the self.bocs odict of pchip-generated objects).
                 self.get_bocs(boc_optims, totalfunds, weight)
@@ -102,10 +102,10 @@ class Geospatial:
             # Run results in parallel or series.
             # can run in parallel b/c child processes in series
             if parallel:
-                results += utils.run_parallel(run_optim, regions, num_procs=len(regions))
+                results += utils.run_parallel(run_optim[0], regions, num_procs=len(regions))
             else:
                 for region in regions:
-                    results.append(run_optim(region))
+                    results.append(run_optim(region)[0])
 
         # Flatten list.
         results = [item for sublist in results for item in sublist]

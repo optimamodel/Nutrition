@@ -577,7 +577,7 @@ msgstr "Risques des rés. des naissances"
 
 #: nutrition/data.py:554 nutrition/data.py:1439
 msgid "Odds ratios for conditions"
-msgstr "Rapport des cote pour des conditions"
+msgstr "Rapport des cotes pour des conditions"
 
 #: nutrition/data.py:555 nutrition/data.py:1132
 msgid "Stunting (HAZ-score < -2)"
@@ -891,7 +891,7 @@ msgstr "Rapport des cotes pour l'allaitement maternelle correct - supérieur"
 
 #: nutrition/data.py:1421
 msgid "Odds ratio for stunting - upper"
-msgstr "Rapport de cotes pour le retard de croissance - supérieur"
+msgstr "Rapport des cotes pour le retard de croissance - supérieur"
 
 #: nutrition/data.py:1430
 msgid "Odds ratios for conditions - lower"

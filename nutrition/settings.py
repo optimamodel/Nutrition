@@ -19,7 +19,7 @@ class Settings(object):
         self.t = [2017, 2030]
         self.years = sc.inclusiverange(self.t[0], self.t[1])
         self.n_years = len(self.years)
-        self.timestep = 1.0 / 12.0  # in months
+        self.timestep = 1.0 / 12.0  # in months. WARNING do not change this, montly timestep is hardcoded as e.g. for month in range(12) elsewhere.
         self.stunting_list = [_("High"), _("Moderate"), _("Mild"), _("Normal")]
         self.stunted_list = self.stunting_list[:2]
         self.non_stunted_list = self.stunting_list[2:]

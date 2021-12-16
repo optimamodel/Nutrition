@@ -39,12 +39,17 @@ kwargs7 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progval
 kwargs8 = {"name": "Treat SAM 100%", "model_name": "Maximize thrive", "mults": [1], "weights": sc.odict({"thrive": 1}), "prog_set": ["Vitamin A supplementation", "IYCF 1", "IFA fortification of maize", "Balanced energy-protein supplementation", "Public provision of complementary foods", "Iron and iodine fortification of salt"], "fix_curr": False, "add_funds": 0, "filter_progs": True}
 
 if __name__ == "__main__":
+    # mod = p.models.keys()[0]
+    # progs = p.models[mod].prog_info.programs.keys()
+    # zero_budget_kwargs = {"name": 'Zero spending exc FP', "model_name": mod, "scen_type": "budget", "progvals": sc.odict([(prog, [0]) for prog in progs])}
+    # inf_budget_kwargs = {"name": 'Infinite spending exc FP', "model_name": mod, "scen_type": "budget", "progvals": sc.odict([(prog, [0 if prog=='Family planning' else 9999999999]) for prog in progs])}
+    # scen_list = nu.make_scens([zero_budget_kwargs, inf_budget_kwargs])
+    
     scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3, kwargs2])
     p.add_scens(scen_list)
 
     results = p.run_scens(n_samples=3)
-    # p.mean()
-# p.run_scens()
+    
 if doplot:
     p.plot()
 # costeff = p.get_costeff()

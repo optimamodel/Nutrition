@@ -163,7 +163,8 @@ class Model(sc.prettyobj):
         prog_areas = self.prog_info.prog_areas
         for pop in self.pops:
             pop.previousCov = init_cov
-            pop.set_probs(prog_areas)
+            if year == 0:
+                pop.set_probs(prog_areas)
 
     def _reset_storage(self):
         for pop in self.pops:

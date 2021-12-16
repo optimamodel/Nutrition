@@ -720,7 +720,7 @@ msgid "Odds ratio for stunting"
 msgstr "Rapport des cotes pour le retard de croissance"
 
 msgid "Odds ratio for correct complementary feeding"
-msgstr "Rapport des cotes pour l'alimentation complémetaire"
+msgstr "Rapport des cotes pour l'alimentation complémentaire"
 
 msgid "Maternal risk factors leading to birth outcomes"
 msgstr "Facteurs de risque maternels contribuant aux résultats des naissances"
@@ -735,7 +735,7 @@ msgid "Risks for children who experience birth outcomes"
 msgstr "Risques pour les enfants touchés par chaque résultat des naissances"
 
 msgid "Odds ratios for conditions"
-msgstr "Rapport des cote pour des conditions"
+msgstr "Rapport des cotes pour des conditions"
 
 msgid "Stunting (HAZ-score < -2)"
 msgstr "Émaciation (score-HAZ < -2)"
@@ -803,7 +803,7 @@ msgid "By program"
 msgstr "Par programme"
 
 msgid "Odds ratio for correct breastfeeding by program"
-msgstr "Rapport des cotes pour allaitement correct par programme"
+msgstr "Rapport des cotes pour l'allaitement correct par programme"
 
 msgid "Other odds ratios"
 msgstr "Rapports des cotes supplémentaires"
@@ -869,7 +869,7 @@ msgid "Odds ratios for stunting"
 msgstr "Rapport des cotes pour le retard de croissance"
 
 msgid "Odds ratios for correct breastfeeding by program"
-msgstr "Rapport des cotes pour allaitement maternel correct par programme"
+msgstr "Rapport des cotes pour l'allaitement maternel correct par programme"
 
 msgid ""
 "=\"Percentage of deaths in baseline year (\"&start_year&\") attributable to "
@@ -883,7 +883,7 @@ msgstr "Pour MM par épisode supplémentaire de la diarrhée"
 
 msgid "Odds ratios for optimal birth spacing by program"
 msgstr ""
-"Rapports des cotes pour espacement des naissances optimal par programme"
+"Rapports des cotes pour l'espacement des naissances optimal par programme"
 
 msgid ""
 "=\"Percentage of population in each category in baseline year "
@@ -993,7 +993,7 @@ msgstr "Rapport des cotes pour le retard de croissance - inférieur"
 
 msgid "Odds ratio for correct complementary feeding - lower"
 msgstr ""
-"Rapport des cotes pour l'alimentation complémetaire correct - inférieur"
+"Rapport des cotes pour l'alimentation complémentaire correct - inférieur"
 
 msgid "Upper bounds"
 msgstr "Bornes supérieures"
@@ -1002,11 +1002,11 @@ msgid "Odds ratio for correct breastfeeding - upper"
 msgstr "Rapport des cotes pour l'allaitement maternelle correct - supérieur"
 
 msgid "Odds ratio for stunting - upper"
-msgstr "Rapport de cotes pour le retard de croissance - supérieur"
+msgstr "Rapport des cotes pour le retard de croissance - supérieur"
 
 msgid "Odds ratio for correct complementary feeding - upper"
 msgstr ""
-"Rapport des cotes pour l'alimentation complémetaire correct - supérieur"
+"Rapport des cotes pour l'alimentation complémentaire correct - supérieur"
 
 msgid "Relative risk by birth spacing - lower"
 msgstr "Risque relatif par espacement des naissances - inférieur"
@@ -1065,7 +1065,8 @@ msgid "Zinc supplementation - lower"
 msgstr "Supplémentation en zinc - inférieur"
 
 msgid "Odds ratios for correct breastfeeding by program - lower"
-msgstr "Rapport des cotes pour allaitement correct par programme - inférieur"
+msgstr ""
+"Rapport des cotes pour l'allaitement correct par programme - inférieur"
 
 msgid "Kangaroo mother care - lower"
 msgstr "Soins maternals kangourou - inférieur"
@@ -1109,7 +1110,8 @@ msgid "Zinc supplementation - upper"
 msgstr "Supplémentation en zinc - supérieur"
 
 msgid "Odds ratios for correct breastfeeding by program - upper"
-msgstr "Rapport des cotes pour allaitement correct par programme - supérieur"
+msgstr ""
+"Rapport des cotes pour l'allaitement correct par programme - supérieur"
 
 msgid "Kangaroo mother care - upper"
 msgstr "Soins maternals kangourou - supérieur"

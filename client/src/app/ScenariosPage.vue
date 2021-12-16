@@ -154,11 +154,13 @@ Last update: 2019feb11
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
             <b>{{ $t("scenarios.Databook") }}:</b><br>
-            <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
-              <option v-for='dataset in datasets'>
-                {{ dataset }}
-              </option>
-            </select><br><br>		   
+            <tr>
+              <th><select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
+                <option v-for='dataset in datasetOptions'>
+                  {{ dataset }}
+                </option>
+              </select><br><br></th>
+            </tr>
             <div class="scrolltable" style="max-height: 80vh;">
               <table class="table table-bordered table-striped table-hover">
                 <thead>
