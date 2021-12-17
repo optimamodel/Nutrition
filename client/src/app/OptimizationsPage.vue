@@ -82,8 +82,8 @@ Last update: 2019feb11
           <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("common.Export plots") }}</button>
-          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("common.Export data") }}</button>
+          <button class="btn" @click="exportGraphs(projectID, 'opts')">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, 'opts')">{{ $t("common.Export data") }}</button>
         </div>
       </div>
 
