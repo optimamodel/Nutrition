@@ -224,7 +224,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years, locale=results[0].locale)
 
     ### Outcomes sheet
-    headers = [[_("Scenario"), _("Outcome")] + years + [""] + [_("Cumulative")]]
+    headers = [[_("Scenario"), _("Estimate"), _("Outcome")] + years + [_("Cumulative")]]
 
     for r, res in enumerate(results):
         if res.name != _("Excess budget") and resampled_key_str not in res.name:
@@ -240,7 +240,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
                     cumul = "N/A"
                 else:
                     cumul = sum(thisout)
-                outputs.append(name + [outcome] + list(thisout) + [""] + [cumul])
+                outputs.append(name + ["point"] + [outcome] + list(thisout) + [cumul])
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)

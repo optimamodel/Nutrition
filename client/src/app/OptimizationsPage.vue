@@ -257,7 +257,7 @@ Last update: 2019feb11
                  v-model="modalUncertRuns"/><br>
         </div>
         <div style="text-align:justify">
-          <button @click="plotOptims(modalUncertRuns)" class='btn __green' style="display:inline-block">
+          <button @click="plotOptims(modalUncertRuns)  | $modal.hide('uncert-nruns')" class='btn __green' style="display:inline-block">
             {{ $t("optimization.Plot optimizations") }}
           </button>
 
@@ -752,6 +752,13 @@ Last update: 2019feb11
         } catch (error) {
           this.$sciris.fail(this, 'Could not plot optimization scenarios', error)
         }
+      },
+
+
+      UncertScensModal(nruns) {
+        console.log('UncertScensModal() called');
+        this.modalUncertRuns = nruns
+        this.$modal.show('uncert-nruns');
       },
     }
   }

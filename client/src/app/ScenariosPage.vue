@@ -239,7 +239,7 @@ Last update: 2019feb11
                  v-model="modalUncertRuns"/><br>
         </div>
         <div style="text-align:justify">
-          <button @click="runScens(modalUncertRuns)" class='btn __green' style="display:inline-block">
+          <button @click="runScens(modalUncertRuns) | $modal.hide('uncert-nruns')" class='btn __green' style="display:inline-block">
             {{ $t("scenarios.Run scenarios") }}
           </button>
 
