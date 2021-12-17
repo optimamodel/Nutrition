@@ -658,7 +658,6 @@ def get_costeff(project, results):
     parents = []
     baselines = []
     children = sc.odict()
-    outcomes = utils.default_trackers(prev=False, rate=False)
 
     for r, res in enumerate(results):
         _ = utils.get_translator(res.locale)
