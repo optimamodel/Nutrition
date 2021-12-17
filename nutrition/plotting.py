@@ -166,34 +166,35 @@ def plot_prevs_reduce(all_res, all_reduce, locale=None):
     figs = sc.odict()
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
     for i, prev in enumerate(prevs):
-        fig = pl.figure(figsize=fig_size)
-        ax = fig.add_axes(ax_size)
-        ymax = 0
-        leglabels = []
-        for r, res in enumerate(all_reduce):
-            out_p = all_reduce[res][prev]["point"]
-            out_l = all_reduce[res][prev]["low"]
-            out_h = all_reduce[res][prev]["high"]
-            newx = np.linspace(years[0], years[-1], len(years) * 10)
-            fp = scipy.interpolate.PchipInterpolator(years, out_p, extrapolate=False)
-            fl = scipy.interpolate.PchipInterpolator(years, out_l, extrapolate=False)
-            fh = scipy.interpolate.PchipInterpolator(years, out_h, extrapolate=False)
-            out_p = fp(newx) * 100
-            out_l = fl(newx) * 100
-            out_h = fh(newx) * 100
-            thismax = max(out_h)
-            if thismax > ymax:
-                ymax = thismax
-            (line,) = ax.plot(newx, out_p, color=colors[r])
-            ax.fill_between(newx, out_l, out_h, alpha=0.2, color=colors[r])
-            lines.append(line)
-            leglabels.append(res)
-        ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
-        ax.set_ylim([0, ymax * 1.1])
-        ax.set_xlabel(pgettext("plotting", "Years"))
-        ax.set_title(utils.relabel(prev, locale=locale))
-        ax.legend(lines, [res for res in all_reduce if res != _("Excess budget not allocated")], **legend_loc)
-        figs["prevs_%0i" % i] = fig
+        if 'mam' not in prev:
+            fig = pl.figure(figsize=fig_size)
+            ax = fig.add_axes(ax_size)
+            ymax = 0
+            leglabels = []
+            for r, res in enumerate(all_reduce):
+                out_p = all_reduce[res][prev]["point"]
+                out_l = all_reduce[res][prev]["low"]
+                out_h = all_reduce[res][prev]["high"]
+                newx = np.linspace(years[0], years[-1], len(years) * 10)
+                fp = scipy.interpolate.PchipInterpolator(years, out_p, extrapolate=False)
+                fl = scipy.interpolate.PchipInterpolator(years, out_l, extrapolate=False)
+                fh = scipy.interpolate.PchipInterpolator(years, out_h, extrapolate=False)
+                out_p = fp(newx) * 100
+                out_l = fl(newx) * 100
+                out_h = fh(newx) * 100
+                thismax = max(out_h)
+                if thismax > ymax:
+                    ymax = thismax
+                (line,) = ax.plot(newx, out_p, color=colors[r])
+                ax.fill_between(newx, out_l, out_h, alpha=0.2, color=colors[r])
+                lines.append(line)
+                leglabels.append(res)
+            ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
+            ax.set_ylim([0, ymax * 1.1])
+            ax.set_xlabel(pgettext("plotting", "Years"))
+            ax.set_title(utils.relabel(prev, locale=locale))
+            ax.legend(lines, [res for res in all_reduce if res != _("Excess budget not allocated")], **legend_loc)
+            figs["prevs_%0i" % i] = fig
     return figs
 
 
@@ -211,7 +212,10 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
     for i, outcome in enumerate(outcomes):
-        if ("cost" not in outcome and "pop" not in outcome and seq) or ("mam" not in outcome and "sam" not in outcome and "sga" not in outcome and "pop" not in outcome and not seq):
+        #if ("cost" not in outcome and "pop" not in outcome) or ("mam" not in outcome and "sam" not in outcome and "sga" not in outcome and "pop" not in outcome and not seq) or ("mam" not in outcome and "sga" not in outcome and not seq):
+        if "cost" in outcome or "pop" in outcome or ("mam" in outcome and seq) or ("sga" in outcome and seq) or ("months" in outcome and not seq) or ("years" in outcome and not seq):
+            continue
+        else:
             fig = pl.figure(figsize=fig_size)
             ax = fig.add_axes(ax_size)
             ymax = 0
