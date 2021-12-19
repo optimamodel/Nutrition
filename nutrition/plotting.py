@@ -213,7 +213,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
     for i, outcome in enumerate(outcomes):
         #if ("cost" not in outcome and "pop" not in outcome) or ("mam" not in outcome and "sam" not in outcome and "sga" not in outcome and "pop" not in outcome and not seq) or ("mam" not in outcome and "sga" not in outcome and not seq):
-        if "cost" in outcome or "pop" in outcome or ("mam" in outcome and seq) or ("sga" in outcome and seq) or ("months" in outcome and not seq) or ("years" in outcome and not seq):
+        if "cost" in outcome or "pop" in outcome or ("mam" in outcome and seq) or ("sga" in outcome and seq) or ("months" in outcome and not seq) or ("years" in outcome and not seq) or ("num_pw" in outcome and not seq):
             continue
         else:
             fig = pl.figure(figsize=fig_size)
