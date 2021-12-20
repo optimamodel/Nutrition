@@ -57,8 +57,12 @@ Last update: 2019feb11
         </table>
 
         <div>
+            <button class="btn" @click="modalDeselectAllScens()" data-tooltip="Deselect all scenarios">{{ $t("Deselect all") }}</button>
             <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
             <label for="costeff_checkbox">{{ $t("scenarios.Perform intervention cost-effectiveness analysis") }}</label>
+        </div>
+        <div>
+        &nbsp;
         </div>
 
         <div>
@@ -199,7 +203,7 @@ Last update: 2019feb11
                 </tbody>
               </table>
             </div>
-            <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
+            <button class="btn" @click="modalDeselectAllProgs()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
           </div>
           <div style="text-align:center">
             <button @click="modalSave()" class='btn __green' style="display:inline-block">
@@ -399,9 +403,15 @@ Last update: 2019feb11
         }
       },
 
-      modalDeselectAll() {
+      modalDeselectAllProgs() {
         this.addEditModal.scenSummary.progvals.forEach(progval => {
           progval.included = false;
+        })
+      },
+
+      modalDeselectAllScens() {
+        this.scenSummaries.forEach(scenSummary => {
+          scenSummary.active = false;
         })
       },
 

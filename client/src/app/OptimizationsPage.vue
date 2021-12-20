@@ -60,8 +60,12 @@ Last update: 2019feb11
         </table>
 
         <div>
+          <button class="btn" @click="modalDeselectAllOptims()" data-tooltip="Deselect all optimizations">{{ $t("Deselect all") }}</button>
           <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
           <label for="costeff_checkbox">{{ $t("optimization.perform_costeff") }}</label>
+        </div>
+        <div>
+        &nbsp;
         </div>
 
         <div>
@@ -220,7 +224,7 @@ Last update: 2019feb11
               </tbody>
             </table>
           </div>
-          <button class="btn" @click="modalDeselectAll()" :data-tooltip='$t("optimization.Deselect all interventions")'>{{ $t("Deselect all") }}</button>
+          <button class="btn" @click="modalDeselectAllProgs()" :data-tooltip='$t("optimization.Deselect all interventions")'>{{ $t("Deselect all") }}</button>
         </div>
         <div style="text-align:center">
           <button @click="modalSave()" class='btn __green' style="display:inline-block">
@@ -646,9 +650,15 @@ Last update: 2019feb11
         }
       },
 
-      modalDeselectAll() {
+      modalDeselectAllProgs() {
         this.addEditModal.optimSummary.programs.forEach(progval => {
           progval.included = false;
+        })
+      },
+
+      modalDeselectAllOptims() {
+        this.optimSummaries.forEach(optimSummary => {
+          optimSummary.active = false;
         })
       },
 
