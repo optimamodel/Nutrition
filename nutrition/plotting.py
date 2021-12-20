@@ -222,7 +222,11 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
             perchange = []
             bars = []
 
-            baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
+            #baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
+            if seq:
+                baseout = sc.promotetoarray(all_reduce[0][outcome]['point'][1:])
+            else:
+                baseout = sc.promotetoarray(all_reduce[0][outcome]['point'][1:].sum())
             scale = 1e6 if baseout.max() > 1e6 else 1
             baseout /= scale
             offsets = np.arange(len(all_reduce) + 1) * width  # Calculate offset so tick is in the center of the bars
@@ -251,6 +255,8 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     ymax = thimax
                 change = round_elements([utils.get_change(base, out) for out, base in zip(output_p, baseout)], dec=1)
                 perchange.append(change)
+                if outcome == 'child_mam' or outcome == 'child_sam':
+                    print(outcome, change)
 
                 if seq:
                     bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2, **kwargs)
