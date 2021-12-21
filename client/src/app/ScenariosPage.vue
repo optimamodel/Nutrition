@@ -25,7 +25,9 @@ Last update: 2019feb11
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th></th>
+            <th style="text-align:center">
+              <input type="checkbox" @click="modalDeselectAllScens()" v-model="allActive"/>
+            </th>
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Type") }}</th>
             <th>{{ $t("Databook") }}</th>
@@ -35,7 +37,7 @@ Last update: 2019feb11
           <tbody>
           <tr v-for="scenSummary in scenSummaries">
             <td style="text-align: center">
-              <input type="checkbox" v-model="scenSummary.active"/>
+              <input type="checkbox" @click="uncheckSelectAll()" v-model="scenSummary.active"/>
             </td>
             <td>
               <b>{{ scenSummary.name }}</b>
@@ -57,12 +59,8 @@ Last update: 2019feb11
         </table>
 
         <div>
-            <button class="btn" @click="modalDeselectAllScens()" data-tooltip="Deselect all scenarios">{{ $t("Deselect all") }}</button>
             <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
             <label for="costeff_checkbox">{{ $t("scenarios.Perform intervention cost-effectiveness analysis") }}</label>
-        </div>
-        <div>
-        &nbsp;
         </div>
 
         <div>
@@ -271,6 +269,7 @@ Last update: 2019feb11
 
     data() {
       return {
+        allActive: true,
         scenSummaries: [],
         defaultScenYears: [],
         scenariosLoaded: false,
@@ -410,9 +409,11 @@ Last update: 2019feb11
       },
 
       modalDeselectAllScens() {
-        this.scenSummaries.forEach(scenSummary => {
-          scenSummary.active = false;
-        })
+        this.scenSummaries.forEach(scenSummary => scenSummary.active = !this.allActive)
+      },
+
+      uncheckSelectAll() {
+        this.allActive = false
       },
 
       modalSave() {

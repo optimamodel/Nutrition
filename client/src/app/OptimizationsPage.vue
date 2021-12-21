@@ -25,7 +25,9 @@ Last update: 2019feb11
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th></th>
+            <th style="text-align:center">
+              <input type="checkbox" @click="modalDeselectAllOptims()" v-model="allActive"/>
+            </th>
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Databook") }}</th>
             <th>{{ $t("Status") }}</th>
@@ -35,7 +37,7 @@ Last update: 2019feb11
           <tbody>
           <tr v-for="optimSummary in optimSummaries">
             <td style="text-align: center">
-              <input type="checkbox" v-model="optimSummary.active"/>
+              <input type="checkbox" @click="uncheckSelectAll()" v-model="optimSummary.active"/>
             </td>
             <td>
               <b>{{ optimSummary.name }}</b>
@@ -60,12 +62,8 @@ Last update: 2019feb11
         </table>
 
         <div>
-          <button class="btn" @click="modalDeselectAllOptims()" data-tooltip="Deselect all optimizations">{{ $t("Deselect all") }}</button>
           <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
           <label for="costeff_checkbox">{{ $t("optimization.perform_costeff") }}</label>
-        </div>
-        <div>
-        &nbsp;
         </div>
 
         <div>
@@ -291,6 +289,7 @@ Last update: 2019feb11
 
     data() {
       return {
+        allActive: true,
         serverDatastoreId: '',
         displayResultName: '',
         displayResultDatastoreId: '',
@@ -657,9 +656,11 @@ Last update: 2019feb11
       },
 
       modalDeselectAllOptims() {
-        this.optimSummaries.forEach(optimSummary => {
-          optimSummary.active = false;
-        })
+        this.optimSummaries.forEach(optimSummary => optimSummary.active = !this.allActive)
+      },
+
+      uncheckSelectAll() {
+        this.allActive = false
       },
 
       async modalSave() {
