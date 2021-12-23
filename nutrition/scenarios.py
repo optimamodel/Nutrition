@@ -6,7 +6,7 @@ from .migration import migrate
 
 
 class Scen(sc.prettyobj):
-    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, optim_uid=None):
+    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, _optim_uid=None):
         """
         Structure to define a scenario which can be used to fully instantiate a model instance in the project class.
         :param name: The name of the scenario (string)
@@ -22,7 +22,7 @@ class Scen(sc.prettyobj):
         self.scen_type = scen_type
         self.vals = list(progvals.values())
         self.prog_set = list(progvals.keys())
-        self._optim_uid = optim_uid  # Link this scenario to an Optim - for FE use
+        self._optim_uid = _optim_uid  # Link this scenario to an Optim - for FE use
 
         if growth is None:
             if "budget" in self.scen_type:

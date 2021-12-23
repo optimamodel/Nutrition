@@ -25,7 +25,9 @@ Last update: 2019feb11
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th></th>
+            <th style="text-align:center">
+              <input type="checkbox" @click="modalDeselectAllOptims()" v-model="allActive"/>
+            </th>
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Databook") }}</th>
             <th>{{ $t("Status") }}</th>
@@ -35,7 +37,7 @@ Last update: 2019feb11
           <tbody>
           <tr v-for="optimSummary in optimSummaries">
             <td style="text-align: center">
-              <input type="checkbox" v-model="optimSummary.active"/>
+              <input type="checkbox" @click="uncheckSelectAll()" v-model="optimSummary.active"/>
             </td>
             <td>
               <b>{{ optimSummary.name }}</b>
@@ -82,8 +84,8 @@ Last update: 2019feb11
           <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("common.Export plots") }}</button>
-          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("common.Export data") }}</button>
+          <button class="btn" @click="exportGraphs(projectID, 'opts')">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, 'opts')">{{ $t("common.Export data") }}</button>
         </div>
       </div>
 
@@ -220,7 +222,7 @@ Last update: 2019feb11
               </tbody>
             </table>
           </div>
-          <button class="btn" @click="modalDeselectAll()" :data-tooltip='$t("optimization.Deselect all interventions")'>{{ $t("Deselect all") }}</button>
+          <button class="btn" @click="modalDeselectAllProgs()" :data-tooltip='$t("optimization.Deselect all interventions")'>{{ $t("Deselect all") }}</button>
         </div>
         <div style="text-align:center">
           <button @click="modalSave()" class='btn __green' style="display:inline-block">
@@ -257,7 +259,7 @@ Last update: 2019feb11
                  v-model="modalUncertRuns"/><br>
         </div>
         <div style="text-align:justify">
-          <button @click="plotOptims(modalUncertRuns)" class='btn __green' style="display:inline-block">
+          <button @click="plotOptims(modalUncertRuns)  | $modal.hide('uncert-nruns')" class='btn __green' style="display:inline-block">
             {{ $t("optimization.Plot optimizations") }}
           </button>
 
@@ -287,6 +289,7 @@ Last update: 2019feb11
 
     data() {
       return {
+        allActive: true,
         serverDatastoreId: '',
         displayResultName: '',
         displayResultDatastoreId: '',
@@ -646,10 +649,18 @@ Last update: 2019feb11
         }
       },
 
-      modalDeselectAll() {
+      modalDeselectAllProgs() {
         this.addEditModal.optimSummary.programs.forEach(progval => {
           progval.included = false;
         })
+      },
+
+      modalDeselectAllOptims() {
+        this.optimSummaries.forEach(optimSummary => optimSummary.active = !this.allActive)
+      },
+
+      uncheckSelectAll() {
+        this.allActive = false
       },
 
       async modalSave() {
@@ -752,6 +763,13 @@ Last update: 2019feb11
         } catch (error) {
           this.$sciris.fail(this, 'Could not plot optimization scenarios', error)
         }
+      },
+
+
+      UncertScensModal(nruns) {
+        console.log('UncertScensModal() called');
+        this.modalUncertRuns = nruns
+        this.$modal.show('uncert-nruns');
       },
     }
   }

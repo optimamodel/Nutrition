@@ -25,7 +25,9 @@ Last update: 2019feb11
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th></th>
+            <th style="text-align:center">
+              <input type="checkbox" @click="modalDeselectAllScens()" v-model="allActive"/>
+            </th>
             <th>{{ $t("Name") }}</th>
             <th>{{ $t("Type") }}</th>
             <th>{{ $t("Databook") }}</th>
@@ -35,7 +37,7 @@ Last update: 2019feb11
           <tbody>
           <tr v-for="scenSummary in scenSummaries">
             <td style="text-align: center">
-              <input type="checkbox" v-model="scenSummary.active"/>
+              <input type="checkbox" @click="uncheckSelectAll()" v-model="scenSummary.active"/>
             </td>
             <td>
               <b>{{ scenSummary.name }}</b>
@@ -199,7 +201,7 @@ Last update: 2019feb11
                 </tbody>
               </table>
             </div>
-            <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
+            <button class="btn" @click="modalDeselectAllProgs()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
           </div>
           <div style="text-align:center">
             <button @click="modalSave()" class='btn __green' style="display:inline-block">
@@ -239,7 +241,7 @@ Last update: 2019feb11
                  v-model="modalUncertRuns"/><br>
         </div>
         <div style="text-align:justify">
-          <button @click="runScens(modalUncertRuns)" class='btn __green' style="display:inline-block">
+          <button @click="runScens(modalUncertRuns) | $modal.hide('uncert-nruns')" class='btn __green' style="display:inline-block">
             {{ $t("scenarios.Run scenarios") }}
           </button>
 
@@ -267,6 +269,7 @@ Last update: 2019feb11
 
     data() {
       return {
+        allActive: true,
         scenSummaries: [],
         defaultScenYears: [],
         scenariosLoaded: false,
@@ -399,10 +402,18 @@ Last update: 2019feb11
         }
       },
 
-      modalDeselectAll() {
+      modalDeselectAllProgs() {
         this.addEditModal.scenSummary.progvals.forEach(progval => {
           progval.included = false;
         })
+      },
+
+      modalDeselectAllScens() {
+        this.scenSummaries.forEach(scenSummary => scenSummary.active = !this.allActive)
+      },
+
+      uncheckSelectAll() {
+        this.allActive = false
       },
 
       modalSave() {

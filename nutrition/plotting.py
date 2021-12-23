@@ -166,34 +166,35 @@ def plot_prevs_reduce(all_res, all_reduce, locale=None):
     figs = sc.odict()
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
     for i, prev in enumerate(prevs):
-        fig = pl.figure(figsize=fig_size)
-        ax = fig.add_axes(ax_size)
-        ymax = 0
-        leglabels = []
-        for r, res in enumerate(all_reduce):
-            out_p = all_reduce[res][prev]["point"]
-            out_l = all_reduce[res][prev]["low"]
-            out_h = all_reduce[res][prev]["high"]
-            newx = np.linspace(years[0], years[-1], len(years) * 10)
-            fp = scipy.interpolate.PchipInterpolator(years, out_p, extrapolate=False)
-            fl = scipy.interpolate.PchipInterpolator(years, out_l, extrapolate=False)
-            fh = scipy.interpolate.PchipInterpolator(years, out_h, extrapolate=False)
-            out_p = fp(newx) * 100
-            out_l = fl(newx) * 100
-            out_h = fh(newx) * 100
-            thismax = max(out_h)
-            if thismax > ymax:
-                ymax = thismax
-            (line,) = ax.plot(newx, out_p, color=colors[r])
-            ax.fill_between(newx, out_l, out_h, alpha=0.2, color=colors[r])
-            lines.append(line)
-            leglabels.append(res)
-        ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
-        ax.set_ylim([0, ymax * 1.1])
-        ax.set_xlabel(pgettext("plotting", "Years"))
-        ax.set_title(utils.relabel(prev, locale=locale))
-        ax.legend(lines, [res for res in all_reduce if res != _("Excess budget not allocated")], **legend_loc)
-        figs["prevs_%0i" % i] = fig
+        if 'mam' not in prev:
+            fig = pl.figure(figsize=fig_size)
+            ax = fig.add_axes(ax_size)
+            ymax = 0
+            leglabels = []
+            for r, res in enumerate(all_reduce):
+                out_p = all_reduce[res][prev]["point"]
+                out_l = all_reduce[res][prev]["low"]
+                out_h = all_reduce[res][prev]["high"]
+                newx = np.linspace(years[0], years[-1], len(years) * 10)
+                fp = scipy.interpolate.PchipInterpolator(years, out_p, extrapolate=False)
+                fl = scipy.interpolate.PchipInterpolator(years, out_l, extrapolate=False)
+                fh = scipy.interpolate.PchipInterpolator(years, out_h, extrapolate=False)
+                out_p = fp(newx) * 100
+                out_l = fl(newx) * 100
+                out_h = fh(newx) * 100
+                thismax = max(out_h)
+                if thismax > ymax:
+                    ymax = thismax
+                (line,) = ax.plot(newx, out_p, color=colors[r])
+                ax.fill_between(newx, out_l, out_h, alpha=0.2, color=colors[r])
+                lines.append(line)
+                leglabels.append(res)
+            ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
+            ax.set_ylim([0, ymax * 1.1])
+            ax.set_xlabel(pgettext("plotting", "Years"))
+            ax.set_title(utils.relabel(prev, locale=locale))
+            ax.legend(lines, [res for res in all_reduce if res != _("Excess budget not allocated")], **legend_loc)
+            figs["prevs_%0i" % i] = fig
     return figs
 
 
@@ -211,14 +212,21 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
     for i, outcome in enumerate(outcomes):
-        if ("cost" not in outcome and "pop" not in outcome and seq) or ("mam" not in outcome and "sam" not in outcome and "sga" not in outcome and "pop" not in outcome and not seq):
+        #if ("cost" not in outcome and "pop" not in outcome) or ("mam" not in outcome and "sam" not in outcome and "sga" not in outcome and "pop" not in outcome and not seq) or ("mam" not in outcome and "sga" not in outcome and not seq):
+        if "cost" in outcome or "pop" in outcome or ("mam" in outcome and seq) or ("sga" in outcome and seq) or ("months" in outcome and not seq) or ("years" in outcome and not seq) or ("num_pw" in outcome and not seq):
+            continue
+        else:
             fig = pl.figure(figsize=fig_size)
             ax = fig.add_axes(ax_size)
             ymax = 0
             perchange = []
             bars = []
 
-            baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
+            #baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
+            if seq:
+                baseout = sc.promotetoarray(all_reduce[0][outcome]['point'][1:])
+            else:
+                baseout = sc.promotetoarray(all_reduce[0][outcome]['point'][1:].sum())
             scale = 1e6 if baseout.max() > 1e6 else 1
             baseout /= scale
             offsets = np.arange(len(all_reduce) + 1) * width  # Calculate offset so tick is in the center of the bars
@@ -247,6 +255,8 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     ymax = thimax
                 change = round_elements([utils.get_change(base, out) for out, base in zip(output_p, baseout)], dec=1)
                 perchange.append(change)
+                if outcome == 'child_mam' or outcome == 'child_sam':
+                    print(outcome, change)
 
                 if seq:
                     bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2, **kwargs)
@@ -267,7 +277,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     rect = bar[-1]
                     change = perchange[j][0]
                     height = rect.get_height()
-                    ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="right", va="bottom", fontsize=10)
+                    ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="right", va="bottom", fontsize=14)
 
             # formatting
             title = f"{utils.relabel(outcome, locale=locale)} ({seq_str})\n{baseres.years[pltstart]}-{baseres.years[-1]}"
@@ -654,6 +664,7 @@ def get_costeff(project, results):
     parents = []
     baselines = []
     children = sc.odict()
+
     for r, res in enumerate(results):
         _ = utils.get_translator(res.locale)
         print("Running cost-effectiveness result %s of %s" % (r + 1, len(results)))
@@ -674,6 +685,7 @@ def get_costeff(project, results):
                 childres = run_scen(child, model)
                 children[res.name].append(childres)
     outcomes = utils.default_trackers(prev=False, rate=False)
+    outcomes = outcomes[:outcomes.index("child_mam")] # limit outcomes to run
     pretty = utils.relabel(outcomes, locale=res.locale)  # nb. uses locale from last result in list
     costeff = sc.odict()
     for i, parent in enumerate(parents):

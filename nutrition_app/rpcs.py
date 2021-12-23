@@ -1082,7 +1082,7 @@ def get_default_scen(project_id, model_name, scen_type, locale=None):
     else:
         raise Exception("Unknown scenario type")
     proj = load_project(project_id)
-    py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, name=scen_name)
+    py_scen = nu.make_default_scen(scen_name, model_name, model=proj.model(model_name), scen_type=scen_type)
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     return js_scen
 

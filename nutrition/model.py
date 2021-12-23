@@ -101,6 +101,8 @@ class Model(sc.prettyobj):
     def _track_wra_outcomes(self):
         # pw
         self.pw_anaemic[self.year] += self.pw.num_anaemic()
+        num_pw = self.pw
+        self.num_pw[self.year] = num_pw.total_pop()
         # nonpw
         self.nonpw_anaemic[self.year] += self.nonpw.num_anaemic()
 
@@ -112,9 +114,11 @@ class Model(sc.prettyobj):
         Child_1_5_months = self.children.age_groups[1]
         Child_6_11_months = self.children.age_groups[2]
         Child_12_23_months = self.children.age_groups[3]
+        num_pw = self.pw
         self.child_sam[self.year] = self.children.num_risk("sam")
         self.child_mam[self.year] = self.children.num_risk("mam")
         self.child_less_5years[self.year] = NewlyBorns.totalchild_pop() + Child_1_5_months.totalchild_pop() + Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop() + oldest.totalchild_pop()
+        self.num_pw[self.year] = num_pw.total_pop()
         self.stunted_prev[self.year] = self.children.frac_stunted()
         self.wasted_prev[self.year] = self.children.frac_risk("wast")
         self.child_anaemprev[self.year] = self.children.frac_risk("an")
