@@ -903,7 +903,8 @@ class Dataset(object):
         inputsheet = project.inputsheet(spreadsheetkey)
 
         # Convert them to Pandas
-        input_data = inputsheet.pandas()
+        kw = {'store':False} if sc.__version__ > '1.2' else {} # Handle legacy Sciris versions
+        input_data = inputsheet.pandas(**kw)
 
         # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
         # databooks, so pull the default data from input_data.
