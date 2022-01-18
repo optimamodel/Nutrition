@@ -251,7 +251,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
         if res.name != _("Excess budget"):
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
-            cov = res.get_covs(unrestr=True)
+            cov = res.get_covs(unrestr=False)
             # print(spend)
             # collate coverages first
             for r, prog in enumerate(rows):
