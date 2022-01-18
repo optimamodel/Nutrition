@@ -8,7 +8,7 @@ from . import utils
 
 
 class Geospatial:
-    def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None, add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True, growth="fixed budget", balanced_optimization=False, locale=None):
+    def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None, add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, growth="fixed budget", balanced_optimization=False, locale=None):
         """
         :param name: name of the optimization (string)
         :param modelnames: names of the models (datasets) that each region corresponds to (list of strings). Order must match that of region_names.
@@ -44,6 +44,7 @@ class Geospatial:
         self.bocs = sc.odict()
         self.growth = growth
         self.balanced_optimization = balanced_optimization
+        
 
     def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel, runbalanced=False, n_samples=0):
         """Runs geospatial optimization for a given project via the following steps:
@@ -157,7 +158,7 @@ class Geospatial:
         for i, name in enumerate(self.modelnames):
             modelname = self.modelnames[i]
             regionalfunds = add_funds[i]
-            region = Optim(name=name, model_name=modelname, weights=obj_weights, mults=mults, prog_set=self.prog_set, active=self.active, add_funds=regionalfunds, filter_progs=self.filter_progs, fix_curr=self.fix_curr, rem_curr=rem_curr, growth=self.growth, balanced_optimization=self.balanced_optimization)
+            region = Optim(name=name, model_name=modelname, weights=obj_weights, mults=mults, prog_set=self.prog_set, add_funds=regionalfunds, filter_progs=self.filter_progs, fix_curr=self.fix_curr, rem_curr=rem_curr, growth=self.growth, balanced_optimization=self.balanced_optimization)
             regions.append(region)
         self.regions = regions
         return regions

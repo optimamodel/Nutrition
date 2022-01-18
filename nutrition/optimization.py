@@ -4,6 +4,7 @@ import sciris as sc
 from . import pso, utils
 from .scenarios import Scen, run_scen
 from .migration import migrate
+from .utils import get_translator, translate
 
 
 class Optim(sc.prettyobj):
@@ -56,7 +57,7 @@ class Optim(sc.prettyobj):
         return kwargs
 
     ######### OPTIMIZATION ##########
-
+    @translate
     def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None, runbalanced=False, base=None):
         if parallel:
             how = "parallel"
