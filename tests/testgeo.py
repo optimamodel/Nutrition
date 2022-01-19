@@ -15,8 +15,8 @@ kwargs = {
     "modelnames": ["Demo1", "Demo2"],
     "weights": sc.odict(
         {
-            "Minimize the number of child deaths": [1.0, 0.5],
-            "thrive": [1.0, 0.5],
+            "Minimize the number of child deaths": [0.0],
+            "thrive": [1.0],
         }
     ),
     "fix_curr": False,
@@ -27,7 +27,7 @@ kwargs = {
 }
 if __name__ == "__main__":
     geo = Geospatial(**kwargs)
-    results = p.run_geo(geo=geo, maxiter=5, swarmsize=0, maxtime=5, parallel=False, runbalanced=True, n_samples=2)
+    results = p.run_geo(geo=geo, maxiter=5, swarmsize=0, maxtime=200, parallel=False, runbalanced=False, n_samples=1)
     p.plot(geo=True)
     p.write_results("geo_results.xlsx")
     p.save("geo_test")
