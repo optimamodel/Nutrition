@@ -73,8 +73,9 @@ class Model(sc.prettyobj):
         self.prog_info.get_base_spend()
 
     def initialize_covs(self, covs, scentype, restrictcovs=True):
-        covs, restr_covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
-        self.prog_info.initialize_covs(covs, restr_covs, spend, restrictcovs)
+        """covs can be either coverages (restr_covs) or budgets depending on scentype)"""
+        unrestr_covs, restr_covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
+        self.prog_info.initialize_covs(unrestr_covs, restr_covs, spend, restrictcovs)
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """

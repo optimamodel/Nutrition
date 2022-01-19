@@ -62,7 +62,7 @@ class ScenResult(sc.prettyobj):
 
         for name, prog in self.programs.iteritems():
             if unrestr:
-                covs[name] = prog.annual_cov
+                covs[name] = prog.annual_unrestr_cov
             else:
                 covs[name] = prog.annual_restr_cov
         return covs
