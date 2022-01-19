@@ -112,8 +112,7 @@ class Program(sc.prettyobj):
         self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
-        unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
-        self.annual_cov[0] = unrestr_cov
+        self.annual_cov[0] = sc.dcp(self.base_cov) #do NOT adjust for population size - self.annual_cov is the restricted coverage
 
     def adjust_cov(self, pops, year, growth=False):
         """This functions adjust coverage and spending to the annual population growth in each time step
