@@ -47,5 +47,6 @@ setup(
         "numpy>=1.10.1",
         "scipy",
         "pandas>=0.17.1",
+        "sciris",
     ],
 )
