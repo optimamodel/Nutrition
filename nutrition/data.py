@@ -903,7 +903,7 @@ class Dataset(object):
         inputsheet = project.inputsheet(spreadsheetkey)
 
         # Convert them to Pandas
-        kw = {'storage_options':False} if sc.__version__ > '1.2' else {} # Handle legacy Sciris versions
+        kw = {'store':False} if sc.compareversions(sc.__version__, ">=1.3") else {}
         input_data = inputsheet.pandas(**kw)
 
         # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
