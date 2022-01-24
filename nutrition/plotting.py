@@ -124,10 +124,8 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False, locale=None):
     toplot = sc.promotetolist(toplot)
     if all_res is not None:
         all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
-        if len(all_res) > 1:  # this avoids generating upper/lower bounds if there is only a single result
-            all_reduce = reduce_results(all_res)
-        else:
-            all_reduce = sc.odict()
+        all_reduce = reduce_results(all_res)
+
     else:
         print("WARNING: No results to plot!")
         return allplots
