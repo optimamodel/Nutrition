@@ -668,7 +668,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
     calcscache = proj.dataset(key).calcscache  # Get the calculation cells cache
     sheetdata = sc.odict()
     for sheet in sheets:  # Read pandas DataFrames in for each worksheet
-        sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
+        sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False, method='xlrd')
     sheetformat = define_formats()
 
     sheetjson = sc.odict()
