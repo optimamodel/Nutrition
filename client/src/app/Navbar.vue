@@ -48,6 +48,11 @@ Last update: 2018sep23
               <span>{{ $t("navbar.Geospatial") }}</span>
             </router-link>
           </li>
+          <li class="nav-item">
+            <a href="https://docs.google.com/document/d/1fIW186yjNToy5YBlobefqecIz886k-M33u1hfgSfYWY/edit" target="_blank">
+              <span>{{ $t("Parameters") }}</span>
+            </a>
+          </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li class="nav-item">
