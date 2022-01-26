@@ -49,7 +49,7 @@ Last update: 2018sep23
             </router-link>
           </li>
           <li class="nav-item">
-            <a href="https://docs.google.com/document/d/1fIW186yjNToy5YBlobefqecIz886k-M33u1hfgSfYWY/edit" target="_blank">
+            <a href="http://optimamodel.com/docs/Optima%20Nutrition%20Input%20Data_Jan2022.pdf" target="_blank">
               <span>{{ $t("Parameters") }}</span>
             </a>
           </li>
