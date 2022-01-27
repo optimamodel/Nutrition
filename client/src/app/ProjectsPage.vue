@@ -670,7 +670,7 @@ Last update: 2019feb18
       loadCountryProj() {
         console.log('loadCountryProj() called');
         this.$sciris.start(this) // Start indicating progress.
-        this.$sciris.download('create_country_project', [this.$store.state.currentUser.username, this.country_name, i18n.locale]) // Have the server create a new project.
+        this.$sciris.rpc('create_country_project', [this.$store.state.currentUser.username, this.country_name, i18n.locale]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
             this.$sciris.succeed(this, '') // Indicate success.
