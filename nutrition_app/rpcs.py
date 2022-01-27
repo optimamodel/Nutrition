@@ -474,8 +474,7 @@ def create_new_project(username, proj_name, locale):
 def create_country_project(username, country, locale):
     """ Add a demo Optima Nutrition project """
     _ = nu.get_translator(locale)
-    proj = nu.default_country(country, scens=True, optims=True, geos=False, locale=locale)  # Create the project, loading in the desired spreadsheets.
-    proj.optims[0].weights[0] = proj.optims[0].weights[0]  # Overwrite optim weights to not be full array and avoid confusion.
+    proj = nu.default_country(country, locale=locale)  # Create the project, loading in the desired spreadsheets.
     proj.name = _(country + " project")
     print(">> add_default_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.

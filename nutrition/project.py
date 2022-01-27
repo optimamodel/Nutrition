@@ -451,8 +451,8 @@ class Project(object):
         self.add(name=name, item=result, what="result")
         return result
 
-    def demo_scens(self, dorun=None, doadd=True, name="demo"):
-        scens = demo_scens(self.locale, name=name)
+    def demo_scens(self, dorun=None, doadd=True):
+        scens = demo_scens(self.locale)
         if doadd:
             self.add_scens(scens)
             if dorun:
@@ -461,8 +461,8 @@ class Project(object):
         else:
             return scens
 
-    def demo_optims(self, dorun=False, doadd=True, name="demo"):
-        optims = demo_optims(self.locale, name=name)
+    def demo_optims(self, dorun=False, doadd=True):
+        optims = demo_optims(self.locale)
         if doadd:
             self.add_optims(optims)
             if dorun:
@@ -662,13 +662,13 @@ class Project(object):
 ### DEMO VALUES
 
 
-def demo_scens(locale, name="demo"):
+def demo_scens(locale):
     _ = get_translator(locale)
 
     # stunting reduction
     kwargs1 = {
         "name": _("Stunting example (coverage)"),
-        "model_name": _(name),
+        "model_name": _("demo"),
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
@@ -680,7 +680,7 @@ def demo_scens(locale, name="demo"):
 
     kwargs2 = {
         "name": _("Stunting example (budget)"),
-        "model_name": _(name),
+        "model_name": _("demo"),
         "scen_type": "budget",
         "progvals": sc.odict(
             {
@@ -693,7 +693,7 @@ def demo_scens(locale, name="demo"):
     # wasting reduction
     kwargs3 = {
         "name": _("Wasting example"),
-        "model_name": _(name),
+        "model_name": _("demo"),
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
@@ -705,7 +705,7 @@ def demo_scens(locale, name="demo"):
     # anaemia reduction
     kwargs4 = {
         "name": _("Anaemia example"),
-        "model_name": _(name),
+        "model_name": _("demo"),
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
@@ -721,12 +721,12 @@ def demo_scens(locale, name="demo"):
     return scens
 
 
-def demo_optims(locale, name="demo"):
+def demo_optims(locale):
     _ = get_translator(locale)
 
     kwargs1 = {
         "name": _("Maximize thrive"),
-        "model_name": _(name),
+        "model_name": _("demo"),
         "mults": [1],
         "weights": sc.odict({"thrive": [1]}),
         "prog_set": [
@@ -818,9 +818,9 @@ def default_country(country, scens=False, optims=False, geos=False, locale=None)
 
     # Create demo scenarios and optimizations
     if scens:
-        P.demo_scens(name=country)
+        P.demo_scens()
     if optims:
-        P.demo_optims(name=country)
+        P.demo_optims()
     if geos:
         P.demo_geos()
     return P
