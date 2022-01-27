@@ -663,20 +663,19 @@ Last update: 2019jan10
         this.$sciris.rpc('delete_task', ['run_optim'])
       },
 
-      plotGeospatial(geoSummary) {
+      async plotGeospatial(geoSummary) {
         console.log('plotGeospatial() called')
         this.$sciris.start(this)
-        this.$sciris.rpc('plot_geospatial', [this.projectID, geoSummary.serverDatastoreId])
-          .then(response => {
-            this.table = response.data.table
-            this.makeGraphs(response.data.graphs)
-            this.displayResultName = geoSummary.name
-            this.displayResultDatastoreId = geoSummary.serverDatastoreId
-            this.$sciris.succeed(this, 'Graphs created')
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
-          })
+        try{
+          let response = await this.$sciris.rpc('plot_geospatial', [this.projectID, geoSummary.serverDatastoreId]) // Go to the server to get the results
+          this.table = null //response.data.table
+          this.makeGraphs(response.data.graphs)
+          this.displayResultName = geoSummary.name
+          this.displayResultDatastoreId = geoSummary.serverDatastoreId
+          this.$sciris.succeed(this, '')
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not plot geospatial optimization', error)
+        }
       },
     }
   }

@@ -1572,11 +1572,12 @@ def plot_geospatial(project_id, cache_id):
             ax.set_facecolor("none")
         graph_dict = sw.mpld3ify(fig, jsonify=False)
         graphs.append(graph_dict)
+        pl.close(fig)
         print("Converted figure %s of %s" % (f + 1, len(figs)))
 
     # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
-    table = reformat_costeff(costeff)
+    #costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+    table = [] #reformat_costeff(costeff)
 
     return {"graphs": graphs, "table": table}
 
