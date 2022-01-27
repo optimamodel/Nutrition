@@ -203,13 +203,13 @@ Last update: 2019feb18
         </div>
         <tr>
           <th><select v-model="country_name">
-            <option v-for='country in countryList'>
-              {{ country }}
+            <option v-for='country_name in countryList'>
+              {{ country_name }}
             </option>
           </select><br><br></th>
         </tr>
         <div style="text-align:justify">
-          <button @click="loadProj(country_name) | $modal.hide('country-proj')" class='btn __green' style="display:inline-block">
+          <button @click="loadCountryProj(country_name) | $modal.hide('country-proj')" class='btn __green' style="display:inline-block">
             {{ $t("Load") }}
           </button>
 
@@ -244,6 +244,7 @@ Last update: 2019feb18
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
         countryList: [], // List of country databooks from LiST database
+        country_name: '',
       }
     },
 
@@ -650,9 +651,10 @@ Last update: 2019feb18
       pullCountryList() {
         console.log('pullCountryList() called');
         this.$sciris.start(this) // Start indicating progress.
-        this.$sciris.rpc('pull_country_list', [this.$store.state.currentUser.username]) // Pull the list of countries.
+        this.$sciris.rpc('pull_country_list', [i18n.locale]) // Pull the list of countries.
           .then(response => {
             this.countryList = response.data
+            this.country_name = response.data[0]
             this.$sciris.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
@@ -663,6 +665,19 @@ Last update: 2019feb18
       addCountryProject() {
         console.log('addCountryProject() called');
         this.$modal.show('country-proj');
+      },
+
+      loadCountryProj() {
+        console.log('loadCountryProj() called');
+        this.$sciris.start(this) // Start indicating progress.
+        this.$sciris.download('create_country_project', [this.$store.state.currentUser.username, this.country_name, i18n.locale]) // Have the server create a new project.
+          .then(response => {
+            this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
+            this.$sciris.succeed(this, '') // Indicate success.
+          })
+          .catch(error => {
+            this.$sciris.fail(this, i18n.t('projects.Could not add new project'), error)    // Indicate failure.
+          })
       },
     }
   }

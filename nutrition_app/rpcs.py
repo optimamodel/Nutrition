@@ -18,6 +18,7 @@ import scirisweb as sw
 import nutrition.ui as nu
 from . import config
 
+
 pl.rc("font", size=14)
 
 # Globals
@@ -284,10 +285,10 @@ def save_project(project):  # NB, only for saving an existing project
     return output
 
 @RPC()  # Not usually called as an RPC
-def pull_country_list():
+def pull_country_list(locale):
     import pathlib
     ONpath = pathlib.Path(__file__).parent.parent
-    file_loc = ONpath / "inputs" / "LiST countries"
+    file_loc = ONpath / "inputs" / locale / "LiST countries"
     file_list = [file for file in os.listdir(file_loc) if os.path.isfile(os.path.join(file_loc, file))]
     country_list = [country.replace("_databook.xlsx", "") for country in file_list]
 
@@ -468,6 +469,17 @@ def create_new_project(username, proj_name, locale):
     print(">> create_new_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
     return download_new_databook(key)
+
+@RPC()
+def create_country_project(username, country, locale):
+    """ Add a demo Optima Nutrition project """
+    _ = nu.get_translator(locale)
+    proj = nu.default_country(country, scens=True, optims=True, geos=False, locale=locale)  # Create the project, loading in the desired spreadsheets.
+    proj.optims[0].weights[0] = proj.optims[0].weights[0]  # Overwrite optim weights to not be full array and avoid confusion.
+    proj.name = _(country + " project")
+    print(">> add_default_project %s" % (proj.name))  # Display the call information.
+    key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
+    return {"projectID": str(proj.uid)}  # Return the new project UID in the return message.
 
 
 @RPC(call_type="download")
