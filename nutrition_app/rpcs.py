@@ -284,7 +284,7 @@ def save_project(project):  # NB, only for saving an existing project
     return output
 
 @RPC()  # Not usually called as an RPC
-def pull_country_list(username=None):
+def pull_country_list():
     import pathlib
     ONpath = pathlib.Path(__file__).parent.parent
     file_loc = ONpath / "inputs" / "LiST countries"
