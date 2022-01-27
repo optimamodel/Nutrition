@@ -16,6 +16,8 @@ Last update: 2019feb18
         &nbsp; &nbsp;
         <button class="btn __blue" @click="uploadProjectFromFile">{{ $t("projects.Upload project from file") }}</button>
         &nbsp; &nbsp;
+        <button class="btn __blue" @click="addCountryProject">{{ $t("Add country project from LiST database") }}</button>
+        &nbsp; &nbsp;
       </div>
     </div>
 
@@ -183,7 +185,42 @@ Last update: 2019feb18
       </div>
 
     </modal>
-    <!-- ### End: rename dataset modal ### -->    
+    <!-- ### End: rename dataset modal ### -->
+
+    <!-- ### Start: create country project modal ### -->
+    <modal name="country-proj"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="400"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="false"
+    >
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          {{ $t("Select country") }}
+        </div>
+        <tr>
+          <th><select v-model="country_name">
+            <option v-for='country in countryList'>
+              {{ country }}
+            </option>
+          </select><br><br></th>
+        </tr>
+        <div style="text-align:justify">
+          <button @click="loadProj(country_name) | $modal.hide('country-proj')" class='btn __green' style="display:inline-block">
+            {{ $t("Load") }}
+          </button>
+
+          <button @click="$modal.hide('country-proj')" class='btn __red' style="display:inline-block">
+            {{ $t("Cancel") }}
+          </button>
+        </div>
+      </div>
+
+    </modal>
+    <!-- ### End: input uncertainty runs modal ### -->
   </div>
 
 </template>
@@ -206,6 +243,7 @@ Last update: 2019feb18
         projectSummaries: [], // List of summary objects for projects the user has
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
+        countryList: [], // List of country databooks from LiST database
       }
     },
 
@@ -225,6 +263,7 @@ Last update: 2019feb18
       } else {
         this.updateProjectSummaries()
       }
+      this.pullCountryList()
     },
 
     methods: {
@@ -606,7 +645,25 @@ Last update: 2019feb18
               this.$sciris.fail(this, 'Could not download project(s)', error) // Indicate failure.
             })
         }
-      }
+      },
+
+      pullCountryList() {
+        console.log('pullCountryList() called');
+        this.$sciris.start(this) // Start indicating progress.
+        this.$sciris.rpc('pull_country_list', [this.$store.state.currentUser.username]) // Pull the list of countries.
+          .then(response => {
+            this.countryList = response.data
+            this.$sciris.succeed(this, '')  // No green popup message.
+          })
+          .catch(error => {
+            this.$sciris.fail(this, i18n.t('Could not initialize LiST country set'), error)    // Indicate failure.
+          })
+      },
+
+      addCountryProject() {
+        console.log('addCountryProject() called');
+        this.$modal.show('country-proj');
+      },
     }
   }
 </script>

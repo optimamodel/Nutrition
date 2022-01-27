@@ -283,6 +283,17 @@ def save_project(project):  # NB, only for saving an existing project
     output = datastore.saveblob(obj=project, objtype="project", die=True)
     return output
 
+@RPC()  # Not usually called as an RPC
+def pull_country_list(username=None):
+    import pathlib
+    ONpath = pathlib.Path(__file__).parent.parent
+    file_loc = ONpath / "inputs" / "LiST countries"
+    file_list = [file for file in os.listdir(file_loc) if os.path.isfile(os.path.join(file_loc, file))]
+    country_list = [country.replace("_databook.xlsx", "") for country in file_list]
+
+    return country_list
+
+
 
 @RPC()  # Not usually called as an RPC
 def save_new_project(proj, username=None, uid=None):
