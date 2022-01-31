@@ -429,14 +429,17 @@ def jsonify_projects(username, verbose=False):
     output = {"projects": []}
     user = get_user(username)
     for project_key in user.projects:
-        json = jsonify_project(project_key)
-        output["projects"].append(json)
         try:
-            pass
+            json = jsonify_project(project_key)
+            output["projects"].append(json)
         except Exception as E:
-            print("Project load failed, removing: %s" % str(E))
-            user.projects.remove(project_key)
-            datastore.saveuser(user)
+            if not datastore.exists(project_key):
+                # Remove missing projects from the user's list of projects. This does NOT remove projects
+                # that exist but have an error - if we removed those here, we'd have orphaned blobs in the database
+                user.projects.remove(project_key)
+                datastore.saveuser(user)
+            else:
+                raise E
     if verbose:
         sc.pp(output)
     return output
