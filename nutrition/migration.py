@@ -257,3 +257,9 @@ def _optim_remove_active(optim):
     if hasattr(optim, "active"):
         delattr(optim, "active")
     return optim
+
+@migration("Project", "1.7.12", "1.7.14", "Clear WB cache")
+def _clear_workbook_cache(proj):
+    for ss in proj.spreadsheets.values():
+        ss.wb = None
+    return proj
