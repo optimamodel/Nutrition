@@ -1,8 +1,11 @@
 #######################################################################################################
 # %% Imports
 #######################################################################################################
-
+import io
 import os
+
+import openpyxl
+
 import sciris as sc
 import numpy as np
 import multiprocessing
@@ -158,13 +161,16 @@ class Project(object):
         if fromfile:
             name = sc.uniquename(name, self.datasets.keys())
 
-        # Optionally (but almost always) reload the spreadsheets from file.
+        # The fromfile path is used if loading a file for the first time e.g. when creating a project
+        # Otherwise, we might be reloading a modified Dataset to recompute its value via the loading process
+        # In that case, there is no need to store the inputs because they are already stored within the Project
         if fromfile:
             if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
 
-        # Optionally (but almost always) use these to make a model (do not do if blank sheets).
-        databook = self.inputsheet(name).pandas()
+        ss = self.inputsheet(name)
+        wb = openpyxl.load_workbook(io.BytesIO(ss.blob), read_only=False, data_only=True)
+        databook = pd.ExcelFile(wb, engine='openpyxl')
 
         dataset = Dataset(databook=databook, country=country, region=region, name=name)
         if dataset.locale != self.locale:
