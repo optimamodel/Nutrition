@@ -653,7 +653,7 @@ Last update: 2019feb18
         this.$sciris.start(this) // Start indicating progress.
         this.$sciris.rpc('pull_country_list', [i18n.locale]) // Pull the list of countries.
           .then(response => {
-            this.countryList = response.data
+            this.countryList = response.data.sort()
             this.country_name = response.data[0]
             this.$sciris.succeed(this, '')  // No green popup message.
           })
