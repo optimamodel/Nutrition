@@ -19,6 +19,7 @@ import nutrition.ui as nu
 from . import config
 import pandas as pd
 import openpyxl
+import openpyexcel
 import io
 
 pl.rc("font", size=14)
@@ -801,19 +802,21 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
         "program_cost_cov": _("Programs cost and coverage"),
     }
 
-    ss = proj.inputsheet(key)  # CK: Warning, might want to change
+    ss = proj.inputsheet(key)
+    wb = openpyexcel.load_workbook(io.BytesIO(ss.blob), data_only=False) # Must NOT read with data_only, otherwise the formulas will get removed
 
     for sheet in sheetdata.keys():
 
         if sheet not in sheetnames:
             continue
 
+        ws = wb[sheetnames[sheet]]
+
         if verbose:
             print("Saving sheet %s..." % sheet)
+
         datashape = np.shape(sheetdata[sheet])
         rows, cols = datashape
-        cells = []
-        vals = []
         for r in range(rows):
             for c in range(cols):
                 cellformat = sheetdata[sheet][r][c]["format"]
@@ -832,36 +835,30 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                             cellval = True
                     else:
                         pass
-                    cells.append([r + 1, c + 1])  # Excel uses 1-based indexing
-                    vals.append(cellval)
-                    if verbose:
-                        print("  Cell (%s,%s) = %s" % (r + 1, c + 1, cellval))
-        ss.writecells(sheetname=sheetnames[sheet], cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+
+                    ws.cell(row=r+1, column=c+1).value = cellval
 
     # Write program dependencies
-    cells = []
-    vals = []
-
     existing = ss.readcells(sheetname=_("Program dependencies"))
+    ws = wb[_("Program dependencies")]
 
     for i, entry in enumerate(sheetdata["program_dependencies"]):
+        ws.cell(i + 2, 1).value = entry["program"]
+        ws.cell(i + 2, 2).value = entry["exclusion"]
+        ws.cell(i + 2, 3).value = entry["threshold"]
 
-        cells.append([i + 2, 1])  # 1-based indexing, plus skipping header row
-        vals.append(entry["program"])
-
-        cells.append([i + 2, 2])
-        vals.append(entry["exclusion"])
-
-        cells.append([i + 2, 3])
-        vals.append(entry["threshold"])
-
+    # If the user has deleted dependencies such that the total number is now less than the existing
+    # number of entries, we need to clear any extras
     for i in range(len(sheetdata["program_dependencies"]), len(existing)):
-        cells.extend([[i + 2, 1], [i + 2, 2], [i + 2, 3]])
-        vals.extend([None, None, None])
+        ws.cell(i + 2, 1).value = None
+        ws.cell(i + 2, 2).value = None
+        ws.cell(i + 2, 3).value = None
 
-    ss.writecells(sheetname=_("Program dependencies"), cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
-
+    # Save the modified spreadsheet and realculate values
+    wb.save(ss.freshbytes()) # Save workbook to ss.bytes
+    ss.load() # Sync ss.bytes and ss.blob
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
+
     print("Saving project...")
     save_project(proj)
     return None
