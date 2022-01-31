@@ -130,12 +130,14 @@ Last update: 2019-02-11
 
                 <td class="c_drop">
                   <select v-model="entry.exclusion">
+                    <option :value="null" />
                     <option v-for='program in programOptions'>{{ program }}</option>
                   </select>
                 </td>
 
                 <td class="c_drop">
                   <select v-model="entry.threshold">
+                    <option :value="null" />
                     <option v-for='program in programOptions'>{{ program }}</option>
                   </select>
                 </td>
@@ -216,7 +218,7 @@ Last update: 2019-02-11
         activeSheet: undefined,
         costFuncOptions: [],
         programOptions: [],
-        customSheets: ['program_dependencies'],
+        customSheets: ['program_dependencies'], // Custom sheets that are implemented in this file rather than specified in rpcs.py
       }
     },
 
