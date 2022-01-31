@@ -238,8 +238,8 @@ Last update: 2019feb18
         filterText: '',  // Text in the table filter box
         allSelected: false, // Are all of the projects selected?
         projectToRename: null, // What project is being renamed?
-        sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
-        sortReverse: false, // Sort in reverse order?
+        sortColumn: 'updatedTime',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
+        sortReverse: true, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
