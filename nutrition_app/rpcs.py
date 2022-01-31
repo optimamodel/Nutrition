@@ -17,7 +17,9 @@ import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
-
+import pandas as pd
+import openpyxl
+import io
 
 pl.rc("font", size=14)
 
@@ -714,12 +716,22 @@ def get_sheet_data(project_id, key=None, verbose=False):
         "program_cost_cov": _("Programs cost and coverage"),
     }
 
-    wb = proj.inputsheet(key)  # Get the spreadsheet
+    # wb = openpyxl.load_workbook(self.bytes, **kwargs)  # This stream can be passed straight to openpyxl
+
+    ss = proj.inputsheet(key)
+
+    wb = openpyxl.load_workbook(io.BytesIO(ss.blob), read_only=True, data_only=True)
+    # wb = proj.inputsheet(key).openpyxl()  # Get the spreadsheet
     calcscache = dataset.calcscache  # Get the calculation cells cache
     sheetdata = sc.odict()
     for key, sheet in sheets.items():  # Read pandas DataFrames in for each worksheet
-        sheetdata[key] = wb.readcells(sheetname=sheet, header=False)
+        df = pd.DataFrame(wb[sheet].values)#   ss.readcells(sheetname=sheet, header=False)
+        # df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+        sheetdata[key] = df.loc[:df.last_valid_index()]
     sheetformat = define_formats(locale)
+
+    # ss.readcells(sheetname=sheet, header=False)
+
 
     tables = sc.odict()
     for key, sheet in sheets.items():  # loop over each GUI worksheet
@@ -734,7 +746,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
             tables[key].append([])
             for c in range(cols):
                 cellformat = sheetformat[key][r][c]
-                cellval = sheetdata[key][r][c]
+                cellval = sheetdata[key].iat[r,c]
                 if cellformat in ["calc"]:  # Pull from cache if 'calc'
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
@@ -762,9 +774,10 @@ def get_sheet_data(project_id, key=None, verbose=False):
     # Handle program dependencies
     output["prog_names"] = dataset.prog_names
 
-    print(wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False))
-    output["tables"]["program_dependencies"] = [tuple(x.values()) for x in wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False)]  # List of tuples [(program,exclusion,threshold)]
-    output["tables"]["program_dependencies"] = [{"program": x[0], "exclusion": x[1], "threshold": x[2]} for x in output["tables"]["program_dependencies"]]
+    df = pd.DataFrame(wb[_("Program dependencies")].values)
+    df = df.loc[1:df.last_valid_index()]
+    df.columns = ['program', 'exclusion', 'threshold']
+    output["tables"]["program_dependencies"] = df.to_dict(orient='records')
 
     sheets["program_dependencies"] = _("Program dependencies")
     # Get cost types
@@ -793,7 +806,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
         "program_cost_cov": _("Programs cost and coverage"),
     }
 
-    wb = proj.inputsheet(key)  # CK: Warning, might want to change
+    ss = proj.inputsheet(key)  # CK: Warning, might want to change
 
     for sheet in sheetdata.keys():
 
@@ -828,14 +841,13 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     vals.append(cellval)
                     if verbose:
                         print("  Cell (%s,%s) = %s" % (r + 1, c + 1, cellval))
-        wb.writecells(sheetname=sheetnames[sheet], cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+        ss.writecells(sheetname=sheetnames[sheet], cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
 
     # Write program dependencies
     cells = []
     vals = []
 
-    existing = wb.readcells(sheetname=_("Program dependencies"))
-    print(existing)
+    existing = ss.readcells(sheetname=_("Program dependencies"))
 
     for i, entry in enumerate(sheetdata["program_dependencies"]):
 
@@ -852,7 +864,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
         cells.extend([[i + 2, 1], [i + 2, 2], [i + 2, 3]])
         vals.extend([None, None, None])
 
-    wb.writecells(sheetname=_("Program dependencies"), cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+    ss.writecells(sheetname=_("Program dependencies"), cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
 
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
     print("Saving project...")
