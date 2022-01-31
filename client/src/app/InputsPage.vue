@@ -40,8 +40,16 @@ Last update: 2019-02-11
 <!--            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button> --> &nbsp;
             <!--<help reflink="parameter-sets"></help>-->
           </div>
-          <br>
-          <br>
+
+          <br><br>
+
+          <div>
+            <button class="btn __green" @click="saveSheetData()"  :data-tooltip="$t('inputs.save_tooltip')">{{ $t("inputs.save_changes") }}</button>
+            <button class="btn __red"   @click="getSheetData()"   :data-tooltip="$t('inputs.revert_tooltip')">{{ $t("inputs.revert") }}</button>
+          </div>
+
+          <br><br>
+
           <div v-for="[key, label] in sheetNames" style="display:inline-block; padding-right:10px">
             <div v-if="key===activeSheet">
               <button class="btn sheetbtn" @click="activeSheet = key" :data-tooltip='$t("inputs.Current sheet")'>{{ label }}</button>
@@ -53,13 +61,6 @@ Last update: 2019-02-11
           </div>
 
           <br><br>
-
-          <div>
-            <button class="btn __green" @click="saveSheetData()"  :data-tooltip="$t('inputs.save_tooltip')">{{ $t("inputs.save_changes") }}</button>
-            <button class="btn __red"   @click="getSheetData()"   :data-tooltip="$t('inputs.revert_tooltip')">{{ $t("inputs.revert") }}</button>
-          </div>
-
-          <br>
 
           <div class="icantbelieveitsnotexcel">
 
