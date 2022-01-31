@@ -856,10 +856,11 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
 
     # Save the modified spreadsheet and realculate values
     wb.save(ss.freshbytes()) # Save workbook to ss.bytes
-    ss.load() # Sync ss.bytes and ss.blob
+    ss.load()  # Sync ss.bytes and ss.blob
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
 
     print("Saving project...")
+    ss.wb = None # Should not be needed if Sciris drops the cache automatically in the future
     save_project(proj)
     return None
 
