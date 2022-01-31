@@ -716,22 +716,17 @@ def get_sheet_data(project_id, key=None, verbose=False):
         "program_cost_cov": _("Programs cost and coverage"),
     }
 
-    # wb = openpyxl.load_workbook(self.bytes, **kwargs)  # This stream can be passed straight to openpyxl
 
     ss = proj.inputsheet(key)
-
     wb = openpyxl.load_workbook(io.BytesIO(ss.blob), read_only=True, data_only=True)
-    # wb = proj.inputsheet(key).openpyxl()  # Get the spreadsheet
     calcscache = dataset.calcscache  # Get the calculation cells cache
+
     sheetdata = sc.odict()
     for key, sheet in sheets.items():  # Read pandas DataFrames in for each worksheet
         df = pd.DataFrame(wb[sheet].values)#   ss.readcells(sheetname=sheet, header=False)
         # df = df.rename(columns=df.iloc[0]).drop(df.index[0])
         sheetdata[key] = df.loc[:df.last_valid_index()]
     sheetformat = define_formats(locale)
-
-    # ss.readcells(sheetname=sheet, header=False)
-
 
     tables = sc.odict()
     for key, sheet in sheets.items():  # loop over each GUI worksheet
