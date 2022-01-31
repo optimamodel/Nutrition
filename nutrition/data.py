@@ -90,7 +90,7 @@ class CalcCellCache(object):
     # Check a value in the calculations cache against the cached value actually in the spreadsheet.
     def check_cell_against_worksheet_value(self, wb, worksheet_name, row, col):
         calc_val = self.read_cell(worksheet_name, row, col)
-        wsheet_val = wb.readcells(method="openpyexcel", wbargs={"data_only": True}, sheetname=worksheet_name, cells=[[row, col]])[0]
+        wsheet_val = wb.readcells(method="openpyxl", wbargs={"data_only": True}, sheetname=worksheet_name, cells=[[row, col]])[0]
         if sc.approx(calc_val, wsheet_val):
             print("Sheet: %s, Row: %d, Col: %d -- match" % (worksheet_name, row, col))
         else:
@@ -1364,8 +1364,8 @@ class UncertaintyParams(object):
 
     @translate
     def set_pw_progs(self):
-        self.pw_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))], to_odict=False).dropna(axis=1, how="all")
-        self.pw_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(1, 19)], to_odict=False).dropna(axis=1, how="all")
+        self.pw_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))]).dropna(axis=1, how="all")
+        self.pw_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(1, 19)]).dropna(axis=1, how="all")
 
         self.pw_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
 

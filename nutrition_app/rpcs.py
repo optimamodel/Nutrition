@@ -17,7 +17,10 @@ import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
-
+import pandas as pd
+import openpyxl
+import openpyexcel
+import io
 
 pl.rc("font", size=14)
 
@@ -426,14 +429,17 @@ def jsonify_projects(username, verbose=False):
     output = {"projects": []}
     user = get_user(username)
     for project_key in user.projects:
-        json = jsonify_project(project_key)
-        output["projects"].append(json)
         try:
-            pass
+            json = jsonify_project(project_key)
+            output["projects"].append(json)
         except Exception as E:
-            print("Project load failed, removing: %s" % str(E))
-            user.projects.remove(project_key)
-            datastore.saveuser(user)
+            if not datastore.exists(project_key):
+                # Remove missing projects from the user's list of projects. This does NOT remove projects
+                # that exist but have an error - if we removed those here, we'd have orphaned blobs in the database
+                user.projects.remove(project_key)
+                datastore.saveuser(user)
+            else:
+                raise E
     if verbose:
         sc.pp(output)
     return output
@@ -714,11 +720,16 @@ def get_sheet_data(project_id, key=None, verbose=False):
         "program_cost_cov": _("Programs cost and coverage"),
     }
 
-    wb = proj.inputsheet(key)  # Get the spreadsheet
+
+    ss = proj.inputsheet(key)
+    wb = openpyxl.load_workbook(io.BytesIO(ss.blob), read_only=True, data_only=True)
     calcscache = dataset.calcscache  # Get the calculation cells cache
+
     sheetdata = sc.odict()
     for key, sheet in sheets.items():  # Read pandas DataFrames in for each worksheet
-        sheetdata[key] = wb.readcells(sheetname=sheet, header=False)
+        df = pd.DataFrame(wb[sheet].values)#   ss.readcells(sheetname=sheet, header=False)
+        # df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+        sheetdata[key] = df.loc[:df.last_valid_index()]
     sheetformat = define_formats(locale)
 
     tables = sc.odict()
@@ -734,7 +745,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
             tables[key].append([])
             for c in range(cols):
                 cellformat = sheetformat[key][r][c]
-                cellval = sheetdata[key][r][c]
+                cellval = sheetdata[key].iat[r,c]
                 if cellformat in ["calc"]:  # Pull from cache if 'calc'
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
@@ -762,9 +773,10 @@ def get_sheet_data(project_id, key=None, verbose=False):
     # Handle program dependencies
     output["prog_names"] = dataset.prog_names
 
-    print(wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False))
-    output["tables"]["program_dependencies"] = [tuple(x.values()) for x in wb.readcells(sheetname=_("Program dependencies"), header=True, asdataframe=False)]  # List of tuples [(program,exclusion,threshold)]
-    output["tables"]["program_dependencies"] = [{"program": x[0], "exclusion": x[1], "threshold": x[2]} for x in output["tables"]["program_dependencies"]]
+    df = pd.DataFrame(wb[_("Program dependencies")].values)
+    df = df.loc[1:df.last_valid_index()]
+    df.columns = ['program', 'exclusion', 'threshold']
+    output["tables"]["program_dependencies"] = df.to_dict(orient='records')
 
     sheets["program_dependencies"] = _("Program dependencies")
     # Get cost types
@@ -793,19 +805,21 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
         "program_cost_cov": _("Programs cost and coverage"),
     }
 
-    wb = proj.inputsheet(key)  # CK: Warning, might want to change
+    ss = proj.inputsheet(key)
+    wb = openpyexcel.load_workbook(io.BytesIO(ss.blob), data_only=False) # Must NOT read with data_only, otherwise the formulas will get removed
 
     for sheet in sheetdata.keys():
 
         if sheet not in sheetnames:
             continue
 
+        ws = wb[sheetnames[sheet]]
+
         if verbose:
             print("Saving sheet %s..." % sheet)
+
         datashape = np.shape(sheetdata[sheet])
         rows, cols = datashape
-        cells = []
-        vals = []
         for r in range(rows):
             for c in range(cols):
                 cellformat = sheetdata[sheet][r][c]["format"]
@@ -824,38 +838,32 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                             cellval = True
                     else:
                         pass
-                    cells.append([r + 1, c + 1])  # Excel uses 1-based indexing
-                    vals.append(cellval)
-                    if verbose:
-                        print("  Cell (%s,%s) = %s" % (r + 1, c + 1, cellval))
-        wb.writecells(sheetname=sheetnames[sheet], cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+
+                    ws.cell(row=r+1, column=c+1).value = cellval
 
     # Write program dependencies
-    cells = []
-    vals = []
-
-    existing = wb.readcells(sheetname=_("Program dependencies"))
-    print(existing)
+    existing = ss.readcells(sheetname=_("Program dependencies"))
+    ws = wb[_("Program dependencies")]
 
     for i, entry in enumerate(sheetdata["program_dependencies"]):
+        ws.cell(i + 2, 1).value = entry["program"]
+        ws.cell(i + 2, 2).value = entry["exclusion"]
+        ws.cell(i + 2, 3).value = entry["threshold"]
 
-        cells.append([i + 2, 1])  # 1-based indexing, plus skipping header row
-        vals.append(entry["program"])
-
-        cells.append([i + 2, 2])
-        vals.append(entry["exclusion"])
-
-        cells.append([i + 2, 3])
-        vals.append(entry["threshold"])
-
+    # If the user has deleted dependencies such that the total number is now less than the existing
+    # number of entries, we need to clear any extras
     for i in range(len(sheetdata["program_dependencies"]), len(existing)):
-        cells.extend([[i + 2, 1], [i + 2, 2], [i + 2, 3]])
-        vals.extend([None, None, None])
+        ws.cell(i + 2, 1).value = None
+        ws.cell(i + 2, 2).value = None
+        ws.cell(i + 2, 3).value = None
 
-    wb.writecells(sheetname=_("Program dependencies"), cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
-
+    # Save the modified spreadsheet and realculate values
+    wb.save(ss.freshbytes()) # Save workbook to ss.bytes
+    ss.load()  # Sync ss.bytes and ss.blob
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
+
     print("Saving project...")
+    ss.wb = None # Should not be needed if Sciris drops the cache automatically in the future
     save_project(proj)
     return None
 
