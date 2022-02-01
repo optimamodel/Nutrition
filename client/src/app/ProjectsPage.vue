@@ -201,6 +201,11 @@ Last update: 2019feb18
         <div class="dialog-c-title">
           {{ $t("Select country") }}
         </div>
+        <div class="dialog-c-text">
+          {{ $t("Warning: databooks contain unvalidated fields and require review before results are used.") }}
+        </div>
+        <br />
+        <span style="white-space: pre;"></span>
         <tr>
           <th><select v-model="country_name">
             <option v-for='country_name in countryList'>
