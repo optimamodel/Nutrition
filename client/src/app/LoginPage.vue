@@ -34,10 +34,11 @@ Last update: 2018sep22
         <div class="modal-body">
           <h2>{{ $t("Login") }}</h2>
           <div class="section">
-            {{ $t("Optima Nutrition has recently been upgraded to version 2.0. The legacy version, as well as existing projects, will be maintained until June 2022.") }}
+            {{ $t("Optima Nutrition has been upgraded to version 2.0. The legacy version, as well as existing projects, will be maintained")}}
             <a href="http://nutrition.legacy.optimamodel.com" target="_blank">
-            {{$t("Go to legacy site")}}
+            {{$t("here")}}
             </a>
+            {{$t(" until June 2022.") }}
           </div>
 
           <div class="section" v-if="loginResult != ''">{{ loginResult }}</div>
