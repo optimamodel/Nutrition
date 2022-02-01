@@ -1,89 +1,93 @@
-import xlwings as xw
-import pandas as pd
-from pathlib import Path
-import shutil
+import concurrent.futures
 import os
-import win32com.client
 from pathlib import Path
 import polib
-import nutrition.ui as nu
+import win32com.client
 
 # Load translations from Excel
 rootdir = Path(__file__).parent
 source = "en"
 
+if __name__ != '__main__':
+    excel = win32com.client.DispatchEx("Excel.Application")
+    excel.Visible = True
 
-def translate_databook(target_locale: str):
+def translate(x):
     """
-
     Translate all Excel files from source to target locale
+
+    :param source: Path to English databook (including xlsx extension)
+    :param dest: Path to write translated databook to (including xlsx extension)
     :param target_locale: A string like 'fr'
+
     :return: None - translated Excel files are written directly
 
     """
 
+    source, dest, target_locale = x
+
     po = polib.pofile(rootdir / target_locale / "databook.po")
 
-    source_dir = Path(source)
-    dest = Path(target_locale)
+    wb = excel.Workbooks.Add(str(source.resolve()))
 
-    for source_file in source_dir.iterdir():
-        if not source_file.suffix == ".xlsx":
-            continue
+    for sheet in wb.Sheets:
+        print("\t" + sheet.Name)
 
-        wb = excel.Workbooks.Add(str(source_file.resolve()))
+        visible = sheet.Visible
 
-        print(source_file.name)
+        sheet.Activate()
+        sheet.Unprotect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
+        sheet.Visible = True
 
-        for sheet in wb.Sheets:
-            print("\t" + sheet.Name)
+        rg = sheet.UsedRange
 
-            visible = sheet.Visible
+        for entry in po:
+            a = entry.msgid
+            b = entry.msgstr
 
-            sheet.Activate()
-            sheet.Unprotect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
-            sheet.Visible = True
+            # print(f"\t\t'{a}' -> '{b}'")
 
-            rg = sheet.UsedRange
+            # Translate the sheet name
+            if sheet.Name == a:
+                try:
+                    sheet.Name = b
+                except Exception as E:
+                    raise Exception(f"Could not translate sheet name '{a}' -> '{b}'")
 
-            for entry in po:
-                a = entry.msgid
-                b = entry.msgstr
+            # Substitute cell content
+            rg.Replace(a, b, LookAt=1, MatchCase=True)  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
-                # print(f"\t\t'{a}' -> '{b}'")
+        sheet.Protect("nick")  # Restore protection
+        sheet.Visible = visible
 
-                # Translate the sheet name
-                if sheet.Name == a:
-                    try:
-                        sheet.Name = b
-                    except Exception as E:
-                        raise Exception(f"Could not translate sheet name '{a}' -> '{b}'")
+    for property in wb.BuiltinDocumentProperties:
+        if property.name == "Keywords":
+            property.value = f"lang={target_locale}"
+            break
 
-                # Substitute cell content
-                rg.Replace(a, b, LookAt=1, MatchCase=True)  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
+    wb.Worksheets(1).Activate()  # Leave the first sheet open
 
-            sheet.Protect("nick")  # Restore protection
-            sheet.Visible = visible
+    # save as
+    if dest.exists():
+        os.remove(dest)
+    wb.SaveAs(str(dest.resolve()))
+    wb.Close(True)
 
-        for property in wb.BuiltinDocumentProperties:
-            if property.name == "Keywords":
-                property.value = f"lang={target_locale}"
-                break
-
-        wb.Worksheets(1).Activate()  # Leave the first sheet open
-
-        # save as
-        dest_file = (dest / source_file.name).resolve()
-        if dest_file.exists():
-            os.remove(dest_file)
-        wb.SaveAs(str(dest_file))
-        wb.Close(True)
+    # excel.Quit()
 
 
-locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
-excel = win32com.client.Dispatch("Excel.Application")
-excel.Visible = True
-for locale in locales:
-    translate_databook(locale)
-excel.Quit()
+if __name__ == '__main__':
+
+    excel_files = list((rootdir/'en').glob("**/*.xlsx")) # List of all databooks
+    locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
+
+    # Assemble arguments
+    to_translate = []
+    for locale in locales:
+        for f in excel_files:
+            to_translate.append((f, rootdir/locale/f.relative_to(rootdir/'en'), locale)) # List of tuples ('en/databook.xlsx','fr/databook.xlsx', 'fr')
+
+    # Dispatch to workers
+    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        executor.map(translate, to_translate)
