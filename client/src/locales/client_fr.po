@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 
 msgid "Actions"
 msgstr "Actions"
@@ -639,46 +639,34 @@ msgid "Delete projects"
 msgstr "Supprimer les projets"
 
 msgid "Parameters"
-msgstr ""
+msgstr "Paramètres"
 
 msgid "Last extracted 1 Feb 2022"
-msgstr ""
+msgstr "Dernier extrait le 1 février 2022"
 
 msgid "Add country project from LiST database"
-msgstr ""
+msgstr "Ajouter un pays depuis la base de données LiST"
 
 msgid "Select country"
-msgstr ""
+msgstr "Sélectionner un pays"
 
 msgid "Load"
-msgstr ""
+msgstr "Charger"
 
 msgid "Could not initialize LiST country set"
-msgstr ""
+msgstr "Impossible d'initialiser les pays LiST"
 
 msgctxt "login"
 msgid "deprecation_warning"
 msgstr ""
+"Optima Nutrition a été mis à jour en version 2,0. L'ancienne version, aussi "
+"bien que les projets existants, seront maintenus jusqu'à juin 2022."
 
 msgid "Access the legacy version here"
-msgstr ""
+msgstr "Accéder à l'ancienne version ici"
 
 msgctxt "projects"
 msgid "list_data_warning"
 msgstr ""
-
-#~ msgctxt ""
-#~ "Warning: databooks contain unvalidated fields and require review before "
-#~ "results are used"
-#~ msgid ""
-#~ msgstr ""
-
-#~ msgid "Optima Nutrition has been upgraded to version 2"
-#~ msgstr ""
-
-#~ msgid "here"
-#~ msgstr ""
-
-#~ msgctxt " until June 2022"
-#~ msgid ""
-#~ msgstr ""
+"Attention : les recueils de données ont des champs invalidés qui doivent "
+"être vérifiés avant d'utiliser les résultats"
