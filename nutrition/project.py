@@ -807,7 +807,7 @@ def demo(scens=False, optims=False, geos=False, locale=None):
         P.demo_geos()
     return P
 
-def default_country(country:str, scens=False, optims=False, geos=False, locale=None, name=None):
+def default_country(country:str, scens=False, optims=False, geos=False, locale=None):
     """
     Create a default country project with demo settings
 
@@ -820,18 +820,22 @@ def default_country(country:str, scens=False, optims=False, geos=False, locale=N
 
     """
 
-    import pathlib
+    from .settings import ONpath
 
+    if locale is None:
+        locale = utils.locale # Use default locale
+
+    # Get country name
+    country_name = pd.read_csv(ONpath / "inputs" / "countries.csv" , index_col="iso_code").loc[country, locale]
+    # country_name = country_names.loc[country]
+
+    # Create project
     _ = utils.get_translator(locale)
+    P = Project(country_name + " " + _("project"), locale=locale)
 
-    # Parameters
-    name = country + " " + _("project")
-    ONpath = pathlib.Path(__file__).parent.parent
+    # Load demo databook
     file_loc = str(ONpath / "inputs" / locale / "LiST countries" / country) + "_databook.xlsx"
-
-    # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
-    P = Project(name, locale=locale)
-    P.load_data(country, name=country, inputspath=file_loc)
+    P.load_data(country_name, name=country_name, inputspath=file_loc)
 
     # Create demo scenarios and optimizations
     if scens:

@@ -78,7 +78,7 @@
   "login": {
     "New user?": "Nouvel utilisateur?",
     "Register here": "Inscrivez-vous ici",
-    "deprecation_warning": ""
+    "deprecation_warning": "Optima Nutrition a été mis à jour en version 2,0. L'ancienne version, aussi bien que les projets existants, seront maintenus jusqu'à juin 2022."
   },
   "navbar": {
     "About": "À propos",
@@ -152,7 +152,7 @@
     "loaded_popup": "Projet \"{name}\" chargé",
     "Language": "Langue",
     "Are you sure you want to delete the selected projects?": "Voulez-vous vraiment supprimer les projets sélectionnés ?",
-    "list_data_warning": ""
+    "list_data_warning": "Attention : les recueils de données ont des champs invalidés qui doivent être vérifiés avant d'utiliser les résultats"
   },
   "register": {
     "Already registered?": "Déjà inscrit.e?"
@@ -188,19 +188,11 @@
   "Completed after": "Achevé après",
   "Error after": "Erreur après",
   "Delete projects": "Supprimer les projets",
-  "Parameters": "",
-  "Last extracted 1 Feb 2022": "",
-  "Add country project from LiST database": "",
-  "Select country": "",
-  "Load": "",
-  "Could not initialize LiST country set": "",
-  "Access the legacy version here": "",
-  "Warning: databooks contain unvalidated fields and require review before results are used": {
-    "": ""
-  },
-  "Optima Nutrition has been upgraded to version 2": "",
-  "here": "",
-  " until June 2022": {
-    "": ""
-  }
+  "Parameters": "Paramètres",
+  "Last extracted 1 Feb 2022": "Dernier extrait le 1 février 2022",
+  "Add country project from LiST database": "Ajouter un pays depuis la base de données LiST",
+  "Select country": "Sélectionner un pays",
+  "Load": "Charger",
+  "Could not initialize LiST country set": "Impossible d'initialiser les pays LiST",
+  "Access the legacy version here": "Accéder à l'ancienne version ici"
 }

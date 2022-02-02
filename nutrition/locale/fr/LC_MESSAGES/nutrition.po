@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-02-02 14:06+1100\n"
+"POT-Creation-Date: 2022-02-02 16:57+1100\n"
 "PO-Revision-Date: 2022-02-02 14:44+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
@@ -15,9 +15,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "Generated-By: Babel 2.9.0\n"
-"X-Generator: Poedit 3.0\n"
 
 #: nutrition/data.py:196 nutrition/data.py:204 nutrition/data.py:207
 #: nutrition/data.py:210 nutrition/data.py:227 nutrition/data.py:241
@@ -164,7 +163,7 @@ msgstr "FAP non enceintes"
 #: nutrition/data.py:268 nutrition/data.py:276 nutrition/data.py:279
 #: nutrition/data.py:284 nutrition/data.py:287 nutrition/data.py:304
 #: nutrition/data.py:314 nutrition/data.py:368 nutrition/data.py:920
-#: nutrition_app/rpcs.py:726 nutrition_app/rpcs.py:811
+#: nutrition_app/rpcs.py:722 nutrition_app/rpcs.py:807
 msgid "Nutritional status distribution"
 msgstr "Dist. de l'état nutritionnel"
 
@@ -277,8 +276,8 @@ msgstr "Anémique"
 msgid "Not anaemic"
 msgstr "Pas anémique"
 
-#: nutrition/data.py:328 nutrition/data.py:332 nutrition_app/rpcs.py:727
-#: nutrition_app/rpcs.py:812
+#: nutrition/data.py:328 nutrition/data.py:332 nutrition_app/rpcs.py:723
+#: nutrition_app/rpcs.py:808
 msgid "Breastfeeding distribution"
 msgstr "Dist. l'allaitement maternel"
 
@@ -433,8 +432,8 @@ msgstr "Femmes enceintes"
 
 #: nutrition/data.py:417 nutrition/data.py:541 nutrition/data.py:751
 #: nutrition/data.py:774 nutrition/data.py:925 nutrition/geospatial.py:329
-#: nutrition/project.py:706 nutrition/project.py:773 nutrition_app/rpcs.py:729
-#: nutrition_app/rpcs.py:814
+#: nutrition/project.py:706 nutrition/project.py:773 nutrition_app/rpcs.py:725
+#: nutrition_app/rpcs.py:810
 msgid "Treatment of SAM"
 msgstr "Traitement de la MAS"
 
@@ -611,7 +610,7 @@ msgid "Odds ratio for stunting"
 msgstr "Rapport des cotes pour le retard de croissance"
 
 #: nutrition/data.py:593 nutrition/data.py:903 nutrition/data.py:1179
-#: nutrition_app/rpcs.py:728 nutrition_app/rpcs.py:813
+#: nutrition_app/rpcs.py:724 nutrition_app/rpcs.py:809
 msgid "IYCF packages"
 msgstr "Paquets ANJE"
 
@@ -700,8 +699,8 @@ msgid ""
 "be used."
 msgstr ""
 "Attention, le recueil de données en cours de lecture n'est pas à jour et ne "
-"comprend pas les prévalences de base de l'éclampsie et de la pré-"
-"éclampsie ; des moyennes mondiales seront donc utilisées."
+"comprend pas les prévalences de base de l'éclampsie et de la pré-éclampsie ;"
+" des moyennes mondiales seront donc utilisées."
 
 #: nutrition/data.py:748
 msgid "Prevalence of pre-eclampsia"
@@ -804,8 +803,8 @@ msgstr "Moustiquaires imprégnées d'insecticide de longue durée"
 msgid "Reference programs"
 msgstr "Programmes de référence"
 
-#: nutrition/data.py:840 nutrition_app/rpcs.py:786 nutrition_app/rpcs.py:791
-#: nutrition_app/rpcs.py:855 nutrition_app/rpcs.py:856
+#: nutrition/data.py:840 nutrition_app/rpcs.py:782 nutrition_app/rpcs.py:787
+#: nutrition_app/rpcs.py:851 nutrition_app/rpcs.py:852
 msgid "Program dependencies"
 msgstr "Dépendances du programme"
 
@@ -825,7 +824,7 @@ msgstr "Coût"
 msgid "Proportional Cost"
 msgstr "Coût proportionnel"
 
-#: nutrition/data.py:874 nutrition_app/rpcs.py:730 nutrition_app/rpcs.py:815
+#: nutrition/data.py:874 nutrition_app/rpcs.py:726 nutrition_app/rpcs.py:811
 msgid "Programs cost and coverage"
 msgstr "Coûts et couvertures des prgms"
 
@@ -1240,7 +1239,7 @@ msgstr "Exemple de l'émaciation"
 msgid "Anaemia example"
 msgstr "Exemple de l’anémie"
 
-#: nutrition/project.py:734 nutrition_app/rpcs.py:1359
+#: nutrition/project.py:734 nutrition_app/rpcs.py:1355
 msgid "Maximize thrive"
 msgstr "Maximiser l’épanouissement"
 
@@ -1260,11 +1259,11 @@ msgstr "démorégion2"
 msgid "demoregion3"
 msgstr "démorégion3"
 
-#: nutrition/project.py:791 nutrition_app/rpcs.py:475
+#: nutrition/project.py:791 nutrition_app/rpcs.py:471
 msgid "Demo project"
 msgstr "Projet démo"
 
-#: nutrition/project.py:828 nutrition_app/rpcs.py:494
+#: nutrition/project.py:828 nutrition_app/rpcs.py:490
 msgid "project"
 msgstr "projet"
 
@@ -1670,11 +1669,11 @@ msgstr ""
 "Dépenses estimées\n"
 " année de référence"
 
-#: nutrition_app/rpcs.py:1119
+#: nutrition_app/rpcs.py:1115
 msgid "Default scenario (coverage)"
 msgstr "Scénario par défaut (couverture)"
 
-#: nutrition_app/rpcs.py:1121
+#: nutrition_app/rpcs.py:1117
 msgid "Default scenario (budget)"
 msgstr "Scénario par défaut (budget)"
 

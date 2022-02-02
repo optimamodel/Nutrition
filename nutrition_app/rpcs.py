@@ -299,8 +299,6 @@ def pull_country_list(locale):
     # Read country names
     country_names = pd.read_csv(nu.ONpath / "inputs" / "countries.csv" , index_col="iso_code")[locale]
 
-    print(country_names)
-
     outputs = [{'iso':x,'name':country_names[x]} for x in available_country_codes]
 
     return outputs
@@ -487,7 +485,7 @@ def create_country_project(username, country, locale):
     """ Add a demo Optima Nutrition project """
     _ = nu.get_translator(locale)
     proj = nu.default_country(country['iso'], locale=locale)  # Create the project, loading in the desired spreadsheets.
-    name = country["name"] + " " + _("project") # Use full name for project rather than ISO code
+    proj.name = country["name"] + " " + _("project") # Use full name for project rather than ISO code
     print(">> add_default_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
     return {"projectID": str(proj.uid)}  # Return the new project UID in the return message.
