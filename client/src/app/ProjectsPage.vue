@@ -202,19 +202,20 @@ Last update: 2019feb18
           {{ $t("Select country") }}
         </div>
         <div class="dialog-c-text">
-          {{ $t("Warning: databooks contain unvalidated fields and require review before results are used.") }}
+          {{ $t("projects.list_data_warning") }}
         </div>
         <br />
         <span style="white-space: pre;"></span>
-        <tr>
-          <th><select v-model="country_name">
-            <option v-for='country_name in countryList'>
-              {{ country_name }}
+
+            <select v-model="country">
+            <option v-for='entry in countryList' :value="entry">
+              {{ entry.name }}
             </option>
-          </select><br><br></th>
-        </tr>
+          </select>
+            <br><br>
+
         <div style="text-align:justify">
-          <button @click="loadCountryProj(country_name) | $modal.hide('country-proj')" class='btn __green' style="display:inline-block">
+          <button @click="loadCountryProj(country); $modal.hide('country-proj')" class='btn __green' style="display:inline-block">
             {{ $t("Load") }}
           </button>
 
@@ -249,7 +250,7 @@ Last update: 2019feb18
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
         countryList: [], // List of country databooks from LiST database
-        country_name: '',
+        country: '',
       }
     },
 
@@ -269,7 +270,6 @@ Last update: 2019feb18
       } else {
         this.updateProjectSummaries()
       }
-      this.pullCountryList()
     },
 
     methods: {
@@ -283,18 +283,18 @@ Last update: 2019feb18
         return locale;
       },
 
-      beforeOpen (event) {
-        console.log(event)
-        this.TEMPtime = Date.now() // Set the opening time of the modal
-      },
-
-      beforeClose (event) {
-        console.log(event)
-        // If modal was open less then 5000 ms - prevent closing it
-        if (this.TEMPtime + this.TEMPduration < Date.now()) {
-          event.stop()
-        }
-      },
+      // beforeOpen (event) {
+      //   console.log(event)
+      //   this.TEMPtime = Date.now() // Set the opening time of the modal
+      // },
+      //
+      // beforeClose (event) {
+      //   console.log(event)
+      //   // If modal was open less then 5000 ms - prevent closing it
+      //   if (this.TEMPtime + this.TEMPduration < Date.now()) {
+      //     event.stop()
+      //   }
+      // },
 
       async updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
@@ -653,29 +653,26 @@ Last update: 2019feb18
         }
       },
 
-      pullCountryList() {
-        console.log('pullCountryList() called');
-        this.$sciris.start(this) // Start indicating progress.
-        this.$sciris.rpc('pull_country_list', [i18n.locale]) // Pull the list of countries.
-          .then(response => {
-            this.countryList = response.data.sort()
-            this.country_name = response.data[0]
-            this.$sciris.succeed(this, '')  // No green popup message.
-          })
-          .catch(error => {
-            this.$sciris.fail(this, i18n.t('Could not initialize LiST country set'), error)    // Indicate failure.
-          })
+      async pullCountryList() {
+        try {
+          let response = await this.$sciris.rpc('pull_country_list', [i18n.locale]);
+          this.countryList = response.data.sort((a, b) => a.name.localeCompare(b.name));
+          this.country = this.countryList[0];
+        } catch (error) {
+          this.$sciris.fail(this, i18n.t('Could not initialize LiST country set'), error);    // Indicate failure.
+        }
       },
 
-      addCountryProject() {
+      async addCountryProject() {
         console.log('addCountryProject() called');
+        await this.pullCountryList() // Retrieve country list for selected locale
         this.$modal.show('country-proj');
       },
 
       loadCountryProj() {
         console.log('loadCountryProj() called');
         this.$sciris.start(this) // Start indicating progress.
-        this.$sciris.rpc('create_country_project', [this.$store.state.currentUser.username, this.country_name, i18n.locale]) // Have the server create a new project.
+        this.$sciris.rpc('create_country_project', [this.$store.state.currentUser.username, this.country, i18n.locale]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
             this.$sciris.succeed(this, '') // Indicate success.

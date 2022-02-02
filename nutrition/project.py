@@ -807,14 +807,25 @@ def demo(scens=False, optims=False, geos=False, locale=None):
         P.demo_geos()
     return P
 
-def default_country(country, scens=False, optims=False, geos=False, locale=None):
-    """ Create a deafult country project with demo settings """
+def default_country(country:str, scens=False, optims=False, geos=False, locale=None, name=None):
+    """
+    Create a default country project with demo settings
+
+    :param country: Country ISO code e.g. "AFG"
+    :param scens:
+    :param optims:
+    :param geos:
+    :param locale: Optionally specify locale (e.g. "en")
+    :return:
+
+    """
+
     import pathlib
 
     _ = utils.get_translator(locale)
 
     # Parameters
-    name = _(country + " project")
+    name = country + " " + _("project")
     ONpath = pathlib.Path(__file__).parent.parent
     file_loc = str(ONpath / "inputs" / locale / "LiST countries" / country) + "_databook.xlsx"
 

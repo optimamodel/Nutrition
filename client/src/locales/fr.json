@@ -77,7 +77,8 @@
   },
   "login": {
     "New user?": "Nouvel utilisateur?",
-    "Register here": "Inscrivez-vous ici"
+    "Register here": "Inscrivez-vous ici",
+    "deprecation_warning": ""
   },
   "navbar": {
     "About": "À propos",
@@ -150,7 +151,8 @@
     "Upload project from file": "Télécharger le projet à partir d'un fichier",
     "loaded_popup": "Projet \"{name}\" chargé",
     "Language": "Langue",
-    "Are you sure you want to delete the selected projects?": "Voulez-vous vraiment supprimer les projets sélectionnés ?"
+    "Are you sure you want to delete the selected projects?": "Voulez-vous vraiment supprimer les projets sélectionnés ?",
+    "list_data_warning": ""
   },
   "register": {
     "Already registered?": "Déjà inscrit.e?"
@@ -185,5 +187,20 @@
   "Running for": "Temps d'exécution: ",
   "Completed after": "Achevé après",
   "Error after": "Erreur après",
-  "Delete projects": "Supprimer les projets"
+  "Delete projects": "Supprimer les projets",
+  "Parameters": "",
+  "Last extracted 1 Feb 2022": "",
+  "Add country project from LiST database": "",
+  "Select country": "",
+  "Load": "",
+  "Could not initialize LiST country set": "",
+  "Access the legacy version here": "",
+  "Warning: databooks contain unvalidated fields and require review before results are used": {
+    "": ""
+  },
+  "Optima Nutrition has been upgraded to version 2": "",
+  "here": "",
+  " until June 2022": {
+    "": ""
+  }
 }

@@ -28,17 +28,17 @@ def update_messages(source_po, target_po):
 locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
 for locale in locales:
-    print("Syncing databook -> backend")
+    print(f"{locale}: Syncing databook -> backend")
     source_po = polib.pofile(rootdir / locale / "databook.po")
     target_po = polib.pofile(nu.ONpath / "nutrition" / "locale" / locale / "LC_MESSAGES" / "nutrition.po")
     update_messages(source_po, target_po)
 
-    print("Syncing databook -> frontend")
+    print(f"{locale}: Syncing databook -> frontend")
     source_po = polib.pofile(rootdir / locale / "databook.po")
     target_po = polib.pofile(nu.ONpath / "client" / "src" / "locales" / f"client_{locale}.po")
     update_messages(source_po, target_po)
 
-    print("Syncing backend -> frontend")
+    print(f"{locale}: Syncing backend -> frontend")
     source_po = polib.pofile(nu.ONpath / "nutrition" / "locale" / locale / "LC_MESSAGES" / "nutrition.po")
     target_po = polib.pofile(nu.ONpath / "client" / "src" / "locales" / f"client_{locale}.po")
     update_messages(source_po, target_po)

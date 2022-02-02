@@ -269,37 +269,43 @@ def admin_upload_db(pw, filename=None, host=None):
 ##################################################################################
 
 
-@RPC()  # Not usually called as an RPC
+@RPC()
 def load_project(project_key):
     output = datastore.loadblob(project_key, objtype="project", die=True)
     return output
 
 
-@RPC()  # Not usually called as an RPC
+@RPC()
 def load_result(result_key):
     output = datastore.loadblob(result_key, objtype="result", die=True)
     return output
 
 
-@RPC()  # Not usually called as an RPC
+@RPC()
 def save_project(project):  # NB, only for saving an existing project
     project.modified = sc.now(utc=True)
     output = datastore.saveblob(obj=project, objtype="project", die=True)
     return output
 
-@RPC()  # Not usually called as an RPC
+
+@RPC()
 def pull_country_list(locale):
-    import pathlib
-    ONpath = pathlib.Path(__file__).parent.parent
-    file_loc = ONpath / "inputs" / locale / "LiST countries"
-    file_list = [file for file in os.listdir(file_loc) if os.path.isfile(os.path.join(file_loc, file))]
-    country_list = [country.replace("_databook.xlsx", "") for country in file_list]
+    # Read available files for locales
+    available_country_codes = [x.stem.split('_')[0] for x in (nu.ONpath/'inputs'/locale/'LiST countries').glob("*.xlsx")]
 
-    return country_list
+    # Only keep 3 letter country codes - remove once all databooks are listed by country code only
+    available_country_codes = [x for x in available_country_codes if len(x) == 3]
 
+    # Read country names
+    country_names = pd.read_csv(nu.ONpath / "inputs" / "countries.csv" , index_col="iso_code")[locale]
 
+    print(country_names)
 
-@RPC()  # Not usually called as an RPC
+    outputs = [{'iso':x,'name':country_names[x]} for x in available_country_codes]
+
+    return outputs
+
+@RPC()
 def save_new_project(proj, username=None, uid=None):
     """
     If we're creating a new project, we need to do some operations on it to
@@ -480,8 +486,8 @@ def create_new_project(username, proj_name, locale):
 def create_country_project(username, country, locale):
     """ Add a demo Optima Nutrition project """
     _ = nu.get_translator(locale)
-    proj = nu.default_country(country, locale=locale)  # Create the project, loading in the desired spreadsheets.
-    proj.name = _(country + " project")
+    proj = nu.default_country(country['iso'], locale=locale)  # Create the project, loading in the desired spreadsheets.
+    name = country["name"] + " " + _("project") # Use full name for project rather than ISO code
     print(">> add_default_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
     return {"projectID": str(proj.uid)}  # Return the new project UID in the return message.

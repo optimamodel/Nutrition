@@ -637,3 +637,48 @@ msgstr "Voulez-vous vraiment supprimer les projets sélectionnés ?"
 
 msgid "Delete projects"
 msgstr "Supprimer les projets"
+
+msgid "Parameters"
+msgstr ""
+
+msgid "Last extracted 1 Feb 2022"
+msgstr ""
+
+msgid "Add country project from LiST database"
+msgstr ""
+
+msgid "Select country"
+msgstr ""
+
+msgid "Load"
+msgstr ""
+
+msgid "Could not initialize LiST country set"
+msgstr ""
+
+msgctxt "login"
+msgid "deprecation_warning"
+msgstr ""
+
+msgid "Access the legacy version here"
+msgstr ""
+
+msgctxt "projects"
+msgid "list_data_warning"
+msgstr ""
+
+#~ msgctxt ""
+#~ "Warning: databooks contain unvalidated fields and require review before "
+#~ "results are used"
+#~ msgid ""
+#~ msgstr ""
+
+#~ msgid "Optima Nutrition has been upgraded to version 2"
+#~ msgstr ""
+
+#~ msgid "here"
+#~ msgstr ""
+
+#~ msgctxt " until June 2022"
+#~ msgid ""
+#~ msgstr ""
