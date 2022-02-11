@@ -12,6 +12,24 @@ if __name__ != '__main__':
     excel = win32com.client.DispatchEx("Excel.Application")
     excel.Visible = True
 
+def validate_sheet_names(wb, pofile):
+    po = polib.pofile(pofile)
+
+    translations = {x.msgid:x.msgstr for x in po}
+    sheets = {sheet.Name:translations[sheet.Name] if sheet.Name in translations else sheet.Name for sheet in wb.Sheets}
+    failed = False
+    for a,b in sheets.items():
+        if len(b) > 31:
+            print(f'Invalid sheet name: "{a}"->"{b}"')
+            failed = True
+    if failed:
+        for sheet in sheets:
+            for entry in po:
+                if sheet == entry.msgid:
+                    entry.comment = 'Translation must be 31 characters or less in length'
+        po.save(pofile)
+        raise Exception('Invalid sheet names detected')
+
 def translate(x):
     """
     Translate all Excel files from source to target locale
@@ -29,6 +47,9 @@ def translate(x):
     po = polib.pofile(rootdir / target_locale / "databook.po")
 
     wb = excel.Workbooks.Add(str(source.resolve()))
+
+    # pofile =  rootdir / target_locale / "databook.po"
+    # validate_sheet_names(wb, pofile)
 
     for sheet in wb.Sheets:
         print("\t" + sheet.Name)
@@ -55,7 +76,7 @@ def translate(x):
                     raise Exception(f"Could not translate sheet name '{a}' -> '{b}'")
 
             # Substitute cell content
-            rg.Replace(a, b, LookAt=1, MatchCase=True)  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
+            rg.Replace(a, b, LookAt=1, MatchCase="True")  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
         sheet.Protect("nick")  # Restore protection
         sheet.Visible = visible
@@ -79,8 +100,14 @@ def translate(x):
 
 if __name__ == '__main__':
 
+    # Use this block to translate databooks in subfolders e.g. LiST countries
     excel_files = list((rootdir/'en').glob("**/*.xlsx")) # List of all databooks
     locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
+
+    # Use this block to translate top level files only
+    excel_files = list((rootdir/'en').glob("*.xlsx")) # List of all databooks
+    locales = ["es"]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
+
 
     # Assemble arguments
     to_translate = []
@@ -89,5 +116,12 @@ if __name__ == '__main__':
             to_translate.append((f, rootdir/locale/f.relative_to(rootdir/'en'), locale)) # List of tuples ('en/databook.xlsx','fr/databook.xlsx', 'fr')
 
     # Dispatch to workers
+    # WARNING - Must be run directly in a Windows command prompt, NOT in PyCharm
     with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
         executor.map(translate, to_translate)
+
+    # # ...or run debug
+    # excel = win32com.client.DispatchEx("Excel.Application")
+    # excel.Visible = True
+    # for x in to_translate:
+    #     translate(x)
