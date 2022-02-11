@@ -1,4 +1,4 @@
-import DropDown from './app/Dropdown.vue'
+// import DropDown from './app/Dropdown.vue'
 import help from './app/HelpLink.vue'
 
 /**
@@ -7,7 +7,7 @@ import help from './app/HelpLink.vue'
 
 const GlobalComponents = {
   install (Vue) {
-    Vue.component('drop-down', DropDown)
+    // Vue.component('drop-down', DropDown)
     Vue.component('help', help)
   }
 }

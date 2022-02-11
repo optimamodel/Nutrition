@@ -57,9 +57,6 @@ Last update: 2019feb22
 </template>
 
 <script>
-  import rpcs from '@/js/rpc-service'
-  import status from '@/js/status-service'
-
   export default {
     name: 'About',
 
@@ -83,7 +80,7 @@ Last update: 2019feb22
 
     computed: {
       getVersionInfo() {
-        rpcs.rpc('get_version_info')
+        this.$sciris.rpc('get_version_info')
           .then(response => {
             this.username  = this.$store.state.currentUser.username
             this.useragent = window.navigator.userAgent
@@ -130,14 +127,14 @@ Last update: 2019feb22
 
       adv_submit() {
         console.log('adv_submit() called')
-        rpcs.rpc('run_query', [this.adv_authentication, this.adv_query]) // Have the server copy the project, giving it a new name.
+        this.$sciris.rpc('run_query', [this.adv_authentication, this.adv_query]) // Have the server copy the project, giving it a new name.
           .then(response => {
             console.log(response.data)
             this.adv_response = response.data.replace(/\n/g,'<br>')
-            status.succeed(this, 'Query run')    // Indicate success.
+            this.$sciris.succeed(this, 'Query run')    // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not run query', error)
+            this.$sciris.fail(this, 'Could not run query', error)
           })
       },
 
