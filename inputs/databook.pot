@@ -209,6 +209,9 @@ msgstr ""
 msgid "Community-based"
 msgstr ""
 
+msgid "Condition"
+msgstr ""
+
 msgid "Condom"
 msgstr ""
 
@@ -255,6 +258,9 @@ msgid "Diarrhoea (per additional episode) - upper"
 msgstr ""
 
 msgid "Diarrhoea incidence"
+msgstr ""
+
+msgid "Distribution"
 msgstr ""
 
 msgid "Economic loss"

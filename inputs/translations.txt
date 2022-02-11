@@ -65,6 +65,7 @@ Children under 5 population
 Community
 Community based
 Community-based
+Condition
 Condom
 Cost
 Cost curve options
@@ -81,6 +82,7 @@ Diarrhoea (per additional episode)
 Diarrhoea (per additional episode) - lower
 Diarrhoea (per additional episode) - upper
 Diarrhoea incidence
+Distribution
 Economic loss
 Effectiveness
 Effectiveness incidence
