@@ -18,7 +18,7 @@ with open(rootdir / "translations.txt") as f:
         pot.append(entry)
     pot.save(rootdir / f"databook.pot")
 
-locales = ["fr"]  # Locales for translation
+locales = ["fr", "es"]  # Locales for translation
 for locale in locales:
     pathlib.Path(rootdir / locale).mkdir(parents=True, exist_ok=True)
     po_fname = rootdir / locale / f"databook.po"

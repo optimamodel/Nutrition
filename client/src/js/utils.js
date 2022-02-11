@@ -222,7 +222,7 @@ function updateDatasets(vm) {
   })
 }
 
-const locales = [{locale:'en',name:'English'}, {locale:'fr',name:'Français'}]
+const locales = [{locale:'en',name:'English'}, {locale:'fr',name:'Français'}, {locale:'es',name:"Español"}]
 
 export default {
   sleep,

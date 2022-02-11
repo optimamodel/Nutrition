@@ -1,0 +1,767 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#, fuzzy
+msgid "please_wait_spinner"
+msgstr "Espere por favor"
+
+#, fuzzy
+msgctxt "placeholder"
+msgid "Reenter old password"
+msgstr "Vuelva a introducir la antigua contraseña"
+
+msgctxt "placeholder"
+msgid "Enter new password"
+msgstr "Introduzca nueva contraseña"
+
+msgctxt "placeholder"
+msgid "Username"
+msgstr "Nombre de usuario"
+
+msgctxt "placeholder"
+msgid "Password"
+msgstr "Contraseña"
+
+#, fuzzy
+msgctxt "placeholder"
+msgid "Display name (optional)"
+msgstr "Nombre para mostrar (opcional)"
+
+msgctxt "placeholder"
+msgid "Email (optional)"
+msgstr "Correo electrónico (opcional)"
+
+msgctxt "footer"
+msgid "Terms and conditions"
+msgstr "Términos y condiciones"
+
+#, fuzzy
+msgctxt "common"
+msgid "no_project_loaded"
+msgstr "No se carga ningún proyecto"
+
+#, fuzzy
+msgctxt "common"
+msgid "no_data_loaded"
+msgstr ""
+"Datos aún no cargados para el proyecto. Cargue un libro de datos en la "
+"página Proyectos"
+
+msgctxt "common"
+msgid "Run"
+msgstr "Ejecutar"
+
+msgctxt "common"
+msgid "Test run"
+msgstr "Prueba de funcionamiento"
+
+#, fuzzy
+msgctxt "common"
+msgid "Plot results"
+msgstr "Resultados de las parcelas"
+
+msgctxt "common"
+msgid "Clear results"
+msgstr "Borrar Resultados"
+
+msgctxt "common"
+msgid "Zoom out"
+msgstr "Alejar"
+
+#, fuzzy
+msgctxt "common"
+msgid "Reset zoom"
+msgstr "Restablecer el zoom"
+
+msgctxt "common"
+msgid "Zoom in"
+msgstr "Acercar"
+
+#, fuzzy
+msgctxt "common"
+msgid "Export plots"
+msgstr "Exportar parcelas"
+
+msgctxt "common"
+msgid "Export data"
+msgstr "Exportar datos"
+
+#, fuzzy
+msgctxt "common"
+msgid "Can be reallocated"
+msgstr "Se puede reasignar"
+
+#, fuzzy
+msgctxt "common"
+msgid "Cannot be reallocated"
+msgstr "No se puede reasignar"
+
+msgctxt "common"
+msgid "Program name"
+msgstr "Nombre del programa"
+
+#, fuzzy
+msgctxt "common"
+msgid "Export results"
+msgstr "Resultados de la exportación"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Define geospatial optimizations"
+msgstr "Definir las optimizaciones geoespaciales"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Edit geospatial optimization"
+msgstr "Editar la optimización geoespacial"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Copy geospatial optimization"
+msgstr "Copiar la optimización geoespacial"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Delete geospatial optimization"
+msgstr "Eliminar la optimización geoespacial"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Add geospatial optimization"
+msgstr "Añadir optimización geoespacial"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Optimization/program"
+msgstr "Optimización/programa"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Geospatial optimization name"
+msgstr "Nombre de la optimización geoespacial"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Select regions"
+msgstr "Seleccione las regiones"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Optimization objective"
+msgstr "Objetivo de optimización"
+
+msgctxt "geospatial"
+msgid "Weight"
+msgstr "Peso"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Existing spending"
+msgstr "Gasto existente"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Regional spending"
+msgstr "Gasto regional"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Can be reallocated between regions"
+msgstr "Puede reasignarse entre regiones"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Cannot be reallocated between regions"
+msgstr "No se puede reasignar entre regiones"
+
+#, fuzzy
+msgctxt "geospatial"
+msgid "Additional funds to allocate"
+msgstr "Fondos adicionales para asignar"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Actions"
+msgstr "Acciones"
+
+msgid "Outcomes"
+msgstr "Resultado"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Growth type"
+msgstr "Tipo de crecimiento"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Fixed budget"
+msgstr "Presupuesto fijo"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Fixed coverage"
+msgstr "Cobertura fija"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Define optimizations"
+msgstr "Definir las optimizaciones"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Edit optimization"
+msgstr "Editar la optimización"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Copy optimization"
+msgstr "Optimización de la copia"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Delete optimization"
+msgstr "Eliminar la optimización"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "perform_costeff"
+msgstr "perform_costeff"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Plot optimizations"
+msgstr "Optimización de las parcelas"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Plot optimizations with uncertainty"
+msgstr "Optimizaciones de parcelas con incertidumbre"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Add optimization"
+msgstr "Añadir optimización"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Optimization/program"
+msgstr "Optimización/programa"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Optimization name"
+msgstr "Nombre de la optimización"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Run balanced optimization?"
+msgstr "¿Ejecutar una optimización equilibrada?"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Optimization objective"
+msgstr "Objetivo de optimización"
+
+msgctxt "optimization"
+msgid "Weight"
+msgstr "Peso"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Budget multipliers"
+msgstr "Multiplicadores del presupuesto"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "current budget"
+msgstr "presupuesto actual"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Existing spending"
+msgstr "Gasto existente"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Additional funds to allocate"
+msgstr "Fondos adicionales para asignar"
+
+#, fuzzy
+msgctxt "optimization"
+msgid "Deselect all interventions"
+msgstr "Deseleccionar todas las intervenciones"
+
+msgid "Include"
+msgstr "Incluir"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Help"
+msgstr "Ayuda"
+
+msgctxt "inputs"
+msgid "no_project_loaded"
+msgstr "Ningún proyecto cargado"
+
+msgctxt "inputs"
+msgid "data_not_loaded"
+msgstr "Datos no cargados"
+
+#, fuzzy
+msgctxt "inputs"
+msgid "Edit input data"
+msgstr "Editar los datos de entrada"
+
+msgctxt "inputs"
+msgid "save_tooltip"
+msgstr "Guardar datos en el proyecto"
+
+msgctxt "inputs"
+msgid "save_changes"
+msgstr "Guardar cambios"
+
+msgctxt "inputs"
+msgid "revert_tooltip"
+msgstr "Volver a los últimos datos guardados"
+
+msgctxt "inputs"
+msgid "revert"
+msgstr "revertir"
+
+#, fuzzy
+msgctxt "inputs"
+msgid "Current sheet"
+msgstr "Ficha actual"
+
+#, fuzzy
+msgctxt "inputs"
+msgid "Switch to this sheet"
+msgstr "Cambiar a esta hoja"
+
+msgctxt "inputs"
+msgid "Program"
+msgstr "Programa"
+
+#, fuzzy
+msgctxt "inputs"
+msgid "Exclusion dependency"
+msgstr "Dependencia de la exclusión"
+
+#, fuzzy
+msgctxt "inputs"
+msgid "Threshold dependency"
+msgstr "Dependencia del umbral"
+
+msgctxt "inputs"
+msgid "Add dependency"
+msgstr "Agregar dependencia"
+
+msgid "Rename"
+msgstr "Renombrar"
+
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Delete"
+msgstr "Borrar"
+
+msgid "Download"
+msgstr "Descargar"
+
+msgid "Upload"
+msgstr "Subir"
+
+msgid "Login"
+msgstr "Iniciar sesión"
+
+msgctxt "login"
+msgid "deprecation_warning"
+msgstr ""
+"Optima Nutrition se ha actualizado a la versión 2.0. La versión heredada, "
+"así como los proyectos existentes, se mantendrán hasta junio de 2022. "
+
+msgctxt "login"
+msgid "New user?"
+msgstr "¿Nuevo usuario?"
+
+msgctxt "login"
+msgid "Register here"
+msgstr "Regístrate aquí"
+
+#, fuzzy
+msgid "Access the legacy version here"
+msgstr "Acceda a la versión anterior aquí"
+
+msgctxt "navbar"
+msgid "Toggle navigation"
+msgstr "Cambiar modo de Navegación"
+
+msgctxt "navbar"
+msgid "Projects"
+msgstr "Proyectos"
+
+msgctxt "navbar"
+msgid "Inputs"
+msgstr "Entradas"
+
+msgctxt "navbar"
+msgid "Scenarios"
+msgstr "Escenarios"
+
+msgctxt "navbar"
+msgid "Optimizations"
+msgstr "Optimizaciones"
+
+#, fuzzy
+msgctxt "navbar"
+msgid "Geospatial"
+msgstr "Geoespacial"
+
+msgctxt "navbar"
+msgid "Project"
+msgstr "Proyecto"
+
+msgctxt "navbar"
+msgid "User"
+msgstr "Usuario"
+
+msgctxt "navbar"
+msgid "Edit account"
+msgstr "Editar cuenta"
+
+msgctxt "navbar"
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
+msgctxt "navbar"
+msgid "Help"
+msgstr "Ayuda"
+
+msgctxt "navbar"
+msgid "About"
+msgstr "Acerca de"
+
+msgctxt "navbar"
+msgid "Log out"
+msgstr "Cerrar sesión"
+
+#, fuzzy
+msgctxt "navbar"
+msgid "language_warning"
+msgstr "aviso_de_idioma"
+
+msgid "Parameters"
+msgstr "Parámetros"
+
+#, fuzzy
+msgid "Databook"
+msgstr "Libro de datos"
+
+msgid "Deselect all"
+msgstr "Deseleccionar todo"
+
+msgid "Initializing"
+msgstr "Inicializar"
+
+#, fuzzy
+msgid "Running for"
+msgstr "Correr para"
+
+#, fuzzy
+msgid "Completed after"
+msgstr "Completado después de"
+
+#, fuzzy
+msgid "Error after"
+msgstr "Error después de"
+
+msgctxt "projects"
+msgid "Create project"
+msgstr "Crear proyecto"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Add demo project"
+msgstr "Añadir proyecto de demostración"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Create new project"
+msgstr "Crear un nuevo proyecto"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Upload project from file"
+msgstr "Cargar el proyecto desde un archivo"
+
+msgctxt "projects"
+msgid "Manage projects"
+msgstr "Administrar proyectos"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Project actions"
+msgstr "Acciones del proyecto"
+
+msgctxt "projects"
+msgid "Last modified"
+msgstr "Última modificación"
+
+msgctxt "projects"
+msgid "Language"
+msgstr "Idioma"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Rename databook"
+msgstr "Cambiar el nombre de la base de datos"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Copy databook"
+msgstr "Copiar el libro de datos"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Delete databook"
+msgstr "Borrar el libro de datos"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Download databook"
+msgstr "Descargar el libro de datos"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Upload databook"
+msgstr "Cargar el libro de datos"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Create blank project"
+msgstr "Crear un proyecto en blanco"
+
+msgctxt "projects"
+msgid "Project name"
+msgstr "Nombre del proyecto"
+
+msgctxt "projects"
+msgid "New name"
+msgstr "Nuevo nombre"
+
+msgctxt "projects"
+msgid "list_data_warning"
+msgstr ""
+"Advertencia: los libros de datos contienen campos no validados y requieren "
+"revisión antes de usar los resultados "
+
+#, fuzzy
+msgctxt "projects"
+msgid "Type here to filter projects"
+msgstr "Escriba aquí para filtrar los proyectos"
+
+msgctxt "projects"
+msgid "New project"
+msgstr "Nuevo proyecto"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Could not add new project"
+msgstr "No se puede añadir un nuevo proyecto"
+
+#, fuzzy
+msgctxt "projects"
+msgid "New project uploaded"
+msgstr "Nuevo proyecto cargado"
+
+#, fuzzy
+msgctxt "projects"
+msgid "loaded_popup"
+msgstr "loaded_popup"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Could not download project"
+msgstr "No se ha podido descargar el proyecto"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Could not rename databook"
+msgstr "No se ha podido cambiar el nombre de la base de datos"
+
+#, fuzzy
+msgctxt "projects"
+msgid "Are you sure you want to delete the selected projects?"
+msgstr "¿Está seguro de que quiere eliminar los proyectos seleccionados?"
+
+#, fuzzy
+msgid "Last extracted 1 Feb 2022"
+msgstr "Último extracto: 1 de febrero de 2022"
+
+#, fuzzy
+msgid "Add country project from LiST database"
+msgstr "Añadir proyecto de país desde la base de datos LiST"
+
+msgid "Open"
+msgstr "Abierto"
+
+msgid "Delete selected"
+msgstr "Eliminar seleccionado"
+
+msgid "Download selected"
+msgstr "Descargar seleccionado"
+
+msgid "Create"
+msgstr "Crear"
+
+msgid "Select country"
+msgstr "Selecciona país"
+
+msgid "Load"
+msgstr "Cargar"
+
+#, fuzzy
+msgid "Could not upload file"
+msgstr "No se ha podido cargar el archivo"
+
+msgid "Delete projects"
+msgstr "Borrar proyectos"
+
+#, fuzzy
+msgid "Could not initialize LiST country set"
+msgstr "No se ha podido inicializar el conjunto de países LiST"
+
+msgid "Register"
+msgstr "Registrarse"
+
+msgctxt "register"
+msgid "Already registered?"
+msgstr "¿Ya estás registrado?"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Define scenarios"
+msgstr "Definir escenarios"
+
+msgctxt "scenarios"
+msgid "budget"
+msgstr "presupuesto"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "coverage"
+msgstr "cobertura"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Edit scenario"
+msgstr "Editar escenario"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Copy scenario"
+msgstr "Copiar escenario"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Convert scenario type"
+msgstr "Convertir el tipo de escenario"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Delete scenario"
+msgstr "Borrar escenario"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Perform intervention cost-effectiveness analysis"
+msgstr "Realizar un análisis de rentabilidad de la intervención"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Run scenarios"
+msgstr "Ejecutar escenarios"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Run scenarios with uncertainty"
+msgstr "Ejecutar escenarios con incertidumbre"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Add coverage scenario"
+msgstr "Añadir escenario de cobertura"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Add budget scenario"
+msgstr "Añadir escenario presupuestario"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Program cost-effectiveness"
+msgstr "Rentabilidad del programa"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Scenario/program"
+msgstr "Escenario/programa"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Add scenario"
+msgstr "Añadir escenario"
+
+msgctxt "scenarios"
+msgid "Scenario name"
+msgstr "Título del escenario"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Databook"
+msgstr "Libro de datos"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Program coverages"
+msgstr "Coberturas del programa"
+
+#, fuzzy
+msgctxt "scenarios"
+msgid "Program spending"
+msgstr "Gastos del programa"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Zoom out"
+msgstr "Alejar"
+
+#, fuzzy
+msgctxt "uncertainty"
+msgid "Input uncertainty runs"
+msgstr "Incertidumbre de entrada se ejecuta"
+
+#, fuzzy
+msgctxt "uncertainty"
+msgid "Number of runs"
+msgstr "Número de ejecuciones"
