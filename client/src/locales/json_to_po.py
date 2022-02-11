@@ -1,12 +1,14 @@
 # Convert JSON to PO
 # This will ensure that every JSON item has a corresponding PO entry
 # but will NOT copy over any translations
+# After running vue-i18n-extract, the JSON files will contain all of the keys that
+# need to be translated
+
 import polib
 import json
 import pathlib
 
 rootdir = pathlib.Path(__file__).parent
-
 
 def flatten(d, out, prefix=()):
     for k, v in d.items():
@@ -35,7 +37,6 @@ for locale in rootdir.iterdir():
             msgctxt=".".join(k[:-1]) if k[:-1] else None,
         )
         pot.append(entry)
-    # pot.save(rootdir/'client.pot')
 
     # Merge it with the existing po file
     po_fname = rootdir / f"client_{locale.stem}.po"
@@ -46,24 +47,3 @@ for locale in rootdir.iterdir():
     po.merge(pot)
     po.save(po_fname)
 
-    #
-    #
-    # po_fname = rootdir/f'{locale.stem}.po'
-    #
-    # if po_fname.exists():
-    #     po = polib.pofile(po_fname)
-    # else:
-    #     po = polib.POFile()
-    #
-    #
-    # for k,v in out.items():
-    #     entry = polib.POEntry(
-    #         msgid = k[-1],
-    #         msgstr = v,
-    #         msgctxt = '.'.join(k[:-1]),
-    #     )
-    #     po.append(entry)
-    #
-    # po.save()
-    #
-    #
