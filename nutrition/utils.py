@@ -446,14 +446,18 @@ def trace_exception(func):
     return wrapper
 
 
-def run_parallel(func, args_list, num_procs):
+def run_parallel(func, args_list, num_procs, return_two=False):
     """Uses pool.map() to distribute parallel processes.
     args_list: an iterable of args (also iterable)
     func: function to parallelise, must have single explicit argument (i.e an iterable)"""
 
     p = multiprocessing.Pool(processes=num_procs)
-    res = p.map(func, args_list)
-    return res
+    if return_two:
+        res, scen = zip(*p.map(func, args_list))
+        return res, scen
+    else:
+        res = p.map(func, args_list)
+        return res
 
 
 def get_new_prob(coverage, probCovered, probNotCovered):

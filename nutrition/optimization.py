@@ -72,7 +72,7 @@ class Optim(sc.prettyobj):
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, weight, mult, keep_inds), mult) + optim for mult in self.mults for weight in list(self.weights)]
         if parallel:
-            res, scen = utils.run_parallel(self.one_optim_parallel, args, num_procs)
+            res, scen = utils.run_parallel(self.one_optim_parallel, args, num_procs, return_two=True)
         else:
             res, scen = [], []
             for arg in args:
@@ -111,7 +111,7 @@ class Optim(sc.prettyobj):
                 balanced_args.append((self.get_kwargs(model, balanced_weight, mult, keep_inds), mult) + optim)
 
             if parallel:
-                res_balanced, scen_balanced = utils.run_parallel(self.one_optim_parallel, balanced_args, num_procs)
+                res_balanced, scen_balanced = utils.run_parallel(self.one_optim_parallel, balanced_args, num_procs, return_two=True)
             else:
                 res_balanced, scen_balanced = [], []
                 for arg in balanced_args:
