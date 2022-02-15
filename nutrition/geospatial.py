@@ -99,13 +99,8 @@ class Geospatial:
             regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1], weight_ind=w)
             run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=maxtime, parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced, n_samples=n_samples)
 
-            # Run results in parallel or series.
-            # can run in parallel b/c child processes in series
-            if parallel:
-                results += utils.run_parallel(run_optim, regions, num_procs=len(regions), return_two=True)[0]
-            else:
-                for region in regions:
-                    results.append(run_optim(region)[0])
+            for region in regions:
+                results.append(run_optim(region)[0])
 
         # Flatten list.
         results = [item for sublist in results for item in sublist]
