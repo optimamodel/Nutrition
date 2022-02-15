@@ -27,7 +27,7 @@ kwargs = {
 }
 if __name__ == "__main__":
     geo = Geospatial(**kwargs)
-    results = p.run_geo(geo=geo, maxiter=5, swarmsize=0, maxtime=200, parallel=False, runbalanced=False, n_samples=1)
+    results = p.run_geo(geo=geo, maxiter=1, swarmsize=0, maxtime=1, parallel=True, runbalanced=False, n_samples=1)
     p.plot(geo=True)
     p.write_results("geo_results.xlsx")
     p.save("geo_test")

@@ -102,7 +102,7 @@ class Geospatial:
             # Run results in parallel or series.
             # can run in parallel b/c child processes in series
             if parallel:
-                results += utils.run_parallel(run_optim[0], regions, num_procs=len(regions), return_two=True)[0]
+                results += utils.run_parallel(run_optim, regions, num_procs=len(regions), return_two=True)[0]
             else:
                 for region in regions:
                     results.append(run_optim(region)[0])
