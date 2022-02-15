@@ -556,8 +556,8 @@ class Project(object):
         self.add_result(results, name=name)
         return results
 
-    @translate
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=False, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
+        _ = utils.get_translator(self.locale)
         if optim is not None:
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
