@@ -73,6 +73,7 @@ def translate(x):
                 try:
                     sheet.Name = b
                 except Exception as E:
+                    print(E)
                     raise Exception(f"Could not translate sheet name '{a}' -> '{b}'")
 
             # Substitute cell content

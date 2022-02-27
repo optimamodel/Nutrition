@@ -12,39 +12,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#, fuzzy
 msgid "1-5 months"
 msgstr "1-5 meses"
 
-#, fuzzy
 msgid "12-23 months"
 msgstr "12-23 meses"
 
-#, fuzzy
 msgid "18-23 months"
 msgstr "18-23 meses"
 
-#, fuzzy
 msgid "24 months or greater"
 msgstr "24 meses o más"
 
-#, fuzzy
 msgid "24-59 months"
 msgstr "24-59 meses"
 
-#, fuzzy
 msgid "6-11 months"
 msgstr "6-11 meses"
 
-#, fuzzy
 msgid "<1 month"
 msgstr "<1 mes"
 
-#, fuzzy
 msgid "=\"Baseline (\"&start_year&\") coverage\""
-msgstr "=\"Cobertura de base (\"&start_year&\")\""
+msgstr "=\"Cobertura de referencia (\"&start_year&\")\""
 
-#, fuzzy
 msgid ""
 "=\"Percentage of children in each category in baseline year (\"&start_year&"
 "\")\""
@@ -52,7 +43,6 @@ msgstr ""
 "=\"Porcentaje de niños en cada categoría en el año de referencia "
 "(\"&start_year&\")\""
 
-#, fuzzy
 msgid ""
 "=\"Percentage of deaths in baseline year (\"&start_year&\") attributable to "
 "cause\""
@@ -60,7 +50,6 @@ msgstr ""
 "=\"Porcentaje de muertes en el año de referencia (\"&start_year&\") "
 "atribuible a la causa\""
 
-#, fuzzy
 msgid ""
 "=\"Percentage of population in each category in baseline year "
 "(\"&start_year&\")\""
@@ -74,17 +63,14 @@ msgstr "SIDA"
 msgid "Abortion"
 msgstr "Aborto"
 
-#, fuzzy
 msgid "Add extension"
 msgstr "Añadir extensión"
 
-#, fuzzy
 msgid "Affected fraction"
 msgstr "Fracción afectada"
 
-#, fuzzy
 msgid "Age distribution of pregnant women"
-msgstr "Distribución por edades de las mujeres embarazadas"
+msgstr "Distribución de edad de las mujeres embarazadas"
 
 msgid "Age group"
 msgstr "Rango de edades"
@@ -92,224 +78,179 @@ msgstr "Rango de edades"
 msgid "All"
 msgstr "Todo"
 
-#, fuzzy
 msgid "Anaemia"
 msgstr "Anemia"
 
-#, fuzzy
 msgid "Anaemia prevalence (%)"
-msgstr "Prevalencia de la anemia (%)"
+msgstr "Prevalencia de anemia (%)"
 
-#, fuzzy
 msgid "Anaemia status"
-msgstr "Estado de la anemia"
+msgstr "Estado de anemia"
 
-#, fuzzy
 msgid "Anaemic"
-msgstr "Anemia"
+msgstr "Anémico"
 
-#, fuzzy
 msgid "Anaemic child (per year)"
 msgstr "Niño anémico (por año)"
 
-#, fuzzy
 msgid "Anaemic pregnant woman (per pregnancy)"
 msgstr "Mujer embarazada anémica (por embarazo)"
 
-#, fuzzy
 msgid "Antepartum haemorrhage"
-msgstr "Hemorragia anteparto"
+msgstr "Hemorragia pre-parto"
 
-#, fuzzy
 msgid "Average episodes per year: 1-5 months"
 msgstr "Promedio de episodios por año: 1-5 meses"
 
-#, fuzzy
 msgid "Average episodes per year: 12-23 months"
 msgstr "Promedio de episodios por año: 12-23 meses"
 
-#, fuzzy
 msgid "Average episodes per year: 24-59 months"
 msgstr "Promedio de episodios por año: 24-59 meses"
 
-#, fuzzy
 msgid "Average episodes per year: 6-11 months"
 msgstr "Promedio de episodios por año: 6-11 meses"
 
-#, fuzzy
 msgid "Average episodes per year: <1 month"
 msgstr "Promedio de episodios por año: <1 mes"
 
-#, fuzzy
 msgid "Balanced energy-protein supplementation"
 msgstr "Suplemento energético-proteico equilibrado"
 
-#, fuzzy
 msgid "Baseline (2017) coverage"
 msgstr "Cobertura de referencia (2017)"
 
-#, fuzzy
 msgid "Baseline (2019) coverage"
 msgstr "Cobertura de referencia (2019)"
 
-#, fuzzy
 msgid "Baseline year (projection start year)"
 msgstr "Año de referencia (año de inicio de la proyección)"
 
-#, fuzzy
 msgid "Baseline year data"
 msgstr "Datos del año de referencia"
 
-#, fuzzy
 msgid "Baseline year mortality and risk factors"
-msgstr "Mortalidad del año de referencia y factores de riesgo"
+msgstr "Mortalidad y factores de riesgo en el año de referencia"
 
 # Translation must be 31 characters or less in length
 msgid "Baseline year population inputs"
-msgstr "Entradas iniciales de población"
+msgstr "Entradas de población-año base"
 
 msgid "Behaviour"
 msgstr "Comportamiento"
 
-#, fuzzy
 msgid "Birth number"
 msgstr "Número de nacimiento"
 
-#, fuzzy
+# birth outcome means for example °term°, °preterm°, appropriate for gestational age° etc. Not sure if resultado is interpreted in the same way
 msgid "Birth outcome distribution"
-msgstr "Distribución del resultado del nacimiento"
+msgstr "Distribución del desenlace del nacimiento"
 
 # Translation must be 31 characters or less in length
+# Risks here refers to for example neonatal prematurity, naonatal sepsis, neonatal pneumonia
 msgid "Birth outcome risks"
-msgstr "Riesgos de nacimiento"
+msgstr "Riesgos desenlace de nacimiento"
 
-#, fuzzy
 msgid "Birth outcomes"
-msgstr "Resultados de los nacimientos"
+msgstr "Desenlaces del nacimiento"
 
-#, fuzzy
 msgid "Birth spacing"
-msgstr "Espaciamiento de los nacimientos"
+msgstr "Espaciamiento entre los nacimientos"
 
-#, fuzzy
 msgid "Breastfeeding"
-msgstr "La lactancia materna"
+msgstr "Lactancia materna"
 
 # Translation must be 31 characters or less in length
 msgid "Breastfeeding distribution"
 msgstr "Distribución de lactancia"
 
-#, fuzzy
 msgid "Breastfeeding status"
-msgstr "Situación de la lactancia materna"
+msgstr "Situación de lactancia materna"
 
-#, fuzzy
 msgid "Broad population group"
 msgstr "Amplio grupo de población"
 
-#, fuzzy
 msgid "By program"
 msgstr "Por programa"
 
-#, fuzzy
 msgid "By program - lower"
 msgstr "Por programa - inferior"
 
-#, fuzzy
 msgid "By program - upper"
 msgstr "Por programa - superior"
 
-#, fuzzy
 msgid "Calcium supplementation"
-msgstr "Suplemento de calcio"
+msgstr "Suplemento con calcio"
 
-#, fuzzy
 msgid "Cash transfers"
 msgstr "Transferencias de efectivo"
 
-#, fuzzy
 msgid "Cause of death"
-msgstr "Causa de la muerte"
+msgstr "Causa de muerte"
 
 msgid "Causes"
 msgstr "Causas"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Causes of death"
-msgstr "Causas de la muerte"
+msgstr "Causas de muerte"
 
-#, fuzzy
 msgid "Child death"
 msgstr "Muerte del niño"
 
-#, fuzzy
 msgid "Child turning 5 stunted (over lifetime)"
 msgstr ""
 "Niño que cumple 5 años con retraso en el crecimiento (a lo largo de su vida)"
 
-#, fuzzy
 msgid "Child turning age 5 stunted (over lifetime)"
 msgstr ""
-"Niños que cumplen 5 años con retraso en el crecimiento (a lo largo de su "
-"vida)"
+"Niño que cumple 5 años con retraso en el crecimiento (a lo largo de su vida)"
 
-#, fuzzy
 msgid "Child wasting episode"
-msgstr "Episodio de desgaste infantil"
+msgstr "Episodio de emaciación infantil"
 
 msgid "Children"
 msgstr "Niños"
 
-#, fuzzy
 msgid "Children 0-5 months"
 msgstr "Niños de 0 a 5 meses"
 
-#, fuzzy
 msgid "Children 0-59 months"
 msgstr "Niños de 0 a 59 meses"
 
-#, fuzzy
 msgid "Children 6-23 months"
 msgstr "Niños de 6 a 23 meses"
 
-#, fuzzy
 msgid "Children under 5 population"
 msgstr "Población infantil menor de 5 años"
 
 msgid "Community"
 msgstr "Comunidad"
 
-#, fuzzy
 msgid "Community based"
 msgstr "Basado en la comunidad"
 
-#, fuzzy
 msgid "Community-based"
-msgstr "En la comunidad"
+msgstr "Basado en la comunidad"
 
 msgid "Condom"
-msgstr "Preservativo"
+msgstr "Preservativo/condón"
 
 msgid "Cost"
 msgstr "Costo"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Cost curve options"
-msgstr "Opciones de la curva de costes"
+msgstr "Opciones de la curva de costos"
 
-#, fuzzy
 msgid "Cost-coverage relationship"
-msgstr "Relación coste-cobertura"
+msgstr "Relación costo-cobertura"
 
-#, fuzzy
 msgid "Curved with decreasing marginal cost"
-msgstr "Curva con coste marginal decreciente"
+msgstr "Curva con costo marginal decreciente"
 
-#, fuzzy
 msgid "Curved with increasing marginal cost"
-msgstr "Curva con coste marginal creciente"
+msgstr "Curva con costo marginal creciente"
 
 msgid "Data"
 msgstr "Datos"
@@ -317,7 +258,6 @@ msgstr "Datos"
 msgid "Default"
 msgstr "Por defecto"
 
-#, fuzzy
 msgid "Delayed cord clamping"
 msgstr "Retraso en el pinzamiento del cordón umbilical"
 
@@ -325,59 +265,50 @@ msgid "Delivery mode"
 msgstr "Método de entrega"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Demographic projections"
 msgstr "Proyecciones demográficas"
 
 msgid "Diarrhoea"
 msgstr "Diarrea"
 
-#, fuzzy
 msgid "Diarrhoea (per additional episode)"
 msgstr "Diarrea (por episodio adicional)"
 
-#, fuzzy
 msgid "Diarrhoea (per additional episode) - lower"
 msgstr "Diarrea (por episodio adicional) - inferior"
 
-#, fuzzy
 msgid "Diarrhoea (per additional episode) - upper"
 msgstr "Diarrea (por episodio adicional) - superior"
 
-#, fuzzy
 msgid "Diarrhoea incidence"
 msgstr "Incidencia de la diarrea"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Economic loss"
 msgstr "Pérdida económica"
 
 msgid "Effectiveness"
-msgstr "Eficacia"
+msgstr "Efectividad"
 
-#, fuzzy
+# effectiveness in reducing incidence
 msgid "Effectiveness incidence"
-msgstr "Incidencia de la eficacia"
+msgstr "Efectividad en incidencia"
 
-#, fuzzy
+# effectiveness in reducing mortality
 msgid "Effectiveness mortality"
-msgstr "Eficacia de la mortalidad"
+msgstr "Efectividad en mortalidad"
 
-#, fuzzy
 msgid "Embolism"
 msgstr "Embolia"
 
 msgid "End year"
 msgstr "Año final"
 
-#, fuzzy
 msgid "Estimated pregnant women"
 msgstr "Estimación de mujeres embarazadas"
 
-#, fuzzy
 msgid "Exclusion dependency"
-msgstr "Dependencia de la exclusión"
+msgstr "Exclusión de intervención dependiente"
 
 msgid "Exclusive"
 msgstr "Exclusivo"
@@ -385,327 +316,255 @@ msgstr "Exclusivo"
 msgid "Extension"
 msgstr "Extensión"
 
-#, fuzzy
 msgid "Family planning"
 msgstr "Planificación familiar"
 
-#, fuzzy
 msgid "Family planning - lower"
 msgstr "Planificación familiar - más baja"
 
-#, fuzzy
 msgid "Family planning - upper"
 msgstr "Planificación familiar - superior"
 
-#, fuzzy
 msgid "Female sterilization"
 msgstr "Esterilización femenina"
 
-#, fuzzy
+# tracking ovulation to prevent pregnancy (sometimes called natural family planning) - Planificación Familiar Natural?
 msgid "Fertility awareness"
-msgstr "Conocimiento de la fertilidad"
+msgstr "Planificación Familiar Natural"
 
-#, fuzzy
 msgid "First birth"
 msgstr "El primer nacimiento"
 
 msgid "Food"
-msgstr "Comida"
+msgstr "Alimento"
 
-#, fuzzy
 msgid "For MAM per additional episode of diarrhoea"
 msgstr "Para MAM por episodio adicional de diarrea"
 
-#, fuzzy
 msgid "For MAM per additional episode of diarrhoea - lower"
 msgstr "Para MAM por episodio adicional de diarrea - inferior"
 
-#, fuzzy
 msgid "For MAM per additional episode of diarrhoea - upper"
 msgstr "Para MAM por episodio adicional de diarrea - superior"
 
-#, fuzzy
 msgid "For SAM per additional episode of diarrhoea"
-msgstr "Para SAM por episodio adicional de diarrea"
+msgstr "Para MAS por episodio adicional de diarrea"
 
-#, fuzzy
 msgid "For SAM per additional episode of diarrhoea - lower"
-msgstr "Para SAM por episodio adicional de diarrea - inferior"
+msgstr "Para MAS por episodio adicional de diarrea - inferior"
 
-#, fuzzy
 msgid "For SAM per additional episode of diarrhoea - upper"
-msgstr "Para SAM por episodio adicional de diarrea - superior"
+msgstr "Para MAS por episodio adicional de diarrea - superior"
 
-#, fuzzy
 msgid "For anaemia per additional episode of severe diarrhoea"
-msgstr "Por anemia por episodio adicional de diarrea grave"
+msgstr "Para anemia por episodio adicional de diarrea grave"
 
-#, fuzzy
 msgid "For anaemia per additional episode of severe diarrhoea - lower"
-msgstr "Para la anemia por episodio adicional de diarrea grave - inferior"
+msgstr "Para anemia por episodio adicional de diarrea grave - inferior"
 
-#, fuzzy
 msgid "For anaemia per additional episode of severe diarrhoea - upper"
-msgstr "Por anemia por episodio adicional de diarrea grave - superior"
+msgstr "Para anemia por episodio adicional de diarrea grave - superior"
 
-#, fuzzy
 msgid "Fraction eating maize as main staple food"
 msgstr "Fracción que consume maíz como principal alimento básico"
 
-#, fuzzy
 msgid "Fraction eating rice as main staple food"
 msgstr "Fracción que consume arroz como principal alimento básico"
 
-#, fuzzy
 msgid "Fraction eating wheat as main staple food"
 msgstr "Fracción que consume trigo como principal alimento básico"
 
-#, fuzzy
 msgid "Fraction of pregnancies ending in spontaneous abortion"
 msgstr "Fracción de embarazos que terminan en aborto espontáneo"
 
-#, fuzzy
 msgid "Fraction of subsistence farming"
-msgstr "Fracción de la agricultura de subsistencia"
+msgstr "Fracción de agricultura de subsistencia"
 
-#, fuzzy
 msgid "Fraction on other staples as main staple food"
 msgstr "Fracción de otros alimentos básicos como alimento principal"
 
-#, fuzzy
 msgid "General population"
 msgstr "Población general"
 
-#, fuzzy
 msgid "Given previous stunting (HAZ < -2 in previous age band)"
-msgstr ""
-"Dado el retraso en el crecimiento previo (HAZ < -2 en la banda de edad "
-"anterior)"
+msgstr "Dada la baja talla previa  (HAZ < -2 en la banda de edad anterior)"
 
-#, fuzzy
 msgid "Given previous stunting (HAZ < -2 in previous age band) - lower"
 msgstr ""
-"Teniendo en cuenta el retraso en el crecimiento previo (HAZ < -2 en la "
-"franja de edad anterior) - inferior"
+"Dada a baja talla previa (HAZ < -2 en la banda de edad anterior) - inferior"
 
-#, fuzzy
 msgid "Given previous stunting (HAZ < -2 in previous age band) - upper"
 msgstr ""
-"Dado el retraso en el crecimiento previo (HAZ < -2 en la banda de edad "
-"anterior) - superior"
+"Dada la baja talla previa (HAZ < -2 en la banda de edad anterior) - superior"
 
-#, fuzzy
 msgid "HAZ status"
-msgstr "Estado de la ZAE"
+msgstr "Estado de HAZ (baja talla)"
 
-#, fuzzy
 msgid "Health facility"
 msgstr "Centro de salud"
 
 msgid "High"
 msgstr "Alto"
 
-#, fuzzy
 msgid "High (HAZ-score < -3)"
 msgstr "Alto (puntuación HAZ < -3)"
 
-#, fuzzy
 msgid "Hypertensive disorders"
 msgstr "Trastornos hipertensivos"
 
-#, fuzzy
 msgid "IFA fortification of maize"
-msgstr "Enriquecimiento del maíz con IFAs"
+msgstr "Enriquecimiento del maíz con hierro y ácido fólico"
 
-#, fuzzy
 msgid "IFA fortification of rice"
-msgstr "Enriquecimiento del arroz con IFA"
+msgstr "Enriquecimiento del arroz con hierro y ácido fólico"
 
-#, fuzzy
 msgid "IFA fortification of wheat flour"
-msgstr "Enriquecimiento de la harina de trigo con IFA"
+msgstr "Enriquecimiento de la harina de trigo con hierro y ácido fólico"
 
-#, fuzzy
 msgid "IFAS (community)"
-msgstr "IFAS (comunidad)"
+msgstr "Suplementación con hierro y ácido fólico (comunidad)"
 
-#, fuzzy
 msgid "IFAS (health facility)"
-msgstr "IFAS (centro de salud)"
+msgstr "Suplementación con hierro y ácido fólico (centro de salud)"
 
-#, fuzzy
+# commercially available for women who can afford it
 msgid "IFAS (retailer)"
-msgstr "IFAS (minorista)"
+msgstr "Suplementación con hierro y ácido fólico (minorista)"
 
-#, fuzzy
 msgid "IFAS (school)"
-msgstr "IFAS (escuela)"
+msgstr "Suplementación con hierro y ácido fólico (escuela)"
 
-#, fuzzy
 msgid "IFAS for pregnant women (community)"
-msgstr "IFAS para mujeres embarazadas (comunidad)"
+msgstr ""
+"Suplementación con hierro y ácido fólico para mujeres embarazadas "
+"(comunidad)"
 
-#, fuzzy
 msgid "IFAS for pregnant women (health facility)"
-msgstr "IFAS para mujeres embarazadas (centro de salud)"
+msgstr ""
+"Suplementación con hierro y ácido fólico para mujeres embarazadas (centro "
+"de salud)"
 
-#, fuzzy
 msgid "IPTp"
-msgstr "IPTp"
+msgstr "IPTp-Tratamiento preventivo intermitente de la malaria en el embarazo"
 
-#, fuzzy
 msgid "IUD"
-msgstr "DIU"
+msgstr "Dispositivo Intrauterino (DIU)"
 
-#, fuzzy
 msgid "IYCF 1"
-msgstr "IYCF 1"
+msgstr "IYCF 1-alimentación del lactante y del niño pequeño"
 
-#, fuzzy
 msgid "IYCF 2"
-msgstr "IYCF 2"
+msgstr "IYCF 2-alimentación del lactante y del niño pequeño"
 
-#, fuzzy
 msgid "IYCF 3"
-msgstr "IYCF 3"
+msgstr "IYCF 3-alimentación del lactante y del niño pequeño"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "IYCF odds ratios"
-msgstr "Odds ratios de la IYCF"
+msgstr "Razón de momios IYCF"
 
-#, fuzzy
 msgid "IYCF package"
-msgstr "Paquete IYCF"
+msgstr "Paquete alimentación del lactante y del niño pequeño (IYCF)"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "IYCF packages"
-msgstr "Paquetes IYCF"
+msgstr "Paquetes de IYCF"
 
 msgid "Implant"
 msgstr "Implante"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Incidence of conditions"
 msgstr "Incidencia de las afecciones"
 
-#, fuzzy
 msgid "Indirect causes"
 msgstr "Causas indirectas"
 
-#, fuzzy
 msgid "Infant mortality (per 1,000 live births)"
 msgstr "Mortalidad infantil (por cada 1.000 nacidos vivos)"
 
-#, fuzzy
 msgid "Injectable"
 msgstr "Inyectable"
 
 msgid "Injury"
 msgstr "Lesión"
 
-#, fuzzy
 msgid "Intrapartum haemorrhage"
 msgstr "Hemorragia intraparto"
 
-#, fuzzy
 msgid "Iron and iodine fortification of salt"
-msgstr "Enriquecimiento de la sal con hierro y yodo"
+msgstr "Fortificación de la sal con hierro y yodo"
 
-#, fuzzy
 msgid "Kangaroo mother care"
-msgstr "Cuidado de la madre canguro"
+msgstr "Método de la madre canguro"
 
-#, fuzzy
 msgid "Kangaroo mother care - lower"
-msgstr "Cuidado de la madre canguro - inferior"
+msgstr "Método madre canguro - inferior"
 
-#, fuzzy
 msgid "Kangaroo mother care - upper"
-msgstr "Cuidados de la madre canguro - superior"
+msgstr "Método madre canguro - superior"
 
-#, fuzzy
 msgid "Linear (constant marginal cost) [default]"
-msgstr "Lineal (coste marginal constante) [por defecto]"
+msgstr "Lineal (costo marginal constante) [por defecto]"
 
-#, fuzzy
 msgid "Lipid-based nutrition supplements"
 msgstr "Suplementos nutricionales a base de lípidos"
 
-#, fuzzy
 msgid "Lipid-based nutrition supplements - lower"
 msgstr "Suplementos nutricionales a base de lípidos: más bajos"
 
-#, fuzzy
 msgid "Lipid-based nutrition supplements - upper"
 msgstr "Suplementos nutricionales a base de lípidos - superior"
 
-#, fuzzy
 msgid "Long-lasting insecticide-treated bednets"
 msgstr "Mosquiteros tratados con insecticida de larga duración"
 
-#, fuzzy
 msgid "Lower bound"
 msgstr "Límite inferior"
 
-#, fuzzy
 msgid "Lower bounds"
 msgstr "Límites inferiores"
 
-#, fuzzy
 msgid "MAM"
-msgstr "MAM"
+msgstr "Malnutrición aguda moderada (MAM)"
 
-#, fuzzy
 msgid "MAM (WHZ-score between -3 and -2)"
 msgstr "MAM (puntuación WHZ entre -3 y -2)"
 
-#, fuzzy
 msgid "MAM (WHZ-score between -3 and -2)-l"
-msgstr "MAM (puntuación WHZ entre -3 y -2)-l"
+msgstr "MAM (puntuación WHZ entre -3 y -2)-inferior"
 
-#, fuzzy
 msgid "MAM (WHZ-score between -3 and -2)-u"
-msgstr "MAM (puntuación WHZ entre -3 y -2)-u"
+msgstr "MAM (puntuación WHZ entre -3 y -2)-superior"
 
 msgid "Malaria"
 msgstr "Malaria"
 
-#, fuzzy
 msgid "Male sterilization"
 msgstr "Esterilización masculina"
 
-#, fuzzy
 msgid "Management of MAM"
-msgstr "Gestión del MAM"
+msgstr "Manejo de la Malnutrición Aguda Moderada (MAM)"
 
-#, fuzzy
 msgid "Mass media"
-msgstr "Medios de comunicación"
+msgstr "Medios de comunicación masivos"
 
-#, fuzzy
 msgid "Maternal (deaths per 1,000 births)"
-msgstr "Maternidad (muertes por cada 1.000 nacimientos)"
+msgstr "Materna (muertes por cada 1.000 nacimientos)"
 
-#, fuzzy
 msgid "Maternal death"
 msgstr "Muerte materna"
 
-#, fuzzy
 msgid "Maternal mortality (per 1,000 live births)"
 msgstr "Mortalidad materna (por cada 1.000 nacidos vivos)"
 
-#, fuzzy
 msgid "Maternal risk factors leading to birth outcomes"
-msgstr "Factores de riesgo materno que conducen a los resultados del parto"
+msgstr ""
+"Factores de riesgo materno que conducen a los resultados del nacimiento"
 
-#, fuzzy
 msgid "Max-decrease per annum"
 msgstr "Disminución máxima anual"
 
-#, fuzzy
 msgid "Max-increase per annum"
 msgstr "Aumento máximo anual"
 
@@ -718,88 +577,68 @@ msgstr "Meningitis"
 msgid "Method"
 msgstr "Método"
 
-#, fuzzy
 msgid "Mg for eclampsia"
-msgstr "Mg para la eclampsia"
+msgstr "Magnesio para la eclampsia"
 
-#, fuzzy
 msgid "Mg for pre-eclampsia"
-msgstr "Mg para la preeclampsia"
+msgstr "Magnesio para la preeclampsia"
 
-#, fuzzy
 msgid "Micronutrient powders"
 msgstr "Micronutrientes en polvo"
 
-#, fuzzy
 msgid "Mild"
 msgstr "Leve"
 
-#, fuzzy
 msgid "Mild (HAZ-score between -2 and -1)"
-msgstr "Leve (puntuación HAZ entre -2 y -1)"
+msgstr "Leve (score HAZ entre -2 y -1)"
 
-#, fuzzy
 msgid "Mild (WHZ-score between -2 and -1)"
-msgstr "Leve (puntuación WHZ entre -2 y -1)"
+msgstr "Leve (score WHZ entre -2 y -1)"
 
 msgid "Moderate"
 msgstr "Moderado"
 
-#, fuzzy
 msgid "Moderate (HAZ-score between -3 and -2)"
-msgstr "Moderado (puntuación HAZ entre -3 y -2)"
+msgstr "Moderado (score HAZ entre -3 y -2)"
 
-#, fuzzy
 msgid "Mortality"
 msgstr "Mortalidad"
 
-#, fuzzy
 msgid "Multiple micronutrient supplementation"
-msgstr "Suplementos de micronutrientes múltiples"
+msgstr "Suplementación con micronutrientes múltiples"
 
-#, fuzzy
 msgid "Neonatal"
 msgstr "Neonatal"
 
-#, fuzzy
 msgid "Neonatal asphyxia"
 msgstr "Asfixia neonatal"
 
-#, fuzzy
 msgid "Neonatal congenital anomalies"
 msgstr "Anomalías congénitas neonatales"
 
-#, fuzzy
 msgid "Neonatal diarrhoea"
 msgstr "Diarrea neonatal"
 
-#, fuzzy
 msgid "Neonatal mortality (per 1,000 live births)"
 msgstr "Mortalidad neonatal (por cada 1.000 nacidos vivos)"
 
-#, fuzzy
 msgid "Neonatal other"
 msgstr "Neonatal otros"
 
-#, fuzzy
 msgid "Neonatal pneumonia"
 msgstr "Neumonía neonatal"
 
-#, fuzzy
 msgid "Neonatal prematurity"
 msgstr "Prematuridad neonatal"
 
-#, fuzzy
 msgid "Neonatal sepsis"
 msgstr "Sepsis neonatal"
 
-#, fuzzy
 msgid "Neonatal tetanus"
 msgstr "Tétanos neonatal"
 
-#, fuzzy
 msgid "Non-pregnant WRA"
-msgstr "WRA no embarazada"
+msgstr "Mujeres en edad reproductiva no embarazadas"
 
 msgid "None"
 msgstr "Ninguno"
@@ -807,292 +646,221 @@ msgstr "Ninguno"
 msgid "Normal"
 msgstr "Normal"
 
-#, fuzzy
 msgid "Normal (HAZ-score > -1)"
-msgstr "Normal (puntuación HAZ > -1)"
+msgstr "Normal (score HAZ > -1)"
 
-#, fuzzy
 msgid "Normal (WHZ-score > -1)"
-msgstr "Normal (puntuación WHZ > -1)"
+msgstr "Normal (score WHZ > -1)"
 
-#, fuzzy
 msgid "Not anaemic"
-msgstr "No tiene anemia"
+msgstr "No anémico"
 
-#, fuzzy
 msgid "Number of births"
 msgstr "Número de nacimientos"
 
 # Translation must be 31 characters or less in length
 msgid "Nutritional status distribution"
-msgstr "Estados nutricionales"
+msgstr "Distribución estado nutricional"
 
-#, fuzzy
 msgid "Odds ratio for correct breastfeeding"
-msgstr "Relación de probabilidades para la lactancia materna correcta"
+msgstr "Razón de momios para lactancia materna adecuada"
 
-#, fuzzy
 msgid "Odds ratio for correct breastfeeding - lower"
-msgstr "Proporción de probabilidades de amamantar correctamente - más baja"
+msgstr "Razón de momios para lactancia materna adecuada- inferior"
 
-#, fuzzy
 msgid "Odds ratio for correct breastfeeding - upper"
-msgstr ""
-"Relación de probabilidades para la lactancia materna correcta - superior"
+msgstr "Razón de momios para lactancia materna adecuada - superior"
 
-#, fuzzy
 msgid "Odds ratio for correct breastfeeding by program"
-msgstr "Proporción de probabilidades de amamantamiento correcto por programa"
+msgstr "Razón de momios para lactancia materna adecuada por programa"
 
-#, fuzzy
 msgid "Odds ratio for correct complementary feeding"
-msgstr "Razón de probabilidades para una alimentación complementaria correcta"
+msgstr "Razón de momios para alimentación complementaria correcta"
 
-#, fuzzy
 msgid "Odds ratio for correct complementary feeding - lower"
-msgstr ""
-"Proporción de probabilidades de una alimentación complementaria correcta - "
-"más baja"
+msgstr "Razón de momios para alimentación complementaria correcta - inferior"
 
-#, fuzzy
 msgid "Odds ratio for correct complementary feeding - upper"
-msgstr ""
-"Razón de probabilidades para la alimentación complementaria correcta - "
-"superior"
+msgstr "Razón de momios para alimentación complementaria correcta - superior"
 
-#, fuzzy
 msgid "Odds ratio for stunting"
-msgstr "Razón de probabilidad para el retraso en el crecimiento"
+msgstr "Razón de momios para baja talla o retraso en el crecimiento"
 
-#, fuzzy
 msgid "Odds ratio for stunting - lower"
-msgstr "Proporción de probabilidades de retraso en el crecimiento - inferior"
+msgstr "Razón de momios para baja talla - inferior"
 
-#, fuzzy
 msgid "Odds ratio for stunting - upper"
-msgstr "Razón de probabilidades para el retraso del crecimiento - superior"
+msgstr "Razón de momios para baja talla - superior"
 
-#, fuzzy
 msgid "Odds ratio for women with maternal anaemia"
-msgstr "Odds ratio para mujeres con anemia materna"
+msgstr "Razón de momios para mujeres con anemia materna"
 
-#, fuzzy
 msgid "Odds ratio of MAM when covered by program"
-msgstr ""
-"Proporción de probabilidades de MAM cuando está cubierto por el programa"
+msgstr "Razón de momios de MAM cuando está cubierto por el programa"
 
-#, fuzzy
 msgid "Odds ratio of MAM when covered by program - lower"
 msgstr ""
-"Proporción de probabilidades de MAM cuando está cubierto por el programa - "
-"más bajo"
+"Razón de momios de MAM cuando está cubierto por el programa - inferior"
 
-#, fuzzy
 msgid "Odds ratio of MAM when covered by program - upper"
 msgstr ""
-"Proporción de probabilidades de MAM cuando está cubierto por el programa - "
-"superior"
+"Razón de momios de MAM cuando está cubierto por el programaa - superior"
 
-#, fuzzy
 msgid "Odds ratio of SAM when covered by program"
-msgstr "Ratio de probabilidades de SAM cuando está cubierto por el programa"
+msgstr "Razón de momios de MAS cuando está cubierto por el programa"
 
-#, fuzzy
 msgid "Odds ratio of SAM when covered by program - lower"
 msgstr ""
-"Relación de probabilidades de SAM cuando está cubierto por el programa - "
-"más bajo"
+"Razón de momios de MAS cuando está cubierto por el programa - inferior"
 
-#, fuzzy
 msgid "Odds ratio of SAM when covered by program - upper"
 msgstr ""
-"Relación de probabilidades de SAM cuando está cubierto por el programa - "
-"superior"
+"Razón de momios de MAS cuando está cubierto por el programa - superior"
 
-#, fuzzy
 msgid "Odds ratio of being anaemic when covered by intervention"
 msgstr ""
-"Razón de probabilidades de ser anémico cuando está cubierto por la "
-"intervención"
+"Razón de momios de ser anémico cuando está cubierto por la intervención"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Odds ratios"
-msgstr "Coeficientes de probabilidades"
+msgstr "Razón de momios"
 
-#, fuzzy
 msgid "Odds ratios for conditions"
-msgstr "Coeficientes de probabilidades para las condiciones"
+msgstr "Razón de momios para las condiciones"
 
-#, fuzzy
 msgid "Odds ratios for conditions - lower"
-msgstr "Coeficientes de probabilidades para las condiciones - inferiores"
+msgstr "Razón de momios para las condiciones - inferior"
 
-#, fuzzy
 msgid "Odds ratios for conditions - upper"
-msgstr "Coeficientes de probabilidad para las condiciones - superior"
+msgstr "Razón de momios para las condiciones - superior"
 
-#, fuzzy
 msgid "Odds ratios for correct breastfeeding by program"
-msgstr "Ratios de probabilidades de amamantar correctamente por programa"
+msgstr "Razón de momios de lactancia materna adecuada por programa"
 
-#, fuzzy
 msgid "Odds ratios for correct breastfeeding by program - lower"
-msgstr ""
-"Ratios de probabilidades de amamantar correctamente por programa - inferior"
+msgstr "Razón de momios de lactancia materna adecuada por programa - inferior"
 
-#, fuzzy
 msgid "Odds ratios for correct breastfeeding by program - upper"
-msgstr ""
-"Ratios de probabilidades de amamantar correctamente por programa - superior"
+msgstr "Razón de momios de lactancia materna adecuada por programa - superior"
 
-#, fuzzy
 msgid "Odds ratios for optimal birth spacing by program"
 msgstr ""
-"Razones de probabilidad para el espaciamiento óptimo de los nacimientos por "
-"programa"
+"Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
 
-#, fuzzy
 msgid "Odds ratios for optimal birth spacing by program - lower"
 msgstr ""
-"Razones de probabilidad para el espaciamiento óptimo de los nacimientos por "
+"Razón de momios para el espaciamiento óptimo de los nacimientos por "
 "programa - inferior"
 
-#, fuzzy
 msgid "Odds ratios for optimal birth spacing by program - upper"
 msgstr ""
-"Razones de probabilidad para el espaciamiento óptimo de los nacimientos por "
+"Razón de momios para el espaciamiento óptimo de los nacimientos por "
 "programa - superior"
 
-#, fuzzy
 msgid "Odds ratios for stunting"
-msgstr "Ratios de probabilidad de retraso en el crecimiento"
+msgstr "Razón de momios de baja talla o retraso en el crecimiento"
 
-#, fuzzy
 msgid "Odds ratios for women with maternal anaemia"
-msgstr "Odds ratios para mujeres con anemia materna"
+msgstr "Razón de momios para mujeres con anemia materna"
 
-#, fuzzy
 msgid "Odds ratios for women with maternal anaemia - lower"
-msgstr ""
-"Coeficientes de probabilidad para las mujeres con anemia materna: más bajos"
+msgstr "Razón de momios para mujeres con anemia materna-inferior"
 
-#, fuzzy
 msgid "Odds ratios for women with maternal anaemia - upper"
-msgstr "Odds ratios para mujeres con anemia materna - superior"
+msgstr "Razón de momios para mujeres con anemia materna-superior"
 
-#, fuzzy
 msgid "Odds ratios of being anaemic when covered by intervention"
-msgstr "Odds ratios de ser anémico cuando se cubre la intervención"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención"
 
-#, fuzzy
 msgid "Odds ratios of being anaemic when covered by intervention - lower"
 msgstr ""
-"Coeficientes de probabilidad de padecer anemia cuando la intervención es "
+"Razón de momios de ser anémico cuando está cubierto por la intervención-"
 "menor"
 
-#, fuzzy
 msgid "Odds ratios of being anaemic when covered by intervention - upper"
-msgstr "Odds ratios de ser anémico cuando se cubre la intervención - superior"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención - "
+"superior"
 
-#, fuzzy
 msgid "Oral rehydration salts"
 msgstr "Sales de rehidratación oral"
 
 msgid "Other"
 msgstr "Otro"
 
-#, fuzzy
 msgid "Other direct causes"
 msgstr "Otras causas directas"
 
-#, fuzzy
 msgid "Other odds ratios"
-msgstr "Otros odds ratios"
+msgstr "Otras razones de momios"
 
-#, fuzzy
 msgid "Other risks"
 msgstr "Otros riesgos"
 
-#, fuzzy
 msgid "PW: 15-19 years"
 msgstr "PW: 15-19 años"
 
-#, fuzzy
 msgid "PW: 20-29 years"
 msgstr "PW: 20-29 años"
 
-#, fuzzy
 msgid "PW: 30-39 years"
 msgstr "PW: 30-39 años"
 
-#, fuzzy
 msgid "PW: 40-49 years"
 msgstr "PW: 40-49 años"
 
 msgid "Partial"
 msgstr "Parcial"
 
-#, fuzzy
 msgid "Percentage of anaemia that is iron deficient"
 msgstr "Porcentaje de anemia que es deficiente en hierro"
 
-#, fuzzy
 msgid "Percentage of children attending health facility"
 msgstr "Porcentaje de niños que acuden a un centro de salud"
 
-#, fuzzy
 msgid "Percentage of children in each category in baseline year (2019)"
 msgstr "Porcentaje de niños en cada categoría en el año de referencia (2019)"
 
-#, fuzzy
 msgid "Percentage of deaths in baseline year (2017) attributable to cause"
 msgstr ""
-"Porcentaje de muertes en el año de referencia (2017) atribuibles a la causa"
+"Porcentaje de muertes en el año de referencia (2017) atribuible a la causa"
 
-#, fuzzy
 msgid "Percentage of diarrhea that is severe"
 msgstr "Porcentaje de diarrea grave"
 
-#, fuzzy
 msgid "Percentage of population at risk of malaria"
 msgstr "Porcentaje de población con riesgo de malaria"
 
-#, fuzzy
+# by default this can be equivalent to the percentage of the population living below the poverty line.
 msgid "Percentage of population food insecure (default poor)"
 msgstr ""
 "Porcentaje de población con inseguridad alimentaria (pobre por defecto)"
 
-#, fuzzy
 msgid "Percentage of population in each category in baseline year (2017)"
 msgstr ""
 "Porcentaje de población en cada categoría en el año de referencia (2017)"
 
-#, fuzzy
 msgid "Percentage of pregnant women 15-19 years"
 msgstr "Porcentaje de mujeres embarazadas de 15 a 19 años"
 
-#, fuzzy
 msgid "Percentage of pregnant women 20-29 years"
 msgstr "Porcentaje de mujeres embarazadas de 20 a 29 años"
 
-#, fuzzy
 msgid "Percentage of pregnant women 30-39 years"
 msgstr "Porcentaje de mujeres embarazadas de 30 a 39 años"
 
-#, fuzzy
 msgid "Percentage of pregnant women 40-49 years"
 msgstr "Porcentaje de mujeres embarazadas de 40 a 49 años"
 
-#, fuzzy
 msgid "Percentage of pregnant women attending health facility"
 msgstr "Porcentaje de mujeres embarazadas que acuden a un centro de salud"
 
 msgid "Pertussis"
-msgstr "Tos ferina"
+msgstr "Tosferina"
 
 msgid "Pill"
-msgstr "Cápsula"
+msgstr "Cápsula/píldora"
 
 msgid "Pneumonia"
 msgstr "Neumonía"
@@ -1100,75 +868,61 @@ msgstr "Neumonía"
 msgid "Population"
 msgstr "Población"
 
-#, fuzzy
 msgid "Population data"
-msgstr "Datos de población"
+msgstr "Datos poblacionales"
 
-# Translation must be 31 characters or less in length
+# used to label a sheet in the input databook, where we outline that for example that the model considers stunting, wasting anaemia and mortality for children, whereas for pregnant women it only considered anaemia and mortality. So it is more what outcome/health risks are modelled for each population
 msgid "Population risk areas"
-msgstr "Población zonas de riesgo"
+msgstr "Riegos para la población"
 
-#, fuzzy
 msgid "Postpartum haemorrhage"
 msgstr "Hemorragia posparto"
 
-#, fuzzy
 msgid "Pre-term AGA"
-msgstr "AGA prematuro"
+msgstr "Prematuro AEG (adecuado para edad gestacional)"
 
-#, fuzzy
 msgid "Pre-term SGA"
-msgstr "PEG prematuro"
+msgstr "Prematuro PEG (pequeño para la edad gestacional)"
 
-#, fuzzy
 msgid "Predominant"
 msgstr "Predominante"
 
-#, fuzzy
 msgid "Pregnant women"
 msgstr "Mujeres embarazadas"
 
-#, fuzzy
 msgid "Prevalence of age-appropriate breastfeeding"
-msgstr "Prevalencia de la lactancia materna adecuada a la edad"
+msgstr "Prevalencia de lactancia materna adecuada para la edad"
 
-#, fuzzy
 msgid "Prevalence of anaemia"
-msgstr "Prevalencia de la anemia"
+msgstr "Prevalencia de anemia"
 
-#, fuzzy
 msgid "Prevalence of eclampsia"
-msgstr "Prevalencia de la eclampsia"
+msgstr "Prevalencia de eclampsia"
 
-#, fuzzy
 msgid "Prevalence of iron deficiency anaemia"
-msgstr "Prevalencia de la anemia ferropénica"
+msgstr "Prevalencia de anemia por deficiencia de hierro"
 
-#, fuzzy
 msgid "Prevalence of pre-eclampsia"
-msgstr "Prevalencia de la preeclampsia"
+msgstr "Prevalencia de preeclampsia"
 
 msgid "Program"
 msgstr "Programa"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Program dependencies"
 msgstr "Dependencias del programa"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Program risk areas"
-msgstr "Áreas de riesgo del programa"
+msgstr "Riesgos que impacta programa"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Programs anaemia"
 msgstr "Programas de anemia"
 
 # Translation must be 31 characters or less in length
 msgid "Programs birth outcomes"
-msgstr "Prog. resultados de nacimiento"
+msgstr "Resultados de nacimiento- prog"
 
 # Translation must be 31 characters or less in length
 msgid "Programs cost and coverage"
@@ -1179,17 +933,14 @@ msgid "Programs family planning"
 msgstr "Prog. de planificación familiar"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Programs for PW"
-msgstr "Programas para PW"
+msgstr "Prog. para mujeres embarazadas"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Programs for children"
 msgstr "Programas para niños"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Programs impacted population"
 msgstr "Programas población afectada"
 
@@ -1198,367 +949,288 @@ msgid "Programs target population"
 msgstr "Población objetivo del programa"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Programs wasting"
-msgstr "Programas que desperdician"
+msgstr "Programas para emaciación"
 
-#, fuzzy
 msgid "Projection years"
 msgstr "Años de proyección"
 
-#, fuzzy
 msgid "Proportional Cost"
-msgstr "Coste proporcional"
+msgstr "Costo proporcional"
 
-#, fuzzy
 msgid "Public provision of complementary foods"
 msgstr "Suministro público de alimentos complementarios"
 
-#, fuzzy
 msgid "Public provision of complementary foods - lower"
-msgstr "Suministro público de alimentos complementarios - más bajo"
+msgstr "Suministro público de alimentos complementarios - inferior"
 
-#, fuzzy
 msgid "Public provision of complementary foods - upper"
 msgstr "Suministro público de alimentos complementarios - superior"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Reference programs"
 msgstr "Programas de referencia"
 
-#, fuzzy
 msgid "Relative risk by birth spacing"
 msgstr "Riesgo relativo según el espaciamiento de los nacimientos"
 
-#, fuzzy
 msgid "Relative risk by birth spacing - lower"
-msgstr "Riesgo relativo según el espaciamiento de los nacimientos: más bajo"
+msgstr "Riesgo relativo según el espaciamiento de los nacimientos-inferior"
 
-#, fuzzy
 msgid "Relative risk by birth spacing - upper"
 msgstr "Riesgo relativo según el espaciamiento de los nacimientos - superior"
 
-#, fuzzy
 msgid "Relative risk of causes of death by anaemia status"
 msgstr "Riesgo relativo de las causas de muerte según el estado de la anemia"
 
-#, fuzzy
 msgid "Relative risk of causes of death by breastfeeding status"
 msgstr ""
 "Riesgo relativo de las causas de muerte según el estado de la lactancia "
 "materna"
 
-#, fuzzy
 msgid ""
 "Relative risk of causes of death by height-for-age (stunting) distribution"
 msgstr ""
-"Riesgo relativo de las causas de muerte según la distribución de la altura "
-"para la edad (retraso en el crecimiento)"
+"Riesgo relativo de las causas de muerte según la distribución de talla para "
+"la edad (retraso en el crecimiento)"
 
-#, fuzzy
 msgid ""
 "Relative risk of causes of death by weight-for-height (wasting) distribution"
 msgstr ""
 "Riesgo relativo de las causas de muerte según la distribución del peso para "
-"la altura (emaciación)"
+"la talla (emaciación)"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Relative risks"
 msgstr "Riesgos relativos"
 
-#, fuzzy
 msgid "Relative risks of anaemia when receiving intervention"
-msgstr "Riesgos relativos de anemia al recibir la intervención"
+msgstr "Riesgos relativos de anemia cuando está cubierto por la intervención"
 
-#, fuzzy
 msgid "Relative risks of anaemia when receiving intervention - lower"
-msgstr "Riesgos relativos de anemia al recibir la intervención - menor"
+msgstr ""
+"Riesgos relativos de anemia cuando está cubierto por la intervención - "
+"inferior"
 
-#, fuzzy
 msgid "Relative risks of anaemia when receiving intervention - upper"
-msgstr "Riesgos relativos de anemia al recibir la intervención - superior"
+msgstr ""
+"Riesgos relativos de anemia cuando está cubierto por la intervención - "
+"superior"
 
-#, fuzzy
 msgid "Relative risks of experiencing diarrhoea by breastfeeding status"
 msgstr ""
 "Riesgos relativos de sufrir diarrea según el estado de la lactancia materna"
 
-#, fuzzy
 msgid "Relative risks of neonatal causes of death"
 msgstr "Riesgos relativos de las causas de muerte neonatal"
 
-#, fuzzy
 msgid "Relative risks of neonatal causes of death - lower"
-msgstr "Riesgos relativos de las causas de muerte neonatal - inferiores"
+msgstr "Riesgos relativos de las causas de muerte neonatal - inferior"
 
-#, fuzzy
 msgid "Relative risks of neonatal causes of death - upper"
 msgstr "Riesgos relativos de las causas de muerte neonatal - superior"
 
 msgid "Risk"
 msgstr "Riesgo"
 
-#, fuzzy
 msgid "Risks for children who experience birth outcomes"
-msgstr "Riesgos para los niños que experimentan resultados de nacimiento"
+msgstr "Riesgos para los niños que experimentan desenlaces al nacimiento"
 
-#, fuzzy
 msgid "S-shaped (decreasing then increasing marginal cost)"
-msgstr "En forma de S (coste marginal decreciente y luego creciente)"
+msgstr "En forma de S (costo marginal decreciente y luego creciente)"
 
-#, fuzzy
 msgid "SAM"
-msgstr "SAM"
+msgstr "Malnutrición Aguda Severa (MAS)"
 
-#, fuzzy
 msgid "SAM (WHZ-score < -3)"
-msgstr "SAM (puntuación WHZ < -3)"
+msgstr "MAS (score WHZ < -3)"
 
-#, fuzzy
 msgid "SAM (WHZ-score < -3)-l"
-msgstr "SAM (puntuación WHZ < -3)-l"
+msgstr "MAS (score WHZ < -3)-Inferior"
 
-#, fuzzy
 msgid "SAM (WHZ-score < -3)-u"
-msgstr "SAM (puntuación WHZ < -3)-u"
+msgstr "MAS (score WHZ < -3)-superior"
 
-#, fuzzy
 msgid "Saturation coverage of target population"
 msgstr "Cobertura de saturación de la población objetivo"
 
-#, fuzzy
 msgid "School attendance (percentage of 15-19 year women)"
 msgstr "Asistencia a la escuela (porcentaje de mujeres de 15 a 19 años)"
 
-#, fuzzy
 msgid "Sepsis"
 msgstr "Sepsis"
 
 msgid "Status"
 msgstr "Estado"
 
-#, fuzzy
 msgid "Stillbirths (per 1,000 total births)"
 msgstr "Nacidos muertos (por cada 1.000 nacimientos totales)"
 
-#, fuzzy
 msgid "Stunting"
-msgstr "Aturdimiento"
+msgstr "Baja talla o retraso en el crecimiento"
 
-#, fuzzy
 msgid "Stunting (HAZ-score < -2)"
-msgstr "Retraso en el crecimiento (puntuación HAZ < -2)"
+msgstr "Retraso en el crecimiento (score HAZ < -2)"
 
-#, fuzzy
 msgid "Stunting (HAZ-score < -2)-l"
-msgstr "Retraso en el crecimiento (puntuación HAZ < -2)-l"
+msgstr "Retraso en el crecimiento (score HAZ < -2)-Inferior"
 
-#, fuzzy
 msgid "Stunting (HAZ-score < -2)-u"
-msgstr "Retraso en el crecimiento (puntuación HAZ < -2)-u"
+msgstr "Retraso en el crecimiento (score HAZ < -2)-superior"
 
-#, fuzzy
 msgid "Stunting (height-for-age)"
-msgstr "Retraso en el crecimiento (altura para la edad)"
+msgstr "Retraso en el crecimiento (Talla para la edad)"
 
-#, fuzzy
 msgid "Stunting prevalence (%)"
 msgstr "Prevalencia del retraso del crecimiento (%)"
 
-#, fuzzy
 msgid "Target population"
 msgstr "Población objetivo"
 
-#, fuzzy
 msgid "Targetted condition"
-msgstr "Condición de objetivo"
+msgstr "Condición objetivo"
 
-#, fuzzy
 msgid "Term AGA"
-msgstr "Término AGA"
+msgstr "Nacido a término AEG (Adecuado para la edad gestacional)"
 
-#, fuzzy
 msgid "Term SGA"
-msgstr "Término SGA"
+msgstr "Nacido a término PEG (pequeño para la edad gestacional)"
 
-#, fuzzy
 msgid "Threshold dependency"
-msgstr "Dependencia del umbral"
+msgstr "Dependencia de otra intervención"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Time trends"
 msgstr "Tendencias temporales"
 
-#, fuzzy
 msgid "Total (must be 100%)"
 msgstr "Total (debe ser el 100%)"
 
-#, fuzzy
 msgid "Total WRA"
-msgstr "Total WRA"
+msgstr "Total mujeres en edad reproductiva"
 
 # Translation must be 31 characters or less in length
-#, fuzzy
 msgid "Treatment of SAM"
-msgstr "Tratamiento de la SAM"
+msgstr "Tratamiento de la MAS"
 
 msgid "Type"
 msgstr "Tipo"
 
-#, fuzzy
 msgid "Under 5 mortality (per 1,000 live births)"
 msgstr "Mortalidad de menores de 5 años (por cada 1.000 nacidos vivos)"
 
-#, fuzzy
 msgid "Under five (deaths per 1,000 births)"
 msgstr "Menores de cinco años (muertes por cada 1.000 nacimientos)"
 
-#, fuzzy
 msgid "Unit cost (US$ per person per year)"
-msgstr "Coste unitario (US$ por persona y año)"
+msgstr "Costo unitario (US$ por persona al año)"
 
-#, fuzzy
 msgid "Unit cost (US$)"
-msgstr "Coste unitario (US$)"
+msgstr "Costo unitario (US$)"
 
-#, fuzzy
 msgid "Unmet need for family planning"
 msgstr "Necesidad insatisfecha de planificación familiar"
 
-#, fuzzy
 msgid "Upper bound"
 msgstr "Límite superior"
 
-#, fuzzy
 msgid "Upper bounds"
 msgstr "Límites superiores"
 
-#, fuzzy
 msgid "Vitamin A supplementation"
-msgstr "Suplemento de vitamina A"
+msgstr "Suplementación con vitamina A"
 
-#, fuzzy
 msgid "WASH: Handwashing"
 msgstr "WASH: Lavado de manos"
 
-#, fuzzy
 msgid "WASH: Hygenic disposal"
-msgstr "WASH: Eliminación higiénica"
+msgstr "WASH: Eliminación higiénica de residuos"
 
-#, fuzzy
 msgid "WASH: Improved sanitation"
 msgstr "WASH: Mejora del saneamiento"
 
-#, fuzzy
 msgid "WASH: Improved water source"
 msgstr "WASH: Mejora de la fuente de agua"
 
-#, fuzzy
 msgid "WASH: Piped water"
-msgstr "WASH: Agua corriente"
+msgstr "WASH: Agua corriente o entubada"
 
-#, fuzzy
 msgid "WHZ status"
-msgstr "Estado de la WHZ"
+msgstr "Estado de la peso para la talla (WHZ)"
 
-#, fuzzy
 msgid "WRA: 15-19 years"
-msgstr "WRA: 15-19 años"
+msgstr "WRA: 15-19 años  (mujeres en edad reproductiva)"
 
-#, fuzzy
 msgid "WRA: 20-29 years"
-msgstr "WRA: 20-29 años"
+msgstr "WRA: 20-29 años (mujeres en edad reproductiva)"
 
-#, fuzzy
 msgid "WRA: 30-39 years"
-msgstr "WRA: 30-39 años"
+msgstr "WRA: 30-39 años (mujeres en edad reproductiva)"
 
-#, fuzzy
 msgid "WRA: 40-49 years"
-msgstr "WRA: 40-49 años"
+msgstr "WRA: 40-49 años (mujeres en edad reproductiva)"
 
 msgid "Wasting"
-msgstr "Debilitante"
+msgstr "Emaciación"
 
-#, fuzzy
 msgid "Wasting (weight-for-height)"
-msgstr "Desperdicio (peso para la altura)"
+msgstr "Emaciación (peso para la talla)"
 
-#, fuzzy
 msgid "Wasting prevalence (%)"
-msgstr "Prevalencia de la emaciación (%)"
+msgstr "Prevalencia de emaciación (%)"
 
-#, fuzzy
 msgid "Wasting prevention"
-msgstr "Prevención del despilfarro"
+msgstr "Prevención de la emaciación"
 
-#, fuzzy
 msgid "Wasting treatment"
-msgstr "Tratamiento del despilfarro"
+msgstr "Tratamiento de la emaciación"
 
 msgid "Withdrawal"
 msgstr "Retiro"
 
-#, fuzzy
 msgid "Women of reproductive age"
 msgstr "Mujeres en edad reproductiva"
 
 msgid "Year"
 msgstr "Año"
 
-#, fuzzy
 msgid "Zinc for treatment + ORS"
 msgstr "Zinc para el tratamiento + SRO"
 
-#, fuzzy
 msgid "Zinc supplementation"
-msgstr "Suplemento de zinc"
+msgstr "Suplementación con zinc"
 
-#, fuzzy
 msgid "Zinc supplementation - lower"
-msgstr "Suplemento de zinc - más bajo"
+msgstr "Suplementación con zinc - inferior"
 
-#, fuzzy
 msgid "Zinc supplementation - upper"
-msgstr "Suplemento de zinc - superior"
+msgstr "Suplementación con zinc- superior"
 
-#, fuzzy
 msgid "affected fraction"
 msgstr "fracción afectada"
 
-#, fuzzy
 msgid "effectiveness"
-msgstr "eficacia"
+msgstr "efectividad"
 
-#, fuzzy
 msgid "less than 18 months"
 msgstr "menos de 18 meses"
 
-#, fuzzy
 msgid "non-pregnant WRA"
-msgstr "wRA no embarazada"
+msgstr "mujeres en edad reproductiva no embarazadas"
 
 msgid "year"
 msgstr "año"
 
-#, fuzzy
 msgid "Low birth weight"
 msgstr "Bajo peso al nacer"
 
-#, fuzzy
 msgid "Small quantity lipid-based nutrition supplements"
 msgstr "Suplementos nutricionales a base de lípidos en pequeñas cantidades"
 
-#, fuzzy
 msgid "Small quantity lipid-based nutrition supplements - lower"
 msgstr ""
-"Suplementos nutricionales a base de lípidos en pequeñas cantidades: más "
-"bajos"
+"Suplementos nutricionales a base de lípidos en pequeñas cantidades: lower"
 
-#, fuzzy
 msgid "Small quantity lipid-based nutrition supplements - upper"
 msgstr ""
 "Suplementos nutricionales a base de lípidos en pequeñas cantidades - "
