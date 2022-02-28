@@ -8,32 +8,31 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.15\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2022-02-11 11:10+1100\n"
-"PO-Revision-Date: 2022-02-09 17:07+1100\n"
+"PO-Revision-Date: 2022-02-22 11:02-0600\n"
 "Last-Translator: \n"
 "Language-Team: es <LL@li.org>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.9.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: nutrition/data.py:196 nutrition/data.py:204 nutrition/data.py:207
 #: nutrition/data.py:210 nutrition/data.py:227 nutrition/data.py:241
 #: nutrition/data.py:310 nutrition/data.py:364 nutrition/data.py:732
 #: nutrition/data.py:934
-#, fuzzy
 msgid "Baseline year population inputs"
-msgstr "Entradas iniciales de población"
+msgstr "Entradas de población en el año de referencia"
 
 #: nutrition/data.py:199 nutrition/data.py:200 nutrition/data.py:201
 #: nutrition/data.py:203 nutrition/data.py:214 nutrition/data.py:739
 #: nutrition/data.py:740 nutrition/data.py:741
 msgid "Food"
-msgstr "Comida"
+msgstr "Alimentos"
 
 #: nutrition/data.py:199 nutrition/data.py:739
-#, fuzzy
 msgid "Fraction eating rice as main staple food"
 msgstr "Fracción que consume arroz como principal alimento básico"
 
@@ -47,79 +46,65 @@ msgid "Data"
 msgstr "Datos"
 
 #: nutrition/data.py:200 nutrition/data.py:740
-#, fuzzy
 msgid "Fraction eating wheat as main staple food"
 msgstr "Fracción que consume trigo como principal alimento básico"
 
 #: nutrition/data.py:201 nutrition/data.py:741
-#, fuzzy
 msgid "Fraction eating maize as main staple food"
 msgstr "Fracción que consume maíz como principal alimento básico"
 
 #: nutrition/data.py:203
-#, fuzzy
 msgid "Fraction on other staples as main staple food"
 msgstr "Fracción de otros alimentos básicos como alimento principal"
 
 #: nutrition/data.py:205 nutrition/data.py:206 nutrition/data.py:222
 #: nutrition/model.py:268 nutrition/populations.py:956
 #: nutrition/programs.py:223 nutrition/programs.py:224
-#, fuzzy
 msgid "Birth spacing"
 msgstr "Espaciamiento de los nacimientos"
 
 #: nutrition/data.py:206 nutrition/data.py:223
-#, fuzzy
 msgid "Total (must be 100%)"
 msgstr "Total (debe ser el 100%)"
 
 #: nutrition/data.py:208 nutrition/data.py:209 nutrition/data.py:218
-#, fuzzy
 msgid "Birth outcome distribution"
 msgstr "Distribución del resultado del nacimiento"
 
 #: nutrition/data.py:209 nutrition/model.py:346 nutrition/populations.py:737
 #: nutrition/settings.py:38
-#, fuzzy
 msgid "Term AGA"
-msgstr "Término AGA"
+msgstr "Término AEG (adecuado para la edad gestacional)"
 
 #: nutrition/data.py:214 nutrition/data.py:733 nutrition/data.py:734
 #: nutrition/data.py:735 nutrition/data.py:736 nutrition/data.py:737
 #: nutrition/data.py:738 nutrition/data.py:934
-#, fuzzy
 msgid "Population data"
 msgstr "Datos de población"
 
 #: nutrition/data.py:214
-#, fuzzy
 msgid "Age distribution of pregnant women"
 msgstr "Distribución por edades de las mujeres embarazadas"
 
 #: nutrition/data.py:214 nutrition/data.py:242 nutrition/data.py:243
 #: nutrition/data.py:346 nutrition/model.py:262
-#, fuzzy
 msgid "Mortality"
 msgstr "Mortalidad"
 
 #: nutrition/data.py:214 nutrition/data.py:743 nutrition/data.py:748
 #: nutrition/data.py:749 nutrition/data.py:750
-#, fuzzy
 msgid "Other risks"
 msgstr "Otros riesgos"
 
 #: nutrition/data.py:218 nutrition/populations.py:356
-#, fuzzy
 msgid "Birth dist"
-msgstr "Nacimiento dist"
+msgstr "Distribución de nacimientos"
 
 #: nutrition/data.py:219
-#, fuzzy
 msgid "Projection years"
 msgstr "Años de proyección"
 
 #: nutrition/data.py:220
-#, fuzzy
 msgid "Baseline year (projection start year)"
 msgstr "Año de referencia (año de inicio de la proyección)"
 
@@ -129,99 +114,81 @@ msgstr "Año final"
 
 #: nutrition/data.py:238 nutrition/data.py:248 nutrition/data.py:252
 #: nutrition/data.py:255
-#, fuzzy
 msgid "Demographic projections"
 msgstr "Proyecciones demográficas"
 
 #: nutrition/data.py:242
-#, fuzzy
 msgid "Stillbirths (per 1,000 total births)"
 msgstr "Nacidos muertos (por cada 1.000 nacimientos totales)"
 
 #: nutrition/data.py:243
-#, fuzzy
 msgid "Fraction of pregnancies ending in spontaneous abortion"
 msgstr "Fracción de embarazos que terminan en aborto espontáneo"
 
 #: nutrition/data.py:246 nutrition/settings.py:43
-#, fuzzy
 msgid "WRA: 15-19 years"
-msgstr "WRA: 15-19 años"
+msgstr "WRA: 15-19 años (mujeres en edad reproductiva)"
 
 #: nutrition/data.py:246 nutrition/settings.py:43
-#, fuzzy
 msgid "WRA: 20-29 years"
-msgstr "WRA: 20-29 años"
+msgstr "WRA: 20-29 años (mujeres en edad reproductiva)"
 
 #: nutrition/data.py:246 nutrition/settings.py:43
-#, fuzzy
 msgid "WRA: 30-39 years"
-msgstr "WRA: 30-39 años"
+msgstr "WRA: 30-39 años (mujeres en edad reproductiva)"
 
 #: nutrition/data.py:246 nutrition/settings.py:43
-#, fuzzy
 msgid "WRA: 40-49 years"
-msgstr "WRA: 40-49 años"
+msgstr "WRA: 40-49 años (mujeres en edad reproductiva)"
 
 #: nutrition/data.py:247 nutrition/populations.py:906
-#, fuzzy
 msgid "Total WRA"
-msgstr "Total WRA"
+msgstr "Total WRA (mujeres en edad reproductiva)"
 
 #: nutrition/data.py:249 nutrition/model.py:590 nutrition/populations.py:434
 #: nutrition/populations.py:506 nutrition/populations.py:845
-#, fuzzy
 msgid "Number of births"
 msgstr "Número de nacimientos"
 
 #: nutrition/data.py:251 nutrition/model.py:560 nutrition/populations.py:816
 #: nutrition/populations.py:922
-#, fuzzy
 msgid "Estimated pregnant women"
 msgstr "Estimación de mujeres embarazadas"
 
 #: nutrition/data.py:254
-#, fuzzy
 msgid "non-pregnant WRA"
-msgstr "wRA no embarazada"
+msgstr "mujeres en edad reproductiva no embarazadas"
 
 #: nutrition/data.py:268 nutrition/data.py:276 nutrition/data.py:279
 #: nutrition/data.py:284 nutrition/data.py:287 nutrition/data.py:304
 #: nutrition/data.py:314 nutrition/data.py:368 nutrition/data.py:920
 #: nutrition_app/rpcs.py:720 nutrition_app/rpcs.py:805
-#, fuzzy
 msgid "Nutritional status distribution"
-msgstr "Estados nutricionales"
+msgstr "Distribución del estado nutricional"
 
 #: nutrition/data.py:271 nutrition/data.py:275 nutrition/data.py:278
 #: nutrition/data.py:291
-#, fuzzy
 msgid "Stunting (height-for-age)"
-msgstr "Retraso en el crecimiento (altura para la edad)"
+msgstr "Retraso en el crecimiento (talla para la edad)"
 
 #: nutrition/data.py:275
-#, fuzzy
 msgid "Normal (HAZ-score > -1)"
 msgstr "Normal (puntuación HAZ > -1)"
 
 #: nutrition/data.py:278
-#, fuzzy
 msgid "Mild (HAZ-score between -2 and -1)"
 msgstr "Leve (puntuación HAZ entre -2 y -1)"
 
 #: nutrition/data.py:280 nutrition/data.py:283 nutrition/data.py:286
 #: nutrition/data.py:291 nutrition/data.py:369 nutrition/data.py:370
-#, fuzzy
 msgid "Wasting (weight-for-height)"
-msgstr "Desperdicio (peso para la altura)"
+msgstr "Emaciación (peso para la talla)"
 
 #: nutrition/data.py:283
-#, fuzzy
 msgid "Normal (WHZ-score > -1)"
 msgstr "Normal (puntuación WHZ > -1)"
 
 #: nutrition/data.py:286
-#, fuzzy
 msgid "Mild (WHZ-score between -2 and -1)"
 msgstr "Leve (puntuación WHZ entre -2 y -1)"
 
@@ -244,9 +211,8 @@ msgstr "Leve (puntuación WHZ entre -2 y -1)"
 #: nutrition/populations.py:653 nutrition/populations.py:700
 #: nutrition/populations.py:701 nutrition/populations.py:758
 #: nutrition/programs.py:192 nutrition/settings.py:45
-#, fuzzy
 msgid "Stunting"
-msgstr "Aturdimiento"
+msgstr "Retraso en el crecimiento o baja talla"
 
 #: nutrition/data.py:291 nutrition/data.py:343 nutrition/data.py:461
 #: nutrition/data.py:462 nutrition/data.py:484 nutrition/data.py:507
@@ -260,7 +226,7 @@ msgstr "Aturdimiento"
 #: nutrition/populations.py:484 nutrition/populations.py:710
 #: nutrition/populations.py:758 nutrition/settings.py:45
 msgid "Wasting"
-msgstr "Debilitante"
+msgstr "Emaciación"
 
 #: nutrition/data.py:306 nutrition/data.py:309 nutrition/data.py:313
 #: nutrition/data.py:322 nutrition/data.py:323 nutrition/data.py:324
@@ -290,35 +256,29 @@ msgstr "Debilitante"
 #: nutrition/populations.py:905 nutrition/populations.py:935
 #: nutrition/populations.py:972 nutrition/programs.py:200
 #: nutrition/settings.py:45
-#, fuzzy
 msgid "Anaemia"
 msgstr "Anemia"
 
 #: nutrition/data.py:309 nutrition/data.py:313
-#, fuzzy
 msgid "Prevalence of anaemia"
 msgstr "Prevalencia de la anemia"
 
 #: nutrition/data.py:311
-#, fuzzy
 msgid "Percentage of anaemia that is iron deficient"
 msgstr "Porcentaje de anemia que es deficiente en hierro"
 
 #: nutrition/data.py:323 nutrition/populations.py:50 nutrition/settings.py:26
-#, fuzzy
 msgid "Anaemic"
-msgstr "Anemia"
+msgstr "Anémico"
 
 #: nutrition/data.py:324 nutrition/populations.py:51 nutrition/settings.py:26
-#, fuzzy
 msgid "Not anaemic"
-msgstr "No tiene anemia"
+msgstr "No anémico"
 
 #: nutrition/data.py:328 nutrition/data.py:332 nutrition_app/rpcs.py:721
 #: nutrition_app/rpcs.py:806
-#, fuzzy
 msgid "Breastfeeding distribution"
-msgstr "Distribución de lactancia"
+msgstr "Distribución de lactancia materna"
 
 #: nutrition/data.py:331 nutrition/data.py:333 nutrition/data.py:335
 #: nutrition/data.py:345 nutrition/data.py:471 nutrition/data.py:472
@@ -329,85 +289,69 @@ msgstr "Distribución de lactancia"
 #: nutrition/populations.py:546 nutrition/populations.py:616
 #: nutrition/populations.py:763 nutrition/programs.py:343
 #: nutrition/programs.py:344 nutrition/settings.py:45
-#, fuzzy
 msgid "Breastfeeding"
-msgstr "La lactancia materna"
+msgstr "Lactancia materna"
 
 #: nutrition/data.py:340
-#, fuzzy
 msgid "Time trends"
 msgstr "Tendencias temporales"
 
 #: nutrition/data.py:342
-#, fuzzy
 msgid "Stunting prevalence (%)"
 msgstr "Prevalencia del retraso del crecimiento (%)"
 
 #: nutrition/data.py:342 nutrition/data.py:343
-#, fuzzy
 msgid "Children 0-59 months"
 msgstr "Niños de 0 a 59 meses"
 
 #: nutrition/data.py:343
-#, fuzzy
 msgid "Wasting prevalence (%)"
 msgstr "Prevalencia de la emaciación (%)"
 
 #: nutrition/data.py:344
-#, fuzzy
 msgid "Anaemia prevalence (%)"
 msgstr "Prevalencia de la anemia (%)"
 
 #: nutrition/data.py:345
-#, fuzzy
 msgid "Prevalence of age-appropriate breastfeeding"
-msgstr "Prevalencia de la lactancia materna adecuada a la edad"
+msgstr "Prevalencia de lactancia materna adecuada para la edad"
 
 #: nutrition/data.py:350
-#, fuzzy
 msgid "Economic loss"
 msgstr "Pérdida económica"
 
 #: nutrition/data.py:351
-#, fuzzy
 msgid "Child wasting episode"
-msgstr "Episodio de desgaste infantil"
+msgstr "Episodio de emaciación infantil"
 
 #: nutrition/data.py:352
-#, fuzzy
 msgid "Child turning age 5 stunted (over lifetime)"
 msgstr ""
 "Niños que cumplen 5 años con retraso en el crecimiento (a lo largo de su "
 "vida)"
 
 #: nutrition/data.py:353
-#, fuzzy
 msgid "Child death"
 msgstr "Muerte del niño"
 
 #: nutrition/data.py:354
-#, fuzzy
 msgid "Maternal death"
 msgstr "Muerte materna"
 
 #: nutrition/data.py:355
-#, fuzzy
 msgid "Anaemic child (per year)"
 msgstr "Niño anémico (por año)"
 
 #: nutrition/data.py:356
-#, fuzzy
 msgid "Anaemic pregnant woman (per pregnancy)"
 msgstr "Mujer embarazada anémica (por embarazo)"
 
 #: nutrition/data.py:361 nutrition/data.py:367 nutrition/data.py:372
 #: nutrition/data.py:374
-#, fuzzy
 msgid "Incidence of conditions"
 msgstr "Incidencia de las afecciones"
 
 #: nutrition/data.py:365 nutrition/data.py:742
-#, fuzzy
 msgid "Diarrhoea incidence"
 msgstr "Incidencia de la diarrea"
 
@@ -423,14 +367,12 @@ msgid "Diarrhoea"
 msgstr "Diarrea"
 
 #: nutrition/data.py:369 nutrition/data.py:556 nutrition/data.py:1124
-#, fuzzy
 msgid "MAM (WHZ-score between -3 and -2)"
 msgstr "MAM (puntuación WHZ entre -3 y -2)"
 
 #: nutrition/data.py:370 nutrition/data.py:557 nutrition/data.py:1125
-#, fuzzy
 msgid "SAM (WHZ-score < -3)"
-msgstr "SAM (puntuación WHZ < -3)"
+msgstr "MAS (puntuación WHZ < -3)"
 
 #: nutrition/data.py:371 nutrition/data.py:508 nutrition/data.py:509
 #: nutrition/data.py:541 nutrition/data.py:556 nutrition/data.py:1086
@@ -441,9 +383,8 @@ msgstr "SAM (puntuación WHZ < -3)"
 #: nutrition/populations.py:388 nutrition/populations.py:389
 #: nutrition/populations.py:403 nutrition/populations.py:404
 #: nutrition/settings.py:29
-#, fuzzy
 msgid "MAM"
-msgstr "MAM"
+msgstr "MAM (Malnutrición Aguda Moderada)"
 
 #: nutrition/data.py:373 nutrition/data.py:506 nutrition/data.py:507
 #: nutrition/data.py:539 nutrition/data.py:557 nutrition/data.py:1084
@@ -454,25 +395,21 @@ msgstr "MAM"
 #: nutrition/populations.py:390 nutrition/populations.py:391
 #: nutrition/populations.py:405 nutrition/populations.py:406
 #: nutrition/settings.py:29
-#, fuzzy
 msgid "SAM"
-msgstr "SAM"
+msgstr "MAS (Malnutrición Aguda Severa)"
 
 #: nutrition/data.py:383 nutrition/data.py:386 nutrition/data.py:388
 #: nutrition/data.py:390 nutrition/data.py:394 nutrition/data.py:399
-#, fuzzy
 msgid "Causes of death"
-msgstr "Causas de la muerte"
+msgstr "Causas de muerte"
 
 #: nutrition/data.py:385 nutrition/data.py:392
-#, fuzzy
 msgid "Neonatal"
 msgstr "Neonatal"
 
 #: nutrition/data.py:385 nutrition/populations.py:460
 #: nutrition/populations.py:489 nutrition/settings.py:36
 #: nutrition/settings.py:41
-#, fuzzy
 msgid "<1 month"
 msgstr "<1 mes"
 
@@ -489,7 +426,6 @@ msgstr "Niños"
 #: nutrition/data.py:789 nutrition/data.py:792 nutrition/data.py:829
 #: nutrition/data.py:954 nutrition/data.py:955 nutrition/data.py:956
 #: nutrition/model.py:302 nutrition/model.py:338 nutrition/populations.py:783
-#, fuzzy
 msgid "Pregnant women"
 msgstr "Mujeres embarazadas"
 
@@ -497,42 +433,37 @@ msgstr "Mujeres embarazadas"
 #: nutrition/data.py:774 nutrition/data.py:925 nutrition/geospatial.py:329
 #: nutrition/project.py:706 nutrition/project.py:773 nutrition_app/rpcs.py:723
 #: nutrition_app/rpcs.py:808
-#, fuzzy
 msgid "Treatment of SAM"
-msgstr "Tratamiento de la SAM"
+msgstr "Tratamiento de la MAS"
 
 #: nutrition/data.py:418 nutrition/data.py:752
-#, fuzzy
 msgid "Add extension"
 msgstr "Añadir extensión"
 
 #: nutrition/data.py:424
-#, fuzzy
 msgid "Programs impacted population"
-msgstr "Programas población afectada"
+msgstr "Población impactada por los programas"
 
 #: nutrition/data.py:426 nutrition/data.py:795 nutrition/data.py:800
 #: nutrition/data.py:805 nutrition/data.py:810 nutrition/data.py:813
 #: nutrition/data.py:829
-#, fuzzy
 msgid "Non-pregnant WRA"
-msgstr "WRA no embarazada"
+msgstr "Mujeres en edad reproductiva no embarazadas"
 
 #: nutrition/data.py:426 nutrition/data.py:816 nutrition/data.py:819
 #: nutrition/data.py:822 nutrition/data.py:825 nutrition/data.py:829
-#, fuzzy
 msgid "General population"
 msgstr "Población general"
 
+# used to label a sheet in the input databook, where it outlines for each intervention, which conditions it can impact. E.g. public provision of complementary foods can impact stunting and wasting.
 #: nutrition/data.py:432
-#, fuzzy
 msgid "Program risk areas"
-msgstr "Áreas de riesgo del programa"
+msgstr "Riesgos que impacta programa"
 
+# used to label a sheet in the input databook, where we outline that for example that the model considers stunting, wasting anaemia and mortality for children, whereas for pregnant women it only considered anaemia and mortality. So it is more what outcome/health risks are modelled for each population
 #: nutrition/data.py:443
-#, fuzzy
 msgid "Population risk areas"
-msgstr "Población zonas de riesgo"
+msgstr "Riesgos para la población"
 
 #: nutrition/data.py:456 nutrition/data.py:460 nutrition/data.py:464
 #: nutrition/data.py:470 nutrition/data.py:474 nutrition/data.py:1438
@@ -541,16 +472,14 @@ msgstr "Población zonas de riesgo"
 #: nutrition/data.py:1460 nutrition/data.py:1463 nutrition/data.py:1466
 #: nutrition/data.py:1469 nutrition/data.py:1473 nutrition/data.py:1477
 #: nutrition/data.py:1483 nutrition/data.py:1487
-#, fuzzy
 msgid "Relative risks"
 msgstr "Riesgos relativos"
 
 #: nutrition/data.py:501 nutrition/data.py:515 nutrition/data.py:1492
 #: nutrition/data.py:1493 nutrition/data.py:1494 nutrition/data.py:1495
 #: nutrition/data.py:1513 nutrition/data.py:1524
-#, fuzzy
 msgid "Odds ratios"
-msgstr "Coeficientes de probabilidades"
+msgstr "Razón de momios"
 
 #: nutrition/data.py:502 nutrition/data.py:1496 nutrition/data.py:1497
 #: nutrition/data.py:1514
@@ -558,202 +487,172 @@ msgid "Condition"
 msgstr "Condición"
 
 #: nutrition/data.py:504 nutrition/data.py:1080 nutrition/populations.py:570
-#, fuzzy
 msgid "Prev stunting"
 msgstr "Evitar el retraso en el crecimiento"
 
 #: nutrition/data.py:504 nutrition/data.py:1080
-#, fuzzy
 msgid "Given previous stunting (HAZ < -2 in previous age band)"
 msgstr ""
 "Dado el retraso en el crecimiento previo (HAZ < -2 en la banda de edad "
 "anterior)"
 
 #: nutrition/data.py:505 nutrition/data.py:1081
-#, fuzzy
 msgid "Diarrhoea (per additional episode)"
 msgstr "Diarrea (por episodio adicional)"
 
 #: nutrition/data.py:507 nutrition/data.py:1085
-#, fuzzy
 msgid "For SAM per additional episode of diarrhoea"
-msgstr "Para SAM por episodio adicional de diarrea"
+msgstr "Para MAS por episodio adicional de diarrea"
 
 #: nutrition/data.py:509 nutrition/data.py:1087
-#, fuzzy
 msgid "For MAM per additional episode of diarrhoea"
 msgstr "Para MAM por episodio adicional de diarrea"
 
 #: nutrition/data.py:511 nutrition/data.py:512 nutrition/data.py:1091
 #: nutrition/data.py:1092 nutrition/populations.py:273
-#, fuzzy
 msgid "Severe diarrhoea"
 msgstr "Diarrea severa"
 
 #: nutrition/data.py:512 nutrition/data.py:1092
-#, fuzzy
 msgid "For anaemia per additional episode of severe diarrhoea"
-msgstr "Por anemia por episodio adicional de diarrea grave"
+msgstr "Para anemia por episodio adicional de diarrea grave"
 
 #: nutrition/data.py:513 nutrition/data.py:1520
-#, fuzzy
 msgid "By program"
 msgstr "Por programa"
 
 #: nutrition/data.py:514 nutrition/data.py:1522
-#, fuzzy
 msgid "Odds ratios for correct breastfeeding by program"
-msgstr "Ratios de probabilidades de amamantar correctamente por programa"
+msgstr "Razón de momios de lactancia materna adecuada por programa"
 
 #: nutrition/data.py:516 nutrition/data.py:1525
-#, fuzzy
 msgid "Odds ratios for optimal birth spacing by program"
 msgstr ""
-"Razones de probabilidad para el espaciamiento óptimo de los nacimientos por "
-"programa"
+"Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
 
 #: nutrition/data.py:520 nutrition/data.py:1398 nutrition/data.py:1399
 #: nutrition/data.py:1401
-#, fuzzy
 msgid "Programs birth outcomes"
 msgstr "Prog. resultados de nacimiento"
 
 #: nutrition/data.py:530 nutrition/data.py:1372 nutrition/data.py:1375
 #: nutrition/data.py:1379
-#, fuzzy
 msgid "Programs anaemia"
-msgstr "Programas de anemia"
+msgstr "Programas para anemia"
 
 #: nutrition/data.py:531 nutrition/data.py:1380
-#, fuzzy
 msgid "Relative risks of anaemia when receiving intervention"
-msgstr "Riesgos relativos de anemia al recibir la intervención"
+msgstr "Riesgos relativos de anemia cuando recibe la intervención"
 
 #: nutrition/data.py:532 nutrition/data.py:1381
-#, fuzzy
 msgid "Odds ratios of being anaemic when covered by intervention"
-msgstr "Odds ratios de ser anémico cuando se cubre la intervención"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención"
 
 #: nutrition/data.py:536 nutrition/data.py:1385 nutrition/data.py:1388
 #: nutrition/data.py:1392
-#, fuzzy
 msgid "Programs wasting"
-msgstr "Programas que desperdician"
+msgstr "Programas para emaciación"
 
 #: nutrition/data.py:537 nutrition/data.py:1393
-#, fuzzy
 msgid "Odds ratio of SAM when covered by program"
-msgstr "Ratio de probabilidades de SAM cuando está cubierto por el programa"
+msgstr "Razón de momios de MAS cuando está cubierto por el programa"
 
 #: nutrition/data.py:538 nutrition/data.py:1394
-#, fuzzy
 msgid "Odds ratio of MAM when covered by program"
-msgstr ""
-"Proporción de probabilidades de MAM cuando está cubierto por el programa"
+msgstr "Razón de momios de MAM cuando está cubierto por el programa"
 
 #: nutrition/data.py:545 nutrition/data.py:1365 nutrition/data.py:1366
 #: nutrition/data.py:1368
-#, fuzzy
 msgid "Programs for children"
 msgstr "Programas para niños"
 
 #: nutrition/data.py:549 nutrition/data.py:1358 nutrition/data.py:1359
 #: nutrition/data.py:1361
-#, fuzzy
 msgid "Programs for PW"
-msgstr "Programas para PW"
+msgstr "Programas para mujeres embarazadas"
 
 #: nutrition/data.py:553 nutrition/data.py:1420 nutrition/data.py:1422
 #: nutrition/data.py:1429
-#, fuzzy
 msgid "Birth outcome risks"
-msgstr "Riesgos de nacimiento"
+msgstr "Riesgos de desenlaces de nacimiento"
 
 #: nutrition/data.py:554 nutrition/data.py:1430
-#, fuzzy
 msgid "Odds ratios for conditions"
-msgstr "Coeficientes de probabilidades para las condiciones"
+msgstr "Razón de momios para las condiciones"
 
 #: nutrition/data.py:555 nutrition/data.py:1123
-#, fuzzy
 msgid "Stunting (HAZ-score < -2)"
 msgstr "Retraso en el crecimiento (puntuación HAZ < -2)"
 
 #: nutrition/data.py:558 nutrition/data.py:1431
-#, fuzzy
 msgid "Relative risk by birth spacing"
-msgstr "Riesgo relativo según el espaciamiento de los nacimientos"
+msgstr "Riesgo relativo según el espaciamiento entre nacimientos"
 
 #: nutrition/data.py:559 nutrition/data.py:1129 nutrition/model.py:264
 #: nutrition/populations.py:497 nutrition/populations.py:549
-#, fuzzy
 msgid "Birth outcomes"
-msgstr "Resultados de los nacimientos"
+msgstr "Desenlaces de los nacimientos"
 
 #: nutrition/data.py:559 nutrition/data.py:1432
-#, fuzzy
 msgid "Relative risks of neonatal causes of death"
 msgstr "Riesgos relativos de las causas de muerte neonatal"
 
 #: nutrition/data.py:564 nutrition/data.py:1406 nutrition/data.py:1410
 #: nutrition/data.py:1414
-#, fuzzy
 msgid "IYCF odds ratios"
-msgstr "Odds ratios de la IYCF"
+msgstr ""
+"Razón de momios para la alimentación del lactante y el niño pequeño (IYCF)"
 
 #: nutrition/data.py:565 nutrition/data.py:1415
-#, fuzzy
 msgid "Odds ratio for correct breastfeeding"
-msgstr "Relación de probabilidades para la lactancia materna correcta"
+msgstr "Razón de momios para la lactancia materna adecuada"
 
 #: nutrition/data.py:566 nutrition/data.py:1416
-#, fuzzy
 msgid "Odds ratio for stunting"
-msgstr "Razón de probabilidad para el retraso en el crecimiento"
+msgstr "Razón de momios para el retraso en el crecimiento"
 
 #: nutrition/data.py:593 nutrition/data.py:903 nutrition/data.py:1170
 #: nutrition_app/rpcs.py:722 nutrition_app/rpcs.py:807
-#, fuzzy
 msgid "IYCF packages"
-msgstr "Paquetes IYCF"
+msgstr "Paquetes para la alimentación del lactante y el niño pequeño (IYCF)"
 
 #: nutrition/data.py:601 nutrition/data.py:911 nutrition/data.py:1178
-#, fuzzy
 msgid "Mass media"
-msgstr "Medios de comunicación"
+msgstr "Medios de comunicación masivos"
 
 #: nutrition/data.py:696
-#, fuzzy, python-format
+#, python-format
 msgid "Baseline coverage is outside the interval (0, 100) for %s"
-msgstr "La cobertura de base está fuera del intervalo (0, 100) para %s"
+msgstr "La cobertura de referencia está fuera del intervalo (0, 100) para %s"
 
 #: nutrition/data.py:700
-#, fuzzy, python-format
+#, python-format
 msgid "Saturation is outside the interval (0, 100) for %s"
 msgstr "La saturación está fuera del intervalo (0, 100) para %s"
 
 #: nutrition/data.py:704
-#, fuzzy, python-format
+#, python-format
 msgid "Maximum increase is outside the interval (0, 100) for %s"
 msgstr "El aumento máximo está fuera del intervalo (0, 100) para %s"
 
 #: nutrition/data.py:708
-#, fuzzy, python-format
+#, python-format
 msgid "Maximum decrease is outside the interval (0, 100) for %s"
 msgstr "La disminución máxima está fuera del intervalo (0, 100) para %s"
 
 #: nutrition/data.py:713
-#, fuzzy, python-format
+#, python-format
 msgid "Cost is 0 or negative for %s"
-msgstr "El coste es 0 o negativo para %s"
+msgstr "El costo es 0 o negativo para %s"
 
 #: nutrition/data.py:716
-#, fuzzy, python-format
+#, python-format
 msgid "Target population not defined for %s"
 msgstr "Población objetivo no definida para %s"
 
 #: nutrition/data.py:719
-#, fuzzy, python-format
+#, python-format
 msgid "Target population is 0 for %s"
 msgstr "La población objetivo es 0 para %s"
 
@@ -765,185 +664,151 @@ msgstr "La población objetivo es 0 para %s"
 #: nutrition/data.py:806 nutrition/data.py:811 nutrition/data.py:814
 #: nutrition/data.py:817 nutrition/data.py:820 nutrition/data.py:823
 #: nutrition/data.py:826
-#, fuzzy
 msgid "Programs target population"
 msgstr "Población objetivo del programa"
 
 #: nutrition/data.py:733
-#, fuzzy
 msgid "Percentage of population food insecure (default poor)"
 msgstr ""
 "Porcentaje de población con inseguridad alimentaria (pobre por defecto)"
 
 #: nutrition/data.py:734
-#, fuzzy
 msgid "Percentage of population at risk of malaria"
 msgstr "Porcentaje de población con riesgo de malaria"
 
 #: nutrition/data.py:735
-#, fuzzy
 msgid "School attendance (percentage of 15-19 year women)"
 msgstr "Asistencia a la escuela (porcentaje de mujeres de 15 a 19 años)"
 
 #: nutrition/data.py:736 nutrition/data.py:935
-#, fuzzy
 msgid "Percentage of pregnant women attending health facility"
 msgstr "Porcentaje de mujeres embarazadas que acuden a un centro de salud"
 
 #: nutrition/data.py:737 nutrition/data.py:936
-#, fuzzy
 msgid "Percentage of children attending health facility"
 msgstr "Porcentaje de niños que acuden a un centro de salud"
 
 #: nutrition/data.py:738
-#, fuzzy
 msgid "Unmet need for family planning"
 msgstr "Necesidad insatisfecha de planificación familiar"
 
 #: nutrition/data.py:744
-#, fuzzy
 msgid ""
 "Warning, the databook being read is out of date and does not include "
 "baseline prevalences of eclampsia and pre-eclampsia so global averages will "
 "be used."
 msgstr ""
-"Atención, el libro de datos que se está leyendo está desactualizado y no "
+"Advertencia, el libro de datos que se está leyendo está desactualizado y no "
 "incluye las prevalencias de referencia de eclampsia y preeclampsia, por lo "
 "que se utilizarán los promedios globales."
 
 #: nutrition/data.py:748
-#, fuzzy
 msgid "Prevalence of pre-eclampsia"
-msgstr "Prevalencia de la preeclampsia"
+msgstr "Prevalencia de preeclampsia"
 
 #: nutrition/data.py:749
-#, fuzzy
 msgid "Prevalence of eclampsia"
-msgstr "Prevalencia de la eclampsia"
+msgstr "Prevalencia de eclampsia"
 
 #: nutrition/data.py:750
-#, fuzzy
 msgid "Low birth weight"
 msgstr "Bajo peso al nacer"
 
 #: nutrition/data.py:755
-#, fuzzy
 msgid "Cash transfers"
-msgstr "Transferencias de efectivo"
+msgstr "Transferencias en efectivo"
 
 #: nutrition/data.py:759 nutrition/geospatial.py:324 nutrition/project.py:768
-#, fuzzy
 msgid "Lipid-based nutrition supplements"
 msgstr "Suplementos nutricionales a base de lípidos"
 
 #: nutrition/data.py:761
-#, fuzzy
 msgid "Small quantity lipid-based nutrition supplements"
 msgstr "Suplementos nutricionales a base de lípidos en pequeñas cantidades"
 
 #: nutrition/data.py:764
-#, fuzzy
 msgid "Oral rehydration salts"
 msgstr "Sales de rehidratación oral"
 
 #: nutrition/data.py:767 nutrition/geospatial.py:328
 #: nutrition/optimization.py:297 nutrition/project.py:743
 #: nutrition/project.py:772
-#, fuzzy
 msgid "Public provision of complementary foods"
 msgstr "Suministro público de alimentos complementarios"
 
 #: nutrition/data.py:777 nutrition/geospatial.py:332 nutrition/project.py:776
-#, fuzzy
 msgid "Zinc for treatment + ORS"
 msgstr "Zinc para el tratamiento + SRO"
 
 #: nutrition/data.py:780 nutrition/optimization.py:296
 #: nutrition/project.py:742
-#, fuzzy
 msgid "Balanced energy-protein supplementation"
-msgstr "Suplemento energético-proteico equilibrado"
+msgstr "Suplementación energético-proteica equilibrada"
 
 #: nutrition/data.py:783
-#, fuzzy
 msgid "IFAS for pregnant women (health facility)"
-msgstr "IFAS para mujeres embarazadas (centro de salud)"
+msgstr "Hierro y ácido fólico para mujeres embarazadas (centro de salud)"
 
 #: nutrition/data.py:786
-#, fuzzy
 msgid "IPTp"
-msgstr "IPTp"
+msgstr "Tratamiento preventivo intermitente para malaria en el embarazo"
 
 #: nutrition/data.py:789 nutrition/geospatial.py:331 nutrition/project.py:775
-#, fuzzy
 msgid "Mg for eclampsia"
-msgstr "Mg para la eclampsia"
+msgstr "Magnesio para la eclampsia"
 
 #: nutrition/data.py:792
-#, fuzzy
 msgid "Mg for pre-eclampsia"
-msgstr "Mg para la preeclampsia"
+msgstr "Magnesio para la preeclampsia"
 
 #: nutrition/data.py:795 nutrition/programs.py:50
-#, fuzzy
 msgid "Family planning"
 msgstr "Planificación familiar"
 
 #: nutrition/data.py:800 nutrition/project.py:719
-#, fuzzy
 msgid "IFAS (community)"
-msgstr "IFAS (comunidad)"
+msgstr "Suplementación con hierro y ácido fólico (comunidad)"
 
 #: nutrition/data.py:805
-#, fuzzy
 msgid "IFAS (health facility)"
-msgstr "IFAS (centro de salud)"
+msgstr "Suplementación con hierro y ácido fólico (centro de salud)"
 
 #: nutrition/data.py:810 nutrition/project.py:720
-#, fuzzy
 msgid "IFAS (retailer)"
-msgstr "IFAS (minorista)"
+msgstr "Suplementación con hierro y ácido fólico (minorista)"
 
 #: nutrition/data.py:813 nutrition/project.py:721
-#, fuzzy
 msgid "IFAS (school)"
-msgstr "IFAS (escuela)"
+msgstr "Suplementación con hierro y ácido fólico (escuela)"
 
 #: nutrition/data.py:816 nutrition/geospatial.py:322
 #: nutrition/optimization.py:295 nutrition/project.py:741
 #: nutrition/project.py:766
-#, fuzzy
 msgid "IFA fortification of maize"
-msgstr "Enriquecimiento del maíz con IFAs"
+msgstr "Fortificación del maíz con hierro y ácido fólico"
 
 #: nutrition/data.py:819
-#, fuzzy
 msgid "IFA fortification of rice"
-msgstr "Enriquecimiento del arroz con IFA"
+msgstr "Fortificación del arroz con hierro y ácido fólico"
 
 #: nutrition/data.py:822
-#, fuzzy
 msgid "IFA fortification of wheat flour"
-msgstr "Enriquecimiento de la harina de trigo con IFA"
+msgstr "Fortificación de la harina de trigo con hierro y ácido fólico"
 
 #: nutrition/data.py:825
-#, fuzzy
 msgid "Long-lasting insecticide-treated bednets"
 msgstr "Mosquiteros tratados con insecticida de larga duración"
 
 #: nutrition/data.py:835
-#, fuzzy
 msgid "Reference programs"
 msgstr "Programas de referencia"
 
 #: nutrition/data.py:840 nutrition_app/rpcs.py:780 nutrition_app/rpcs.py:785
 #: nutrition_app/rpcs.py:849 nutrition_app/rpcs.py:850
-#, fuzzy
 msgid "Program dependencies"
 msgstr "Dependencias del programa"
 
 #: nutrition/data.py:860
-#, fuzzy
 msgid "Programs family planning"
 msgstr "Prog. de planificación familiar"
 
@@ -956,169 +821,139 @@ msgid "Cost"
 msgstr "Costo"
 
 #: nutrition/data.py:866
-#, fuzzy
 msgid "Proportional Cost"
-msgstr "Coste proporcional"
+msgstr "Costo proporcional"
 
 #: nutrition/data.py:874 nutrition_app/rpcs.py:724 nutrition_app/rpcs.py:809
-#, fuzzy
 msgid "Programs cost and coverage"
 msgstr "Costo y cobertura del programa"
 
 #: nutrition/data.py:944
-#, fuzzy
 msgid "Health facility"
 msgstr "Centro de salud"
 
 #: nutrition/data.py:1116
-#, fuzzy
 msgid "Management of MAM"
 msgstr "Gestión del MAM"
 
 #: nutrition/data.py:1373
-#, fuzzy
 msgid "Relative risks of anaemia when receiving intervention - lower"
-msgstr "Riesgos relativos de anemia al recibir la intervención - menor"
+msgstr ""
+"Riesgos relativos de anemia cuando está cubierto por la intervención - "
+"inferior"
 
 #: nutrition/data.py:1374
-#, fuzzy
 msgid "Odds ratios of being anaemic when covered by intervention - lower"
 msgstr ""
-"Coeficientes de probabilidad de padecer anemia cuando la intervención es "
-"menor"
+"Razón de momios de padecer anemia cuando está cubierto por la intervención- "
+"inferior"
 
 #: nutrition/data.py:1376
-#, fuzzy
 msgid "Relative risks of anaemia when receiving intervention - upper"
-msgstr "Riesgos relativos de anemia al recibir la intervención - superior"
+msgstr ""
+"Riesgos relativos de anemia cuando está cubierto por la intervención - "
+"superior"
 
 #: nutrition/data.py:1377
-#, fuzzy
 msgid "Odds ratios of being anaemic when covered by intervention - upper"
-msgstr "Odds ratios de ser anémico cuando se cubre la intervención - superior"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención - "
+"superior"
 
 #: nutrition/data.py:1386
-#, fuzzy
 msgid "Odds ratio of SAM when covered by program - lower"
 msgstr ""
-"Relación de probabilidades de SAM cuando está cubierto por el programa - más"
-" bajo"
+"Razón de momios de MAS cuando está cubierto por el programa - inferior"
 
 #: nutrition/data.py:1387
-#, fuzzy
 msgid "Odds ratio of MAM when covered by program - lower"
 msgstr ""
-"Proporción de probabilidades de MAM cuando está cubierto por el programa - "
-"más bajo"
+"Razón de momios de MAM cuando está cubierto por el programa - inferior"
 
 #: nutrition/data.py:1389
-#, fuzzy
 msgid "Odds ratio of SAM when covered by program - upper"
 msgstr ""
-"Relación de probabilidades de SAM cuando está cubierto por el programa - "
+"Razón de momios de MAS cuando está cubierto por el programa - inferior - "
 "superior"
 
 #: nutrition/data.py:1390
-#, fuzzy
 msgid "Odds ratio of MAM when covered by program - upper"
 msgstr ""
-"Proporción de probabilidades de MAM cuando está cubierto por el programa - "
-"superior"
+"Razón de momios de MAM cuando está cubierto por el programa  - superior"
 
 #: nutrition/data.py:1407
-#, fuzzy
 msgid "Odds ratio for correct breastfeeding - lower"
-msgstr "Proporción de probabilidades de amamantar correctamente - más baja"
+msgstr "Razón de momios de lactancia materna adecuada - inferior"
 
 #: nutrition/data.py:1408
-#, fuzzy
 msgid "Odds ratio for stunting - lower"
-msgstr "Proporción de probabilidades de retraso en el crecimiento - inferior"
+msgstr "Razón de momios de retraso en el crecimiento - inferior"
 
 #: nutrition/data.py:1411
-#, fuzzy
 msgid "Odds ratio for correct breastfeeding - upper"
-msgstr ""
-"Relación de probabilidades para la lactancia materna correcta - superior"
+msgstr "razón de momios de lactancia materna adecuada - superior"
 
 #: nutrition/data.py:1412
-#, fuzzy
 msgid "Odds ratio for stunting - upper"
-msgstr "Razón de probabilidades para el retraso del crecimiento - superior"
+msgstr "Razón de momios para el retraso del crecimiento - superior"
 
 #: nutrition/data.py:1421
-#, fuzzy
 msgid "Odds ratios for conditions - lower"
-msgstr "Coeficientes de probabilidades para las condiciones - inferiores"
+msgstr "Coeficientes de momios para las condiciones - inferior"
 
 #: nutrition/data.py:1423
-#, fuzzy
 msgid "Odds ratios for conditions - upper"
-msgstr "Coeficientes de probabilidad para las condiciones - superior"
+msgstr "Razón de momios para las condiciones - superior"
 
 #: nutrition/data.py:1424
-#, fuzzy
 msgid "Relative risk by birth spacing - lower"
-msgstr "Riesgo relativo según el espaciamiento de los nacimientos: más bajo"
+msgstr "Riesgo relativo según el espaciamiento de los nacimientos- inferior"
 
 #: nutrition/data.py:1425
-#, fuzzy
 msgid "Relative risks of neonatal causes of death - lower"
-msgstr "Riesgos relativos de las causas de muerte neonatal - inferiores"
+msgstr "Riesgos relativos de las causas de muerte neonatal - inferior"
 
 #: nutrition/data.py:1426
-#, fuzzy
 msgid "Relative risk by birth spacing - upper"
 msgstr "Riesgo relativo según el espaciamiento de los nacimientos - superior"
 
 #: nutrition/data.py:1427
-#, fuzzy
 msgid "Relative risks of neonatal causes of death - upper"
 msgstr "Riesgos relativos de las causas de muerte neonatal - superior"
 
 #: nutrition/data.py:1505
-#, fuzzy
 msgid "By program - lower"
 msgstr "Por programa - inferior"
 
 #: nutrition/data.py:1506
-#, fuzzy
 msgid "Odds ratios for correct breastfeeding by program - lower"
-msgstr ""
-"Ratios de probabilidades de amamantar correctamente por programa - inferior"
+msgstr "Razón de momios de lactancia materna adecuada por programa - inferior"
 
 #: nutrition/data.py:1507
-#, fuzzy
 msgid "By program - upper"
 msgstr "Por programa - superior"
 
 #: nutrition/data.py:1508
-#, fuzzy
 msgid "Odds ratios for correct breastfeeding by program - upper"
-msgstr ""
-"Ratios de probabilidades de amamantar correctamente por programa - superior"
+msgstr "Razón de momios de lactancia materna adecuada por programa - superior"
 
 #: nutrition/data.py:1510
-#, fuzzy
 msgid "Odds ratios for optimal birth spacing by program - lower"
 msgstr ""
-"Razones de probabilidad para el espaciamiento óptimo de los nacimientos por "
+"Razón de momios para el espaciamiento óptimo de los nacimientos por "
 "programa - inferior"
 
 #: nutrition/data.py:1511
-#, fuzzy
 msgid "Odds ratios for optimal birth spacing by program - upper"
 msgstr ""
-"Razones de probabilidad para el espaciamiento óptimo de los nacimientos por "
+"Razón de momios para el espaciamiento óptimo de los nacimientos por "
 "programa - superior"
 
 #: nutrition/geospatial.py:62
-#, fuzzy
 msgid "Less than 2 regions selected for geospatial analysis."
 msgstr "Menos de 2 regiones seleccionadas para el análisis geoespacial."
 
 #: nutrition/geospatial.py:96
-#, fuzzy
 msgid "No funds to distribute between or within regions."
 msgstr "No hay fondos para distribuir entre o dentro de las regiones."
 
@@ -1127,7 +962,7 @@ msgstr "No hay fondos para distribuir entre o dentro de las regiones."
 #: nutrition/plotting.py:673 nutrition/project.py:380 nutrition/project.py:424
 #: nutrition/utils.py:228
 msgid "Baseline"
-msgstr "Punto de partida"
+msgstr "Referencia"
 
 #: nutrition/geospatial.py:126 nutrition/geospatial.py:127
 #: nutrition/geospatial.py:128 nutrition/geospatial.py:137
@@ -1139,88 +974,73 @@ msgstr "Punto de partida"
 #: nutrition/project.py:419 nutrition/project.py:420 nutrition/project.py:512
 #: nutrition/project.py:513 nutrition/results.py:287 nutrition/results.py:288
 #: nutrition/results.py:361 nutrition/results.py:362
-#, fuzzy
 msgid "Excess budget not allocated"
 msgstr "Exceso de presupuesto no asignado"
 
 #: nutrition/geospatial.py:136 nutrition/plotting.py:680
 #: nutrition/plotting.py:690 nutrition/results.py:230 nutrition/results.py:251
 #: nutrition/results.py:316 nutrition/results.py:342
-#, fuzzy
 msgid "Excess budget"
 msgstr "Exceso de presupuesto"
 
 #: nutrition/geospatial.py:323 nutrition/optimization.py:294
 #: nutrition/project.py:681 nutrition/project.py:693 nutrition/project.py:740
 #: nutrition/project.py:767
-#, fuzzy
 msgid "IYCF 1"
-msgstr "IYCF 1"
+msgstr "IYCF 1 (alimentación del lactante y del niño pequeño)"
 
 #: nutrition/geospatial.py:325 nutrition/project.py:769
-#, fuzzy
 msgid "Multiple micronutrient supplementation"
-msgstr "Suplementos de micronutrientes múltiples"
+msgstr "Suplementación con micronutrientes múltiples"
 
 #: nutrition/geospatial.py:326 nutrition/project.py:718
 #: nutrition/project.py:770
-#, fuzzy
 msgid "Micronutrient powders"
 msgstr "Micronutrientes en polvo"
 
 #: nutrition/geospatial.py:327 nutrition/project.py:771
-#, fuzzy
 msgid "Kangaroo mother care"
 msgstr "Cuidado de la madre canguro"
 
 #: nutrition/geospatial.py:330 nutrition/optimization.py:293
 #: nutrition/project.py:682 nutrition/project.py:694 nutrition/project.py:739
 #: nutrition/project.py:774
-#, fuzzy
 msgid "Vitamin A supplementation"
-msgstr "Suplemento de vitamina A"
+msgstr "Suplementación con vitamina A"
 
 #: nutrition/geospatial.py:333 nutrition/optimization.py:298
 #: nutrition/project.py:744 nutrition/project.py:777
-#, fuzzy
 msgid "Iron and iodine fortification of salt"
-msgstr "Enriquecimiento de la sal con hierro y yodo"
+msgstr "Fortificación de la sal con hierro y yodo"
 
 #: nutrition/model.py:98 nutrition/populations.py:732
 #: nutrition/populations.py:738 nutrition/settings.py:38
-#, fuzzy
 msgid "Term SGA"
-msgstr "Término SGA"
+msgstr "Término PEG (Pequeño para la edad gestacional)"
 
 #: nutrition/model.py:98 nutrition/populations.py:734
 #: nutrition/populations.py:740 nutrition/settings.py:38
-#, fuzzy
 msgid "Pre-term SGA"
-msgstr "PEG prematuro"
+msgstr "Prematuro PEG (Pequelo para edad gestacional)"
 
 #: nutrition/model.py:228 nutrition/model.py:305 nutrition/model.py:355
 #: nutrition/populations.py:904
-#, fuzzy
 msgid "Non-pregnant women"
 msgstr "Mujeres no embarazadas"
 
 #: nutrition/model.py:254
-#, fuzzy
 msgid "Wasting prevention"
-msgstr "Prevención del despilfarro"
+msgstr "Prevención de la emaciación"
 
 #: nutrition/model.py:256 nutrition/model.py:279 nutrition/populations.py:633
-#, fuzzy
 msgid "Wasting treatment"
-msgstr "Tratamiento del despilfarro"
+msgstr "Tratamiento de la emaciación"
 
 #: nutrition/model.py:266
-#, fuzzy
 msgid "Birth number"
 msgstr "Número de nacimiento"
 
 #: nutrition/plotting.py:190
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence (%)"
 msgstr "Prevalencia (%)"
@@ -1234,10 +1054,9 @@ msgstr "Años"
 #: nutrition/plotting.py:268
 msgctxt "plotting"
 msgid "annual"
-msgstr "anualmente"
+msgstr "anual"
 
 #: nutrition/plotting.py:270
-#, fuzzy
 msgctxt "plotting"
 msgid "cumulative"
 msgstr "acumulado"
@@ -1248,14 +1067,13 @@ msgid "Number"
 msgstr "Número"
 
 #: nutrition/plotting.py:287
-#, fuzzy
 msgctxt "plotting"
 msgid "Number (millions)"
 msgstr "Número (millones)"
 
 #: nutrition/plotting.py:352 nutrition/plotting.py:459
 #: nutrition/plotting.py:577
-#, fuzzy, python-format
+#, python-format
 msgctxt "plotting"
 msgid "Optimal allocation, %s-%s"
 msgstr "Asignación óptima, %s-%s"
@@ -1268,72 +1086,66 @@ msgstr "Región"
 
 #: nutrition/plotting.py:363 nutrition/plotting.py:469
 #: nutrition/plotting.py:587
-#, fuzzy, python-format
+#, python-format
 msgctxt "plotting"
 msgid "Total available budget (relative to US$%sM)"
-msgstr "Presupuesto total disponible (en relación con los %sM$)"
+msgstr "Presupuesto total disponible (en relación con los US$%sM$)"
 
 #: nutrition/plotting.py:366
-#, fuzzy, python-format
+#, python-format
 msgctxt "plotting"
 msgid "Average annual spending, %s-%s"
 msgstr "Gasto medio anual, %s-%s"
 
 #: nutrition/plotting.py:376 nutrition/plotting.py:480
 #: nutrition/plotting.py:597
-#, fuzzy
 msgctxt "plotting"
 msgid "Spending (US$)"
 msgstr "Gasto (US$)"
 
 #: nutrition/plotting.py:378 nutrition/plotting.py:482
 #: nutrition/plotting.py:599
-#, fuzzy
 msgctxt "plotting"
 msgid "Spending (US$M)"
 msgstr "Gasto (millones de dólares)"
 
 #: nutrition/plotting.py:472
-#, fuzzy, python-format
+#, python-format
 msgctxt "plotting"
 msgid "Annual spending for year %s"
 msgstr "Gasto anual para el año %s"
 
 #: nutrition/plotting.py:589
-#, fuzzy, python-format
+#, python-format
 msgctxt "plotting"
 msgid "Annual spending, %s-%s"
 msgstr "Gasto anual, %s-%s"
 
 #: nutrition/plotting.py:649
-#, fuzzy
 msgctxt "plotting"
 msgid "Coverage (%)"
 msgstr "Cobertura (%)"
 
 #: nutrition/plotting.py:650
-#, fuzzy
 msgctxt "plotting"
 msgid "Spending ($US)"
 msgstr "Gasto ($US)"
 
 #: nutrition/plotting.py:710
-#, fuzzy
 msgid "No impact"
 msgstr "Sin impacto"
 
 #: nutrition/plotting.py:717 nutrition/plotting.py:722
-#, fuzzy
 msgid "Negative impact"
 msgstr "Impacto negativo"
 
 #: nutrition/plotting.py:719
-#, fuzzy, python-format
+#, python-format
 msgid "$%s per additional case"
-msgstr "$%s por caja adicional"
+msgstr "$%s por caso adicional"
 
 #: nutrition/plotting.py:724
-#, fuzzy, python-format
+#, python-format
 msgid "$%s per case averted"
 msgstr "$%s por caso evitado"
 
@@ -1344,87 +1156,74 @@ msgid "None"
 msgstr "Ninguno"
 
 #: nutrition/populations.py:438
-#, fuzzy
 msgid "Children under 5 population"
 msgstr "Población infantil menor de 5 años"
 
 #: nutrition/populations.py:461 nutrition/populations.py:463
 #: nutrition/populations.py:674
-#, fuzzy
 msgid "Percentage of diarrhea that is severe"
 msgstr "Porcentaje de diarrea grave"
 
 #: nutrition/populations.py:507
-#, fuzzy
 msgid "Neonatal mortality (per 1,000 live births)"
 msgstr "Mortalidad neonatal (por cada 1.000 nacidos vivos)"
 
 #: nutrition/populations.py:508
-#, fuzzy
 msgid "Infant mortality (per 1,000 live births)"
 msgstr "Mortalidad infantil (por cada 1.000 nacidos vivos)"
 
 #: nutrition/populations.py:509
-#, fuzzy
 msgid "Under 5 mortality (per 1,000 live births)"
 msgstr "Mortalidad de menores de 5 años (por cada 1.000 nacidos vivos)"
 
 #: nutrition/populations.py:733 nutrition/populations.py:739
 #: nutrition/settings.py:38
-#, fuzzy
 msgid "Pre-term AGA"
-msgstr "AGA prematuro"
+msgstr "Prematuro AEG (adecuado para edad gestacional)"
 
 #: nutrition/populations.py:847
-#, fuzzy
 msgid "Maternal mortality (per 1,000 live births)"
 msgstr "Mortalidad materna (por cada 1.000 nacidos vivos)"
 
 #: nutrition/programs.py:35 nutrition/utils.py:549
-#, fuzzy
 msgid "Exclusion dependency"
-msgstr "Dependencia de la exclusión"
+msgstr "Exclusión de intervención dependiente"
 
 #: nutrition/programs.py:36 nutrition/utils.py:549
-#, fuzzy
 msgid "Threshold dependency"
-msgstr "Dependencia del umbral"
+msgstr "Dependencia de otra intervención"
 
 #: nutrition/programs.py:204
 msgid "Effectiveness"
-msgstr "Eficacia"
+msgstr "Efectividad"
 
+# effectiveness in reducing incidence
 #: nutrition/programs.py:248 nutrition/programs.py:307
-#, fuzzy
 msgid "Effectiveness incidence"
-msgstr "Incidencia de la eficacia"
+msgstr "Efectividad en incidencia"
 
+# effectiveness in reducing mortality
 #: nutrition/programs.py:265
-#, fuzzy
 msgid "Effectiveness mortality"
-msgstr "Eficacia de la mortalidad"
+msgstr "Efectividad en mortalidad"
 
 #: nutrition/programs.py:306 nutrition/programs.py:322
-#, fuzzy
 msgid "Affected fraction"
 msgstr "Fracción afectada"
 
 #: nutrition/programs.py:333
-#, fuzzy
 msgid "affected fraction"
 msgstr "fracción afectada"
 
 #: nutrition/programs.py:334
-#, fuzzy
 msgid "effectiveness"
-msgstr "eficacia"
+msgstr "efectividad"
 
 #: nutrition/project.py:572
 msgid "baseline"
 msgstr "situación de referencia"
 
 #: nutrition/project.py:676
-#, fuzzy
 msgid "Stunting example (coverage)"
 msgstr "Ejemplo de retraso en el crecimiento (cobertura)"
 
@@ -1434,47 +1233,39 @@ msgid "demo"
 msgstr "demo"
 
 #: nutrition/project.py:688
-#, fuzzy
 msgid "Stunting example (budget)"
 msgstr "Ejemplo de retraso en el crecimiento (presupuesto)"
 
 #: nutrition/project.py:701
-#, fuzzy
 msgid "Wasting example"
-msgstr "Ejemplo de despilfarro"
+msgstr "Ejemplo de emaciación"
 
 #: nutrition/project.py:713
-#, fuzzy
 msgid "Anaemia example"
 msgstr "Ejemplo de anemia"
 
+# “maximize alive and non-stunted children”.
 #: nutrition/project.py:734 nutrition_app/rpcs.py:1353
-#, fuzzy
 msgid "Maximize thrive"
-msgstr "Maximizar la prosperidad"
+msgstr "Maximizar sobrevivencia y crecimiento"
 
 #: nutrition/project.py:759
-#, fuzzy
 msgid "Geospatial optimization"
 msgstr "Optimización geoespacial"
 
 #: nutrition/project.py:760 nutrition/project.py:797
-#, fuzzy
 msgid "demoregion1"
 msgstr "demoregión1"
 
 #: nutrition/project.py:760 nutrition/project.py:798
-#, fuzzy
 msgid "demoregion2"
 msgstr "demoregión2"
 
 #: nutrition/project.py:760 nutrition/project.py:799
-#, fuzzy
 msgid "demoregion3"
 msgstr "demoregión3"
 
 #: nutrition/project.py:791 nutrition_app/rpcs.py:469
-#, fuzzy
 msgid "Demo project"
 msgstr "Proyecto de demostración"
 
@@ -1483,12 +1274,10 @@ msgid "project"
 msgstr "proyecto"
 
 #: nutrition/results.py:103
-#, fuzzy
 msgid "Scenario overall"
 msgstr "Escenario general"
 
 #: nutrition/results.py:227 nutrition/results.py:422
-#, fuzzy
 msgid "Scenario"
 msgstr "Escenario"
 
@@ -1509,12 +1298,10 @@ msgid "N/A"
 msgstr "N/A"
 
 #: nutrition/results.py:239 nutrition/results.py:327
-#, fuzzy
 msgid "Number of SAM children"
-msgstr "Número de niños SAM"
+msgstr "Número de niños MAS"
 
 #: nutrition/results.py:239 nutrition/results.py:327
-#, fuzzy
 msgid "Number of MAM children"
 msgstr "Número de niños MAM"
 
@@ -1533,10 +1320,9 @@ msgstr "Versión"
 
 #: nutrition/results.py:387
 msgid "Outcomes"
-msgstr "Resultado"
+msgstr "Resultados"
 
 #: nutrition/results.py:387
-#, fuzzy
 msgid "Budget & coverage"
 msgstr "Presupuesto y cobertura"
 
@@ -1553,9 +1339,8 @@ msgid "Type"
 msgstr "Tipo"
 
 #: nutrition/results.py:422
-#, fuzzy
 msgid "Cost-coverage type"
-msgstr "Tipo de cobertura de costes"
+msgstr "Tipo de cobertura de costos"
 
 #: nutrition/settings.py:23 nutrition/utils.py:510
 msgid "High"
@@ -1566,7 +1351,6 @@ msgid "Moderate"
 msgstr "Moderado"
 
 #: nutrition/settings.py:23 nutrition/settings.py:29 nutrition/utils.py:510
-#, fuzzy
 msgid "Mild"
 msgstr "Leve"
 
@@ -1579,7 +1363,6 @@ msgid "Exclusive"
 msgstr "Exclusivo"
 
 #: nutrition/settings.py:32
-#, fuzzy
 msgid "Predominant"
 msgstr "Predominante"
 
@@ -1588,375 +1371,309 @@ msgid "Partial"
 msgstr "Parcial"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
-#, fuzzy
 msgid "1-5 months"
 msgstr "1-5 meses"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
-#, fuzzy
 msgid "6-11 months"
 msgstr "6-11 meses"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
-#, fuzzy
 msgid "12-23 months"
 msgstr "12-23 meses"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
-#, fuzzy
 msgid "24-59 months"
 msgstr "24-59 meses"
 
 #: nutrition/settings.py:37
-#, fuzzy
 msgid "24 months or greater"
 msgstr "24 meses o más"
 
 #: nutrition/settings.py:42
-#, fuzzy
 msgid "PW: 15-19 years"
-msgstr "PW: 15-19 años"
+msgstr "PW: 15-19 años (mujeres embarazadas)"
 
 #: nutrition/settings.py:42
-#, fuzzy
 msgid "PW: 20-29 years"
-msgstr "PW: 20-29 años"
+msgstr "PW: 20-29 años (mujeres embarazadas)"
 
 #: nutrition/settings.py:42
-#, fuzzy
 msgid "PW: 30-39 years"
-msgstr "PW: 30-39 años"
+msgstr "PW: 30-39 años (mujeres embarazadas)"
 
 #: nutrition/settings.py:42
-#, fuzzy
 msgid "PW: 40-49 years"
-msgstr "PW: 40-49 años"
+msgstr "PW: 40-49 años (mujeres embarazadas)"
 
 #: nutrition/settings.py:50
-#, fuzzy
 msgid "Linear (constant marginal cost) [default]"
-msgstr "Lineal (coste marginal constante) [por defecto]"
+msgstr "Lineal (costo marginal constante) [por defecto]"
 
 #: nutrition/settings.py:51
-#, fuzzy
 msgid "Curved with increasing marginal cost"
-msgstr "Curva con coste marginal creciente"
+msgstr "Curva con costo marginal creciente"
 
 #: nutrition/settings.py:52
-#, fuzzy
 msgid "Curved with decreasing marginal cost"
-msgstr "Curva con coste marginal decreciente"
+msgstr "Curva con costo marginal decreciente"
 
 #: nutrition/settings.py:53
-#, fuzzy
 msgid "S-shaped (decreasing then increasing marginal cost)"
-msgstr "En forma de S (coste marginal decreciente y luego creciente)"
+msgstr "En forma de S (costo marginal decreciente y luego creciente)"
 
 #: nutrition/utils.py:164
-#, fuzzy
 msgctxt "plotting"
 msgid "Maximize the number of alive, non-stunted children"
 msgstr "Maximizar el número de niños vivos y sin retraso en el crecimiento"
 
 #: nutrition/utils.py:165
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the number of child deaths"
 msgstr "Minimizar el número de muertes de niños"
 
 #: nutrition/utils.py:166
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the number of stunted children"
 msgstr "Minimizar el número de niños con retraso en el crecimiento"
 
 #: nutrition/utils.py:167
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the number of wasted children"
-msgstr "Minimizar el número de niños desperdiciados"
+msgstr "Minimizar el número de niños emaciados"
 
 #: nutrition/utils.py:168
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the number of anaemic children"
 msgstr "Minimizar el número de niños anémicos"
 
 #: nutrition/utils.py:169
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the prevalence of stunting in children"
 msgstr "Minimizar la prevalencia del retraso del crecimiento en los niños"
 
 #: nutrition/utils.py:170
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the prevalence of wasting in children"
 msgstr "Minimizar la prevalencia de la emaciación en los niños"
 
 #: nutrition/utils.py:171
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the prevalence of anaemia in children"
 msgstr "Minimizar la prevalencia de la anemia en los niños"
 
 #: nutrition/utils.py:172
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the number of maternal deaths"
 msgstr "Minimizar el número de muertes maternas"
 
 #: nutrition/utils.py:173
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the number of anaemic pregnant women"
 msgstr "Minimizar el número de mujeres embarazadas anémicas"
 
 #: nutrition/utils.py:174
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the prevalence of anaemia in pregnant women"
 msgstr "Minimizar la prevalencia de la anemia en las mujeres embarazadas"
 
 #: nutrition/utils.py:175
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the number of anaemic non-pregnant women"
 msgstr "Minimizar el número de mujeres anémicas no embarazadas"
 
 #: nutrition/utils.py:176
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize the prevalence of anaemia in non-pregnant women"
 msgstr "Minimizar la prevalencia de la anemia en las mujeres no embarazadas"
 
 #: nutrition/utils.py:177
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize child mortality rate"
 msgstr "Minimizar la tasa de mortalidad infantil"
 
 #: nutrition/utils.py:178
-#, fuzzy
 msgctxt "plotting"
 msgid "Minimize pregnant women mortality rate"
 msgstr "Minimizar la tasa de mortalidad de las mujeres embarazadas"
 
 #: nutrition/utils.py:182
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of alive, non-stunted children turning age 5"
 msgstr ""
 "Número de niños vivos y sin retraso en el crecimiento que cumplen 5 años"
 
 #: nutrition/utils.py:183
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of child deaths"
 msgstr "Número de muertes de niños"
 
 #: nutrition/utils.py:184
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of stunted children turning age 5"
 msgstr "Número de niños con retraso en el crecimiento que cumplen 5 años"
 
 #: nutrition/utils.py:185
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of wasted children turning age 5"
-msgstr "Número de niños desperdiciados que cumplen 5 años"
+msgstr "Número de niños emaciados que cumplen 5 años"
 
 #: nutrition/utils.py:186
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of anaemic children turning age 5"
 msgstr "Número de niños anémicos que cumplen 5 años"
 
 #: nutrition/utils.py:187
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of stunting in children"
 msgstr "Prevalencia del retraso del crecimiento en los niños"
 
 #: nutrition/utils.py:188
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of wasting in children"
 msgstr "Prevalencia de la emaciación en los niños"
 
 #: nutrition/utils.py:189
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of anaemia in children"
 msgstr "Prevalencia de la anemia en los niños"
 
 #: nutrition/utils.py:190
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of maternal deaths"
 msgstr "Número de muertes maternas"
 
 #: nutrition/utils.py:191
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of anaemic pregnant women"
 msgstr "Número de mujeres embarazadas anémicas"
 
 #: nutrition/utils.py:192
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of anaemia in pregnant women"
 msgstr "Prevalencia de la anemia en las mujeres embarazadas"
 
 #: nutrition/utils.py:193
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of anaemic non-pregnant women"
 msgstr "Número de mujeres anémicas no embarazadas"
 
 #: nutrition/utils.py:194
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of anaemia in non-pregnant women"
 msgstr "Prevalencia de la anemia en mujeres no embarazadas"
 
 #: nutrition/utils.py:195
-#, fuzzy
 msgctxt "plotting"
 msgid "Child mortality rate"
 msgstr "Tasa de mortalidad infantil"
 
 #: nutrition/utils.py:196
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of SAM"
-msgstr "Prevalencia de SAM"
+msgstr "Prevalencia de MAS (malnutrición aguda severa)"
 
 #: nutrition/utils.py:197
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of MAM"
-msgstr "Prevalencia del MAM"
+msgstr "Prevalencia del MAM (malnutrición aguda moderada)"
 
 #: nutrition/utils.py:198
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of SAM children"
-msgstr "Número de niños SAM"
+msgstr "Número de niños MAS"
 
 #: nutrition/utils.py:199
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of MAM children"
 msgstr "Número de niños MAM"
 
 #: nutrition/utils.py:200
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of SGA births"
-msgstr "Número de nacimientos PEG"
+msgstr "Número de nacimientos PEG (pequeño para edad gestacional)"
 
 #: nutrition/utils.py:201
-#, fuzzy
 msgctxt "plotting"
 msgid "Exclusive breastfeeding prevalence <6 months"
 msgstr "Prevalencia de la lactancia materna exclusiva <6 meses"
 
 #: nutrition/utils.py:202
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of children <6 months"
 msgstr "Número de niños <6 meses"
 
 #: nutrition/utils.py:203
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of children 6-23 months"
 msgstr "Número de niños de 6 a 23 meses"
 
 #: nutrition/utils.py:204
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of children <5 years"
 msgstr "Número de niños <5 años"
 
 #: nutrition/utils.py:205
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of pregnant women"
 msgstr "Número de mujeres embarazadas"
 
 #: nutrition/utils.py:206
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of stunting"
-msgstr "Coste económico del retraso en el crecimiento"
+msgstr "Costo económico del retraso en el crecimiento"
 
 #: nutrition/utils.py:207
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of wasting"
-msgstr "Coste económico del despilfarro"
+msgstr "Costo económico de la emaciación"
 
 #: nutrition/utils.py:208
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of child death"
-msgstr "Coste económico de la muerte infantil"
+msgstr "Costo económico de la muerte infantil"
 
 #: nutrition/utils.py:209
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of pregnant woman death"
-msgstr "Coste económico de la muerte de una mujer embarazada"
+msgstr "Costo económico de la muerte de una mujer embarazada"
 
 #: nutrition/utils.py:210
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of anaemic child"
-msgstr "Coste económico del niño anémico"
+msgstr "Costo económico del niño anémico"
 
 #: nutrition/utils.py:211
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of anaemic pregnant woman"
-msgstr "Coste económico de la mujer embarazada anémica"
+msgstr "Costo económico de la mujer embarazada anémica"
 
 #: nutrition/utils.py:212
-#, fuzzy
 msgctxt "plotting"
 msgid "Pregnant women mortality rate"
 msgstr "Tasa de mortalidad de mujeres embarazadas"
 
 #: nutrition/utils.py:213
-#, fuzzy
 msgctxt "plotting"
 msgid "Total population"
 msgstr "Población total"
 
 #: nutrition/utils.py:214
-#, fuzzy
 msgctxt "plotting"
 msgid "Population growth rate"
 msgstr "Tasa de crecimiento de la población"
 
 #: nutrition/utils.py:228
-#, fuzzy
 msgctxt "plotting"
 msgid ""
 "Est. spending \n"
 " baseline year"
-msgstr ""
-"Gasto estimado\n"
-" año de referencia"
+msgstr "Gasto estimado en el año de referencia"
 
 #: nutrition_app/rpcs.py:1113
-#, fuzzy
 msgid "Default scenario (coverage)"
 msgstr "Escenario por defecto (cobertura)"
 
 #: nutrition_app/rpcs.py:1115
-#, fuzzy
 msgid "Default scenario (budget)"
 msgstr "Escenario por defecto (presupuesto)"
