@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.15\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-02-11 11:10+1100\n"
+"POT-Creation-Date: 2022-02-28 16:43+1100\n"
 "PO-Revision-Date: 2022-02-22 11:02-0600\n"
 "Last-Translator: \n"
 "Language-Team: es <LL@li.org>\n"
@@ -15,22 +15,21 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Generated-By: Babel 2.9.0\n"
-"X-Generator: Poedit 3.0.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: nutrition/data.py:196 nutrition/data.py:204 nutrition/data.py:207
 #: nutrition/data.py:210 nutrition/data.py:227 nutrition/data.py:241
 #: nutrition/data.py:310 nutrition/data.py:364 nutrition/data.py:732
 #: nutrition/data.py:934
 msgid "Baseline year population inputs"
-msgstr "Entradas de población en el año de referencia"
+msgstr "Entradas de población-año base"
 
 #: nutrition/data.py:199 nutrition/data.py:200 nutrition/data.py:201
 #: nutrition/data.py:203 nutrition/data.py:214 nutrition/data.py:739
 #: nutrition/data.py:740 nutrition/data.py:741
 msgid "Food"
-msgstr "Alimentos"
+msgstr "Alimento"
 
 #: nutrition/data.py:199 nutrition/data.py:739
 msgid "Fraction eating rice as main staple food"
@@ -61,7 +60,7 @@ msgstr "Fracción de otros alimentos básicos como alimento principal"
 #: nutrition/model.py:268 nutrition/populations.py:956
 #: nutrition/programs.py:223 nutrition/programs.py:224
 msgid "Birth spacing"
-msgstr "Espaciamiento de los nacimientos"
+msgstr "Espaciamiento entre los nacimientos"
 
 #: nutrition/data.py:206 nutrition/data.py:223
 msgid "Total (must be 100%)"
@@ -69,22 +68,22 @@ msgstr "Total (debe ser el 100%)"
 
 #: nutrition/data.py:208 nutrition/data.py:209 nutrition/data.py:218
 msgid "Birth outcome distribution"
-msgstr "Distribución del resultado del nacimiento"
+msgstr "Distribución del desenlace del nacimiento"
 
 #: nutrition/data.py:209 nutrition/model.py:346 nutrition/populations.py:737
 #: nutrition/settings.py:38
 msgid "Term AGA"
-msgstr "Término AEG (adecuado para la edad gestacional)"
+msgstr "Nacido a término AEG (Adecuado para la edad gestacional)"
 
 #: nutrition/data.py:214 nutrition/data.py:733 nutrition/data.py:734
 #: nutrition/data.py:735 nutrition/data.py:736 nutrition/data.py:737
 #: nutrition/data.py:738 nutrition/data.py:934
 msgid "Population data"
-msgstr "Datos de población"
+msgstr "Datos poblacionales"
 
 #: nutrition/data.py:214
 msgid "Age distribution of pregnant women"
-msgstr "Distribución por edades de las mujeres embarazadas"
+msgstr "Distribución de edad de las mujeres embarazadas"
 
 #: nutrition/data.py:214 nutrition/data.py:242 nutrition/data.py:243
 #: nutrition/data.py:346 nutrition/model.py:262
@@ -127,7 +126,7 @@ msgstr "Fracción de embarazos que terminan en aborto espontáneo"
 
 #: nutrition/data.py:246 nutrition/settings.py:43
 msgid "WRA: 15-19 years"
-msgstr "WRA: 15-19 años (mujeres en edad reproductiva)"
+msgstr "WRA: 15-19 años  (mujeres en edad reproductiva)"
 
 #: nutrition/data.py:246 nutrition/settings.py:43
 msgid "WRA: 20-29 years"
@@ -143,7 +142,7 @@ msgstr "WRA: 40-49 años (mujeres en edad reproductiva)"
 
 #: nutrition/data.py:247 nutrition/populations.py:906
 msgid "Total WRA"
-msgstr "Total WRA (mujeres en edad reproductiva)"
+msgstr "Total mujeres en edad reproductiva"
 
 #: nutrition/data.py:249 nutrition/model.py:590 nutrition/populations.py:434
 #: nutrition/populations.py:506 nutrition/populations.py:845
@@ -164,20 +163,20 @@ msgstr "mujeres en edad reproductiva no embarazadas"
 #: nutrition/data.py:314 nutrition/data.py:368 nutrition/data.py:920
 #: nutrition_app/rpcs.py:720 nutrition_app/rpcs.py:805
 msgid "Nutritional status distribution"
-msgstr "Distribución del estado nutricional"
+msgstr "Distribución estado nutricional"
 
 #: nutrition/data.py:271 nutrition/data.py:275 nutrition/data.py:278
 #: nutrition/data.py:291
 msgid "Stunting (height-for-age)"
-msgstr "Retraso en el crecimiento (talla para la edad)"
+msgstr "Retraso en el crecimiento (Talla para la edad)"
 
 #: nutrition/data.py:275
 msgid "Normal (HAZ-score > -1)"
-msgstr "Normal (puntuación HAZ > -1)"
+msgstr "Normal (score HAZ > -1)"
 
 #: nutrition/data.py:278
 msgid "Mild (HAZ-score between -2 and -1)"
-msgstr "Leve (puntuación HAZ entre -2 y -1)"
+msgstr "Leve (score HAZ entre -2 y -1)"
 
 #: nutrition/data.py:280 nutrition/data.py:283 nutrition/data.py:286
 #: nutrition/data.py:291 nutrition/data.py:369 nutrition/data.py:370
@@ -186,18 +185,18 @@ msgstr "Emaciación (peso para la talla)"
 
 #: nutrition/data.py:283
 msgid "Normal (WHZ-score > -1)"
-msgstr "Normal (puntuación WHZ > -1)"
+msgstr "Normal (score WHZ > -1)"
 
 #: nutrition/data.py:286
 msgid "Mild (WHZ-score between -2 and -1)"
-msgstr "Leve (puntuación WHZ entre -2 y -1)"
+msgstr "Leve (score WHZ entre -2 y -1)"
 
 #: nutrition/data.py:291 nutrition/data.py:342 nutrition/data.py:457
 #: nutrition/data.py:458 nutrition/data.py:483 nutrition/data.py:503
 #: nutrition/data.py:504 nutrition/data.py:505 nutrition/data.py:555
-#: nutrition/data.py:1061 nutrition/data.py:1079 nutrition/data.py:1080
-#: nutrition/data.py:1081 nutrition/data.py:1123 nutrition/data.py:1439
-#: nutrition/data.py:1455 nutrition/data.py:1470 nutrition/model.py:250
+#: nutrition/data.py:1070 nutrition/data.py:1088 nutrition/data.py:1089
+#: nutrition/data.py:1090 nutrition/data.py:1132 nutrition/data.py:1448
+#: nutrition/data.py:1464 nutrition/data.py:1479 nutrition/model.py:250
 #: nutrition/model.py:293 nutrition/model.py:323 nutrition/model.py:382
 #: nutrition/model.py:408 nutrition/model.py:506 nutrition/model.py:518
 #: nutrition/model.py:547 nutrition/model.py:599 nutrition/model.py:600
@@ -212,13 +211,13 @@ msgstr "Leve (puntuación WHZ entre -2 y -1)"
 #: nutrition/populations.py:701 nutrition/populations.py:758
 #: nutrition/programs.py:192 nutrition/settings.py:45
 msgid "Stunting"
-msgstr "Retraso en el crecimiento o baja talla"
+msgstr "Baja talla o retraso en el crecimiento"
 
 #: nutrition/data.py:291 nutrition/data.py:343 nutrition/data.py:461
 #: nutrition/data.py:462 nutrition/data.py:484 nutrition/data.py:507
-#: nutrition/data.py:509 nutrition/data.py:1064 nutrition/data.py:1442
-#: nutrition/data.py:1458 nutrition/data.py:1474 nutrition/data.py:1499
-#: nutrition/data.py:1500 nutrition/data.py:1516 nutrition/model.py:337
+#: nutrition/data.py:509 nutrition/data.py:1073 nutrition/data.py:1451
+#: nutrition/data.py:1467 nutrition/data.py:1483 nutrition/data.py:1508
+#: nutrition/data.py:1509 nutrition/data.py:1525 nutrition/model.py:337
 #: nutrition/model.py:522 nutrition/model.py:548 nutrition/model.py:603
 #: nutrition/populations.py:37 nutrition/populations.py:192
 #: nutrition/populations.py:207 nutrition/populations.py:359
@@ -232,11 +231,11 @@ msgstr "Emaciación"
 #: nutrition/data.py:322 nutrition/data.py:323 nutrition/data.py:324
 #: nutrition/data.py:344 nutrition/data.py:465 nutrition/data.py:466
 #: nutrition/data.py:468 nutrition/data.py:486 nutrition/data.py:510
-#: nutrition/data.py:511 nutrition/data.py:512 nutrition/data.py:1067
-#: nutrition/data.py:1069 nutrition/data.py:1090 nutrition/data.py:1091
-#: nutrition/data.py:1092 nutrition/data.py:1445 nutrition/data.py:1461
-#: nutrition/data.py:1478 nutrition/data.py:1502 nutrition/data.py:1503
-#: nutrition/data.py:1518 nutrition/model.py:252 nutrition/model.py:296
+#: nutrition/data.py:511 nutrition/data.py:512 nutrition/data.py:1076
+#: nutrition/data.py:1078 nutrition/data.py:1099 nutrition/data.py:1100
+#: nutrition/data.py:1101 nutrition/data.py:1454 nutrition/data.py:1470
+#: nutrition/data.py:1487 nutrition/data.py:1511 nutrition/data.py:1512
+#: nutrition/data.py:1527 nutrition/model.py:252 nutrition/model.py:296
 #: nutrition/model.py:327 nutrition/model.py:354 nutrition/model.py:363
 #: nutrition/model.py:382 nutrition/model.py:408 nutrition/model.py:609
 #: nutrition/model.py:610 nutrition/model.py:613 nutrition/model.py:614
@@ -261,7 +260,7 @@ msgstr "Anemia"
 
 #: nutrition/data.py:309 nutrition/data.py:313
 msgid "Prevalence of anaemia"
-msgstr "Prevalencia de la anemia"
+msgstr "Prevalencia de anemia"
 
 #: nutrition/data.py:311
 msgid "Percentage of anaemia that is iron deficient"
@@ -278,12 +277,12 @@ msgstr "No anémico"
 #: nutrition/data.py:328 nutrition/data.py:332 nutrition_app/rpcs.py:721
 #: nutrition_app/rpcs.py:806
 msgid "Breastfeeding distribution"
-msgstr "Distribución de lactancia materna"
+msgstr "Distribución de lactancia"
 
 #: nutrition/data.py:331 nutrition/data.py:333 nutrition/data.py:335
 #: nutrition/data.py:345 nutrition/data.py:471 nutrition/data.py:472
-#: nutrition/data.py:485 nutrition/data.py:1072 nutrition/data.py:1448
-#: nutrition/data.py:1464 nutrition/data.py:1484 nutrition/model.py:258
+#: nutrition/data.py:485 nutrition/data.py:1081 nutrition/data.py:1457
+#: nutrition/data.py:1473 nutrition/data.py:1493 nutrition/model.py:258
 #: nutrition/model.py:275 nutrition/populations.py:360
 #: nutrition/populations.py:485 nutrition/populations.py:494
 #: nutrition/populations.py:546 nutrition/populations.py:616
@@ -306,11 +305,11 @@ msgstr "Niños de 0 a 59 meses"
 
 #: nutrition/data.py:343
 msgid "Wasting prevalence (%)"
-msgstr "Prevalencia de la emaciación (%)"
+msgstr "Prevalencia de emaciación (%)"
 
 #: nutrition/data.py:344
 msgid "Anaemia prevalence (%)"
-msgstr "Prevalencia de la anemia (%)"
+msgstr "Prevalencia de anemia (%)"
 
 #: nutrition/data.py:345
 msgid "Prevalence of age-appropriate breastfeeding"
@@ -327,8 +326,7 @@ msgstr "Episodio de emaciación infantil"
 #: nutrition/data.py:352
 msgid "Child turning age 5 stunted (over lifetime)"
 msgstr ""
-"Niños que cumplen 5 años con retraso en el crecimiento (a lo largo de su "
-"vida)"
+"Niño que cumple 5 años con retraso en el crecimiento (a lo largo de su vida)"
 
 #: nutrition/data.py:353
 msgid "Child death"
@@ -357,26 +355,26 @@ msgstr "Incidencia de la diarrea"
 
 #: nutrition/data.py:366 nutrition/data.py:468 nutrition/data.py:475
 #: nutrition/data.py:505 nutrition/data.py:507 nutrition/data.py:509
-#: nutrition/data.py:1069 nutrition/data.py:1081 nutrition/data.py:1085
-#: nutrition/data.py:1087 nutrition/data.py:1451 nutrition/data.py:1467
-#: nutrition/data.py:1488 nutrition/model.py:260 nutrition/model.py:277
+#: nutrition/data.py:1078 nutrition/data.py:1090 nutrition/data.py:1094
+#: nutrition/data.py:1096 nutrition/data.py:1460 nutrition/data.py:1476
+#: nutrition/data.py:1497 nutrition/model.py:260 nutrition/model.py:277
 #: nutrition/model.py:378 nutrition/model.py:406 nutrition/populations.py:261
 #: nutrition/populations.py:271 nutrition/populations.py:275
 #: nutrition/programs.py:249 nutrition/programs.py:316
 msgid "Diarrhoea"
 msgstr "Diarrea"
 
-#: nutrition/data.py:369 nutrition/data.py:556 nutrition/data.py:1124
+#: nutrition/data.py:369 nutrition/data.py:556 nutrition/data.py:1133
 msgid "MAM (WHZ-score between -3 and -2)"
 msgstr "MAM (puntuación WHZ entre -3 y -2)"
 
-#: nutrition/data.py:370 nutrition/data.py:557 nutrition/data.py:1125
+#: nutrition/data.py:370 nutrition/data.py:557 nutrition/data.py:1134
 msgid "SAM (WHZ-score < -3)"
-msgstr "MAS (puntuación WHZ < -3)"
+msgstr "MAS (score WHZ < -3)"
 
 #: nutrition/data.py:371 nutrition/data.py:508 nutrition/data.py:509
-#: nutrition/data.py:541 nutrition/data.py:556 nutrition/data.py:1086
-#: nutrition/data.py:1087 nutrition/data.py:1116 nutrition/data.py:1124
+#: nutrition/data.py:541 nutrition/data.py:556 nutrition/data.py:1095
+#: nutrition/data.py:1096 nutrition/data.py:1125 nutrition/data.py:1133
 #: nutrition/model.py:370 nutrition/model.py:372 nutrition/populations.py:188
 #: nutrition/populations.py:189 nutrition/populations.py:203
 #: nutrition/populations.py:204 nutrition/populations.py:274
@@ -384,11 +382,11 @@ msgstr "MAS (puntuación WHZ < -3)"
 #: nutrition/populations.py:403 nutrition/populations.py:404
 #: nutrition/settings.py:29
 msgid "MAM"
-msgstr "MAM (Malnutrición Aguda Moderada)"
+msgstr "MAM"
 
 #: nutrition/data.py:373 nutrition/data.py:506 nutrition/data.py:507
-#: nutrition/data.py:539 nutrition/data.py:557 nutrition/data.py:1084
-#: nutrition/data.py:1085 nutrition/data.py:1114 nutrition/data.py:1125
+#: nutrition/data.py:539 nutrition/data.py:557 nutrition/data.py:1093
+#: nutrition/data.py:1094 nutrition/data.py:1123 nutrition/data.py:1134
 #: nutrition/model.py:369 nutrition/model.py:372 nutrition/populations.py:190
 #: nutrition/populations.py:191 nutrition/populations.py:205
 #: nutrition/populations.py:206 nutrition/populations.py:274
@@ -396,7 +394,7 @@ msgstr "MAM (Malnutrición Aguda Moderada)"
 #: nutrition/populations.py:405 nutrition/populations.py:406
 #: nutrition/settings.py:29
 msgid "SAM"
-msgstr "MAS (Malnutrición Aguda Severa)"
+msgstr "MAS"
 
 #: nutrition/data.py:383 nutrition/data.py:386 nutrition/data.py:388
 #: nutrition/data.py:390 nutrition/data.py:394 nutrition/data.py:399
@@ -442,7 +440,7 @@ msgstr "Añadir extensión"
 
 #: nutrition/data.py:424
 msgid "Programs impacted population"
-msgstr "Población impactada por los programas"
+msgstr "Programas población afectada"
 
 #: nutrition/data.py:426 nutrition/data.py:795 nutrition/data.py:800
 #: nutrition/data.py:805 nutrition/data.py:810 nutrition/data.py:813
@@ -455,169 +453,172 @@ msgstr "Mujeres en edad reproductiva no embarazadas"
 msgid "General population"
 msgstr "Población general"
 
-# used to label a sheet in the input databook, where it outlines for each intervention, which conditions it can impact. E.g. public provision of complementary foods can impact stunting and wasting.
+# used to label a sheet in the input databook, where it outlines for each
+# intervention, which conditions it can impact. E.g. public provision of
+# complementary foods can impact stunting and wasting.
 #: nutrition/data.py:432
 msgid "Program risk areas"
 msgstr "Riesgos que impacta programa"
 
-# used to label a sheet in the input databook, where we outline that for example that the model considers stunting, wasting anaemia and mortality for children, whereas for pregnant women it only considered anaemia and mortality. So it is more what outcome/health risks are modelled for each population
+# used to label a sheet in the input databook, where we outline that for
+# example that the model considers stunting, wasting anaemia and mortality for
+# children, whereas for pregnant women it only considered anaemia and
+# mortality. So it is more what outcome/health risks are modelled for each
+# population
 #: nutrition/data.py:443
 msgid "Population risk areas"
-msgstr "Riesgos para la población"
+msgstr "Riegos para la población"
 
 #: nutrition/data.py:456 nutrition/data.py:460 nutrition/data.py:464
-#: nutrition/data.py:470 nutrition/data.py:474 nutrition/data.py:1438
-#: nutrition/data.py:1441 nutrition/data.py:1444 nutrition/data.py:1447
-#: nutrition/data.py:1450 nutrition/data.py:1454 nutrition/data.py:1457
-#: nutrition/data.py:1460 nutrition/data.py:1463 nutrition/data.py:1466
-#: nutrition/data.py:1469 nutrition/data.py:1473 nutrition/data.py:1477
-#: nutrition/data.py:1483 nutrition/data.py:1487
+#: nutrition/data.py:470 nutrition/data.py:474 nutrition/data.py:1447
+#: nutrition/data.py:1450 nutrition/data.py:1453 nutrition/data.py:1456
+#: nutrition/data.py:1459 nutrition/data.py:1463 nutrition/data.py:1466
+#: nutrition/data.py:1469 nutrition/data.py:1472 nutrition/data.py:1475
+#: nutrition/data.py:1478 nutrition/data.py:1482 nutrition/data.py:1486
+#: nutrition/data.py:1492 nutrition/data.py:1496
 msgid "Relative risks"
 msgstr "Riesgos relativos"
 
-#: nutrition/data.py:501 nutrition/data.py:515 nutrition/data.py:1492
-#: nutrition/data.py:1493 nutrition/data.py:1494 nutrition/data.py:1495
-#: nutrition/data.py:1513 nutrition/data.py:1524
+#: nutrition/data.py:501 nutrition/data.py:515 nutrition/data.py:1501
+#: nutrition/data.py:1502 nutrition/data.py:1503 nutrition/data.py:1504
+#: nutrition/data.py:1522 nutrition/data.py:1533
 msgid "Odds ratios"
 msgstr "Razón de momios"
 
-#: nutrition/data.py:502 nutrition/data.py:1496 nutrition/data.py:1497
-#: nutrition/data.py:1514
+#: nutrition/data.py:502 nutrition/data.py:1505 nutrition/data.py:1506
+#: nutrition/data.py:1523
 msgid "Condition"
 msgstr "Condición"
 
-#: nutrition/data.py:504 nutrition/data.py:1080 nutrition/populations.py:570
+#: nutrition/data.py:504 nutrition/data.py:1089 nutrition/populations.py:570
 msgid "Prev stunting"
 msgstr "Evitar el retraso en el crecimiento"
 
-#: nutrition/data.py:504 nutrition/data.py:1080
+#: nutrition/data.py:504 nutrition/data.py:1089
 msgid "Given previous stunting (HAZ < -2 in previous age band)"
-msgstr ""
-"Dado el retraso en el crecimiento previo (HAZ < -2 en la banda de edad "
-"anterior)"
+msgstr "Dada la baja talla previa  (HAZ < -2 en la banda de edad anterior)"
 
-#: nutrition/data.py:505 nutrition/data.py:1081
+#: nutrition/data.py:505 nutrition/data.py:1090
 msgid "Diarrhoea (per additional episode)"
 msgstr "Diarrea (por episodio adicional)"
 
-#: nutrition/data.py:507 nutrition/data.py:1085
+#: nutrition/data.py:507 nutrition/data.py:1094
 msgid "For SAM per additional episode of diarrhoea"
 msgstr "Para MAS por episodio adicional de diarrea"
 
-#: nutrition/data.py:509 nutrition/data.py:1087
+#: nutrition/data.py:509 nutrition/data.py:1096
 msgid "For MAM per additional episode of diarrhoea"
 msgstr "Para MAM por episodio adicional de diarrea"
 
-#: nutrition/data.py:511 nutrition/data.py:512 nutrition/data.py:1091
-#: nutrition/data.py:1092 nutrition/populations.py:273
+#: nutrition/data.py:511 nutrition/data.py:512 nutrition/data.py:1100
+#: nutrition/data.py:1101 nutrition/populations.py:273
 msgid "Severe diarrhoea"
 msgstr "Diarrea severa"
 
-#: nutrition/data.py:512 nutrition/data.py:1092
+#: nutrition/data.py:512 nutrition/data.py:1101
 msgid "For anaemia per additional episode of severe diarrhoea"
 msgstr "Para anemia por episodio adicional de diarrea grave"
 
-#: nutrition/data.py:513 nutrition/data.py:1520
+#: nutrition/data.py:513 nutrition/data.py:1529
 msgid "By program"
 msgstr "Por programa"
 
-#: nutrition/data.py:514 nutrition/data.py:1522
+#: nutrition/data.py:514 nutrition/data.py:1531
 msgid "Odds ratios for correct breastfeeding by program"
 msgstr "Razón de momios de lactancia materna adecuada por programa"
 
-#: nutrition/data.py:516 nutrition/data.py:1525
+#: nutrition/data.py:516 nutrition/data.py:1534
 msgid "Odds ratios for optimal birth spacing by program"
 msgstr ""
 "Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
 
-#: nutrition/data.py:520 nutrition/data.py:1398 nutrition/data.py:1399
-#: nutrition/data.py:1401
+#: nutrition/data.py:520 nutrition/data.py:1407 nutrition/data.py:1408
+#: nutrition/data.py:1410
 msgid "Programs birth outcomes"
-msgstr "Prog. resultados de nacimiento"
+msgstr "Resultados de nacimiento- prog"
 
-#: nutrition/data.py:530 nutrition/data.py:1372 nutrition/data.py:1375
-#: nutrition/data.py:1379
+#: nutrition/data.py:530 nutrition/data.py:1381 nutrition/data.py:1384
+#: nutrition/data.py:1388
 msgid "Programs anaemia"
-msgstr "Programas para anemia"
+msgstr "Programas de anemia"
 
-#: nutrition/data.py:531 nutrition/data.py:1380
+#: nutrition/data.py:531 nutrition/data.py:1389
 msgid "Relative risks of anaemia when receiving intervention"
-msgstr "Riesgos relativos de anemia cuando recibe la intervención"
+msgstr "Riesgos relativos de anemia cuando está cubierto por la intervención"
 
-#: nutrition/data.py:532 nutrition/data.py:1381
+#: nutrition/data.py:532 nutrition/data.py:1390
 msgid "Odds ratios of being anaemic when covered by intervention"
 msgstr ""
 "Razón de momios de ser anémico cuando está cubierto por la intervención"
 
-#: nutrition/data.py:536 nutrition/data.py:1385 nutrition/data.py:1388
-#: nutrition/data.py:1392
+#: nutrition/data.py:536 nutrition/data.py:1394 nutrition/data.py:1397
+#: nutrition/data.py:1401
 msgid "Programs wasting"
 msgstr "Programas para emaciación"
 
-#: nutrition/data.py:537 nutrition/data.py:1393
+#: nutrition/data.py:537 nutrition/data.py:1402
 msgid "Odds ratio of SAM when covered by program"
 msgstr "Razón de momios de MAS cuando está cubierto por el programa"
 
-#: nutrition/data.py:538 nutrition/data.py:1394
+#: nutrition/data.py:538 nutrition/data.py:1403
 msgid "Odds ratio of MAM when covered by program"
 msgstr "Razón de momios de MAM cuando está cubierto por el programa"
 
-#: nutrition/data.py:545 nutrition/data.py:1365 nutrition/data.py:1366
-#: nutrition/data.py:1368
+#: nutrition/data.py:545 nutrition/data.py:1374 nutrition/data.py:1375
+#: nutrition/data.py:1377
 msgid "Programs for children"
 msgstr "Programas para niños"
 
-#: nutrition/data.py:549 nutrition/data.py:1358 nutrition/data.py:1359
-#: nutrition/data.py:1361
+#: nutrition/data.py:549 nutrition/data.py:1367 nutrition/data.py:1368
+#: nutrition/data.py:1370
 msgid "Programs for PW"
-msgstr "Programas para mujeres embarazadas"
+msgstr "Prog. para mujeres embarazadas"
 
-#: nutrition/data.py:553 nutrition/data.py:1420 nutrition/data.py:1422
-#: nutrition/data.py:1429
+#: nutrition/data.py:553 nutrition/data.py:1429 nutrition/data.py:1431
+#: nutrition/data.py:1438
 msgid "Birth outcome risks"
-msgstr "Riesgos de desenlaces de nacimiento"
+msgstr "Riesgos desenlace de nacimiento"
 
-#: nutrition/data.py:554 nutrition/data.py:1430
+#: nutrition/data.py:554 nutrition/data.py:1439
 msgid "Odds ratios for conditions"
 msgstr "Razón de momios para las condiciones"
 
-#: nutrition/data.py:555 nutrition/data.py:1123
+#: nutrition/data.py:555 nutrition/data.py:1132
 msgid "Stunting (HAZ-score < -2)"
-msgstr "Retraso en el crecimiento (puntuación HAZ < -2)"
+msgstr "Retraso en el crecimiento (score HAZ < -2)"
 
-#: nutrition/data.py:558 nutrition/data.py:1431
+#: nutrition/data.py:558 nutrition/data.py:1440
 msgid "Relative risk by birth spacing"
-msgstr "Riesgo relativo según el espaciamiento entre nacimientos"
+msgstr "Riesgo relativo según el espaciamiento de los nacimientos"
 
-#: nutrition/data.py:559 nutrition/data.py:1129 nutrition/model.py:264
+#: nutrition/data.py:559 nutrition/data.py:1138 nutrition/model.py:264
 #: nutrition/populations.py:497 nutrition/populations.py:549
 msgid "Birth outcomes"
-msgstr "Desenlaces de los nacimientos"
+msgstr "Desenlaces del nacimiento"
 
-#: nutrition/data.py:559 nutrition/data.py:1432
+#: nutrition/data.py:559 nutrition/data.py:1441
 msgid "Relative risks of neonatal causes of death"
 msgstr "Riesgos relativos de las causas de muerte neonatal"
 
-#: nutrition/data.py:564 nutrition/data.py:1406 nutrition/data.py:1410
-#: nutrition/data.py:1414
+#: nutrition/data.py:564 nutrition/data.py:1415 nutrition/data.py:1419
+#: nutrition/data.py:1423
 msgid "IYCF odds ratios"
-msgstr ""
-"Razón de momios para la alimentación del lactante y el niño pequeño (IYCF)"
+msgstr "Razón de momios IYCF"
 
-#: nutrition/data.py:565 nutrition/data.py:1415
+#: nutrition/data.py:565 nutrition/data.py:1424
 msgid "Odds ratio for correct breastfeeding"
-msgstr "Razón de momios para la lactancia materna adecuada"
+msgstr "Razón de momios para lactancia materna adecuada"
 
-#: nutrition/data.py:566 nutrition/data.py:1416
+#: nutrition/data.py:566 nutrition/data.py:1425
 msgid "Odds ratio for stunting"
-msgstr "Razón de momios para el retraso en el crecimiento"
+msgstr "Razón de momios para baja talla o retraso en el crecimiento"
 
-#: nutrition/data.py:593 nutrition/data.py:903 nutrition/data.py:1170
+#: nutrition/data.py:593 nutrition/data.py:903 nutrition/data.py:1179
 #: nutrition_app/rpcs.py:722 nutrition_app/rpcs.py:807
 msgid "IYCF packages"
-msgstr "Paquetes para la alimentación del lactante y el niño pequeño (IYCF)"
+msgstr "Paquetes de IYCF"
 
-#: nutrition/data.py:601 nutrition/data.py:911 nutrition/data.py:1178
+#: nutrition/data.py:601 nutrition/data.py:911 nutrition/data.py:1187
 msgid "Mass media"
 msgstr "Medios de comunicación masivos"
 
@@ -716,7 +717,7 @@ msgstr "Bajo peso al nacer"
 
 #: nutrition/data.py:755
 msgid "Cash transfers"
-msgstr "Transferencias en efectivo"
+msgstr "Transferencias de efectivo"
 
 #: nutrition/data.py:759 nutrition/geospatial.py:324 nutrition/project.py:768
 msgid "Lipid-based nutrition supplements"
@@ -743,15 +744,17 @@ msgstr "Zinc para el tratamiento + SRO"
 #: nutrition/data.py:780 nutrition/optimization.py:296
 #: nutrition/project.py:742
 msgid "Balanced energy-protein supplementation"
-msgstr "Suplementación energético-proteica equilibrada"
+msgstr "Suplemento energético-proteico equilibrado"
 
 #: nutrition/data.py:783
 msgid "IFAS for pregnant women (health facility)"
-msgstr "Hierro y ácido fólico para mujeres embarazadas (centro de salud)"
+msgstr ""
+"Suplementación con hierro y ácido fólico para mujeres embarazadas (centro de"
+" salud)"
 
 #: nutrition/data.py:786
 msgid "IPTp"
-msgstr "Tratamiento preventivo intermitente para malaria en el embarazo"
+msgstr "IPTp-Tratamiento preventivo intermitente de la malaria en el embarazo"
 
 #: nutrition/data.py:789 nutrition/geospatial.py:331 nutrition/project.py:775
 msgid "Mg for eclampsia"
@@ -785,15 +788,15 @@ msgstr "Suplementación con hierro y ácido fólico (escuela)"
 #: nutrition/optimization.py:295 nutrition/project.py:741
 #: nutrition/project.py:766
 msgid "IFA fortification of maize"
-msgstr "Fortificación del maíz con hierro y ácido fólico"
+msgstr "Enriquecimiento del maíz con hierro y ácido fólico"
 
 #: nutrition/data.py:819
 msgid "IFA fortification of rice"
-msgstr "Fortificación del arroz con hierro y ácido fólico"
+msgstr "Enriquecimiento del arroz con hierro y ácido fólico"
 
 #: nutrition/data.py:822
 msgid "IFA fortification of wheat flour"
-msgstr "Fortificación de la harina de trigo con hierro y ácido fólico"
+msgstr "Enriquecimiento de la harina de trigo con hierro y ácido fólico"
 
 #: nutrition/data.py:825
 msgid "Long-lasting insecticide-treated bednets"
@@ -832,122 +835,121 @@ msgstr "Costo y cobertura del programa"
 msgid "Health facility"
 msgstr "Centro de salud"
 
-#: nutrition/data.py:1116
+#: nutrition/data.py:1125
 msgid "Management of MAM"
-msgstr "Gestión del MAM"
+msgstr "Manejo de la Malnutrición Aguda Moderada (MAM)"
 
-#: nutrition/data.py:1373
+#: nutrition/data.py:1382
 msgid "Relative risks of anaemia when receiving intervention - lower"
 msgstr ""
 "Riesgos relativos de anemia cuando está cubierto por la intervención - "
 "inferior"
 
-#: nutrition/data.py:1374
+#: nutrition/data.py:1383
 msgid "Odds ratios of being anaemic when covered by intervention - lower"
 msgstr ""
-"Razón de momios de padecer anemia cuando está cubierto por la intervención- "
-"inferior"
+"Razón de momios de ser anémico cuando está cubierto por la intervención-"
+"menor"
 
-#: nutrition/data.py:1376
+#: nutrition/data.py:1385
 msgid "Relative risks of anaemia when receiving intervention - upper"
 msgstr ""
 "Riesgos relativos de anemia cuando está cubierto por la intervención - "
 "superior"
 
-#: nutrition/data.py:1377
+#: nutrition/data.py:1386
 msgid "Odds ratios of being anaemic when covered by intervention - upper"
 msgstr ""
 "Razón de momios de ser anémico cuando está cubierto por la intervención - "
 "superior"
 
-#: nutrition/data.py:1386
+#: nutrition/data.py:1395
 msgid "Odds ratio of SAM when covered by program - lower"
 msgstr ""
 "Razón de momios de MAS cuando está cubierto por el programa - inferior"
 
-#: nutrition/data.py:1387
+#: nutrition/data.py:1396
 msgid "Odds ratio of MAM when covered by program - lower"
 msgstr ""
 "Razón de momios de MAM cuando está cubierto por el programa - inferior"
 
-#: nutrition/data.py:1389
+#: nutrition/data.py:1398
 msgid "Odds ratio of SAM when covered by program - upper"
 msgstr ""
-"Razón de momios de MAS cuando está cubierto por el programa - inferior - "
-"superior"
+"Razón de momios de MAS cuando está cubierto por el programa - superior"
 
-#: nutrition/data.py:1390
+#: nutrition/data.py:1399
 msgid "Odds ratio of MAM when covered by program - upper"
 msgstr ""
-"Razón de momios de MAM cuando está cubierto por el programa  - superior"
+"Razón de momios de MAM cuando está cubierto por el programaa - superior"
 
-#: nutrition/data.py:1407
+#: nutrition/data.py:1416
 msgid "Odds ratio for correct breastfeeding - lower"
-msgstr "Razón de momios de lactancia materna adecuada - inferior"
+msgstr "Razón de momios para lactancia materna adecuada- inferior"
 
-#: nutrition/data.py:1408
+#: nutrition/data.py:1417
 msgid "Odds ratio for stunting - lower"
-msgstr "Razón de momios de retraso en el crecimiento - inferior"
+msgstr "Razón de momios para baja talla - inferior"
 
-#: nutrition/data.py:1411
+#: nutrition/data.py:1420
 msgid "Odds ratio for correct breastfeeding - upper"
-msgstr "razón de momios de lactancia materna adecuada - superior"
-
-#: nutrition/data.py:1412
-msgid "Odds ratio for stunting - upper"
-msgstr "Razón de momios para el retraso del crecimiento - superior"
+msgstr "Razón de momios para lactancia materna adecuada - superior"
 
 #: nutrition/data.py:1421
-msgid "Odds ratios for conditions - lower"
-msgstr "Coeficientes de momios para las condiciones - inferior"
+msgid "Odds ratio for stunting - upper"
+msgstr "Razón de momios para baja talla - superior"
 
-#: nutrition/data.py:1423
+#: nutrition/data.py:1430
+msgid "Odds ratios for conditions - lower"
+msgstr "Razón de momios para las condiciones - inferior"
+
+#: nutrition/data.py:1432
 msgid "Odds ratios for conditions - upper"
 msgstr "Razón de momios para las condiciones - superior"
 
-#: nutrition/data.py:1424
+#: nutrition/data.py:1433
 msgid "Relative risk by birth spacing - lower"
-msgstr "Riesgo relativo según el espaciamiento de los nacimientos- inferior"
+msgstr "Riesgo relativo según el espaciamiento de los nacimientos-inferior"
 
-#: nutrition/data.py:1425
+#: nutrition/data.py:1434
 msgid "Relative risks of neonatal causes of death - lower"
 msgstr "Riesgos relativos de las causas de muerte neonatal - inferior"
 
-#: nutrition/data.py:1426
+#: nutrition/data.py:1435
 msgid "Relative risk by birth spacing - upper"
 msgstr "Riesgo relativo según el espaciamiento de los nacimientos - superior"
 
-#: nutrition/data.py:1427
+#: nutrition/data.py:1436
 msgid "Relative risks of neonatal causes of death - upper"
 msgstr "Riesgos relativos de las causas de muerte neonatal - superior"
 
-#: nutrition/data.py:1505
+#: nutrition/data.py:1514
 msgid "By program - lower"
 msgstr "Por programa - inferior"
 
-#: nutrition/data.py:1506
+#: nutrition/data.py:1515
 msgid "Odds ratios for correct breastfeeding by program - lower"
 msgstr "Razón de momios de lactancia materna adecuada por programa - inferior"
 
-#: nutrition/data.py:1507
+#: nutrition/data.py:1516
 msgid "By program - upper"
 msgstr "Por programa - superior"
 
-#: nutrition/data.py:1508
+#: nutrition/data.py:1517
 msgid "Odds ratios for correct breastfeeding by program - upper"
 msgstr "Razón de momios de lactancia materna adecuada por programa - superior"
 
-#: nutrition/data.py:1510
+#: nutrition/data.py:1519
 msgid "Odds ratios for optimal birth spacing by program - lower"
 msgstr ""
-"Razón de momios para el espaciamiento óptimo de los nacimientos por "
-"programa - inferior"
+"Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
+" - inferior"
 
-#: nutrition/data.py:1511
+#: nutrition/data.py:1520
 msgid "Odds ratios for optimal birth spacing by program - upper"
 msgstr ""
-"Razón de momios para el espaciamiento óptimo de los nacimientos por "
-"programa - superior"
+"Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
+" - superior"
 
 #: nutrition/geospatial.py:62
 msgid "Less than 2 regions selected for geospatial analysis."
@@ -987,7 +989,7 @@ msgstr "Exceso de presupuesto"
 #: nutrition/project.py:681 nutrition/project.py:693 nutrition/project.py:740
 #: nutrition/project.py:767
 msgid "IYCF 1"
-msgstr "IYCF 1 (alimentación del lactante y del niño pequeño)"
+msgstr "IYCF 1-alimentación del lactante y del niño pequeño"
 
 #: nutrition/geospatial.py:325 nutrition/project.py:769
 msgid "Multiple micronutrient supplementation"
@@ -1000,7 +1002,7 @@ msgstr "Micronutrientes en polvo"
 
 #: nutrition/geospatial.py:327 nutrition/project.py:771
 msgid "Kangaroo mother care"
-msgstr "Cuidado de la madre canguro"
+msgstr "Método de la madre canguro"
 
 #: nutrition/geospatial.py:330 nutrition/optimization.py:293
 #: nutrition/project.py:682 nutrition/project.py:694 nutrition/project.py:739
@@ -1016,12 +1018,12 @@ msgstr "Fortificación de la sal con hierro y yodo"
 #: nutrition/model.py:98 nutrition/populations.py:732
 #: nutrition/populations.py:738 nutrition/settings.py:38
 msgid "Term SGA"
-msgstr "Término PEG (Pequeño para la edad gestacional)"
+msgstr "Nacido a término PEG (pequeño para la edad gestacional)"
 
 #: nutrition/model.py:98 nutrition/populations.py:734
 #: nutrition/populations.py:740 nutrition/settings.py:38
 msgid "Pre-term SGA"
-msgstr "Prematuro PEG (Pequelo para edad gestacional)"
+msgstr "Prematuro PEG (pequeño para la edad gestacional)"
 
 #: nutrition/model.py:228 nutrition/model.py:305 nutrition/model.py:355
 #: nutrition/populations.py:904
@@ -1185,11 +1187,11 @@ msgstr "Prematuro AEG (adecuado para edad gestacional)"
 msgid "Maternal mortality (per 1,000 live births)"
 msgstr "Mortalidad materna (por cada 1.000 nacidos vivos)"
 
-#: nutrition/programs.py:35 nutrition/utils.py:549
+#: nutrition/programs.py:35 nutrition/utils.py:553
 msgid "Exclusion dependency"
 msgstr "Exclusión de intervención dependiente"
 
-#: nutrition/programs.py:36 nutrition/utils.py:549
+#: nutrition/programs.py:36 nutrition/utils.py:553
 msgid "Threshold dependency"
 msgstr "Dependencia de otra intervención"
 
@@ -1342,19 +1344,19 @@ msgstr "Tipo"
 msgid "Cost-coverage type"
 msgstr "Tipo de cobertura de costos"
 
-#: nutrition/settings.py:23 nutrition/utils.py:510
+#: nutrition/settings.py:23 nutrition/utils.py:514
 msgid "High"
 msgstr "Alto"
 
-#: nutrition/settings.py:23 nutrition/utils.py:510
+#: nutrition/settings.py:23 nutrition/utils.py:514
 msgid "Moderate"
 msgstr "Moderado"
 
-#: nutrition/settings.py:23 nutrition/settings.py:29 nutrition/utils.py:510
+#: nutrition/settings.py:23 nutrition/settings.py:29 nutrition/utils.py:514
 msgid "Mild"
 msgstr "Leve"
 
-#: nutrition/settings.py:23 nutrition/settings.py:29 nutrition/utils.py:510
+#: nutrition/settings.py:23 nutrition/settings.py:29 nutrition/utils.py:514
 msgid "Normal"
 msgstr "Normal"
 
@@ -1392,19 +1394,19 @@ msgstr "24 meses o más"
 
 #: nutrition/settings.py:42
 msgid "PW: 15-19 years"
-msgstr "PW: 15-19 años (mujeres embarazadas)"
+msgstr "PW: 15-19 años"
 
 #: nutrition/settings.py:42
 msgid "PW: 20-29 years"
-msgstr "PW: 20-29 años (mujeres embarazadas)"
+msgstr "PW: 20-29 años"
 
 #: nutrition/settings.py:42
 msgid "PW: 30-39 years"
-msgstr "PW: 30-39 años (mujeres embarazadas)"
+msgstr "PW: 30-39 años"
 
 #: nutrition/settings.py:42
 msgid "PW: 40-49 years"
-msgstr "PW: 40-49 años (mujeres embarazadas)"
+msgstr "PW: 40-49 años"
 
 #: nutrition/settings.py:50
 msgid "Linear (constant marginal cost) [default]"

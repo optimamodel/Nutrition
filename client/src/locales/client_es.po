@@ -57,7 +57,8 @@ msgctxt "common"
 msgid "Run"
 msgstr "Ejecutar"
 
-# seems clearer to use ejecucion, since it's similar to the command above (ejecutar), but just as a test
+# seems clearer to use ejecucion, since it's similar to the command above
+# (ejecutar), but just as a test
 msgctxt "common"
 msgid "Test run"
 msgstr "Ejecución de prueba"
@@ -231,7 +232,11 @@ msgctxt "optimization"
 msgid "Optimization name"
 msgstr "Nombre de la optimización"
 
-# Clarification: balanced refers to a weighted optimization, but specifically one that has the weightings ‘balanced’ so as to achieve approximately equivalent progress towards the different outcomes. I.e. balanced in the sense that it does not favour one condition over another. (it appears as a check box in the optimization menu)
+# Clarification: balanced refers to a weighted optimization, but specifically
+# one that has the weightings ‘balanced’ so as to achieve approximately
+# equivalent progress towards the different outcomes. I.e. balanced in the
+# sense that it does not favour one condition over another. (it appears as a
+# check box in the optimization menu)
 # I think ponderada might be more accurate here?
 msgctxt "optimization"
 msgid "Run balanced optimization?"
@@ -318,12 +323,17 @@ msgctxt "inputs"
 msgid "Program"
 msgstr "Programa"
 
-# Exclusion dependencies prevent interventions from being given simultaneously, e.g. Public provision of complementary foods is not given to children already receiving lipid-based nutrition supplements (exclusion dependency).
+# Exclusion dependencies prevent interventions from being given
+# simultaneously, e.g. Public provision of complementary foods is not given to
+# children already receiving lipid-based nutrition supplements (exclusion
+# dependency).
 msgctxt "inputs"
 msgid "Exclusion dependency"
 msgstr "Exclusión de intervención dependiente"
 
-#  threshold dependencies mean that some interventions can only be given at the same time as another e.g. Iron and folic acid (IFA) supplementation may only be given to pregnant women if they are taking IPTp
+#  threshold dependencies mean that some interventions can only be given at
+# the same time as another e.g. Iron and folic acid (IFA) supplementation may
+# only be given to pregnant women if they are taking IPTp
 msgctxt "inputs"
 msgid "Threshold dependency"
 msgstr "Dependencia de otra intervención"
@@ -353,9 +363,9 @@ msgstr "Iniciar sesión"
 msgctxt "login"
 msgid "deprecation_warning"
 msgstr ""
-"advertencia de deprecación. Optima Nutrition se ha actualizado a la "
-"versión 2.0. La versión heredada, así como los proyectos existentes, se "
-"mantendrán hasta junio de 2022"
+"advertencia de deprecación. Optima Nutrition se ha actualizado a la versión "
+"2.0. La versión heredada, así como los proyectos existentes, se mantendrán "
+"hasta junio de 2022"
 
 msgctxt "login"
 msgid "New user?"

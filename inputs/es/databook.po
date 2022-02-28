@@ -526,7 +526,7 @@ msgid "Lower bounds"
 msgstr "Límites inferiores"
 
 msgid "MAM"
-msgstr "Malnutrición aguda moderada (MAM)"
+msgstr "MAM"
 
 msgid "MAM (WHZ-score between -3 and -2)"
 msgstr "MAM (puntuación WHZ entre -3 y -2)"
@@ -1040,7 +1040,7 @@ msgid "S-shaped (decreasing then increasing marginal cost)"
 msgstr "En forma de S (costo marginal decreciente y luego creciente)"
 
 msgid "SAM"
-msgstr "Malnutrición Aguda Severa (MAS)"
+msgstr "MAS"
 
 msgid "SAM (WHZ-score < -3)"
 msgstr "MAS (score WHZ < -3)"
