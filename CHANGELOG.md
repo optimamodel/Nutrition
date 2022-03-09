@@ -25,3 +25,7 @@
 #### [1.7.2] - 2021-19-10
 
 - Fixed incorrect initialization of non-pregnant women population sizes
+
+#### [1.7.4] - 2022-03-09
+
+- Corrected Zn + ORS treatemnt for only severe diarrhoea

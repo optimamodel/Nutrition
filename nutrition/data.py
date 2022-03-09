@@ -655,6 +655,7 @@ class ProgData(object):
         frac_wheat = baseline.loc["Food"].loc["Fraction eating wheat as main staple food"].values[0]
         frac_maize = baseline.loc["Food"].loc["Fraction eating maize as main staple food"].values[0]
         diarr_incid = baseline.loc["Diarrhoea incidence"]["Data"].values
+        frac_diarr_severe = baseline.loc['Other risks'].loc['Percentage of diarrhea that is severe'].values[0]
         if len(baseline.loc["Other risks"].values) < 4:
             print("Warning, the databook being read is out of date and does not include baseline prevalences of " "eclampsia and pre-eclampsia so global averages will be used.")
             preeclampsia_prev = self.settings.global_eclampsia_prevalence["Pre-eclampsia"]
@@ -671,7 +672,7 @@ class ProgData(object):
         lipid_row = food_insecure * np.ones(2)
         targetPopSheet.loc["Children", "Lipid-based nutrition supplements"].iloc[2:4] = lipid_row
         self.calcscache.write_row("Programs target population", 4, 4, lipid_row)
-        oral_rehyd_row = diarr_incid
+        oral_rehyd_row = diarr_incid * frac_diarr_severe
         targetPopSheet.loc["Children", "Oral rehydration salts"].iloc[0:5] = oral_rehyd_row
         self.calcscache.write_row("Programs target population", 6, 2, oral_rehyd_row)
         pub_prov_row = food_insecure * np.ones(2)
@@ -684,7 +685,7 @@ class ProgData(object):
         treat_SAM_row = treat_SAM_val * np.ones(4)
         targetPopSheet.loc["Children", "Treatment of SAM"].iloc[1:5] = treat_SAM_row
         self.calcscache.write_row("Programs target population", 8, 3, treat_SAM_row)
-        zinc_treatment_row = diarr_incid
+        zinc_treatment_row = diarr_incid * frac_diarr_severe
         targetPopSheet.loc["Children", "Zinc for treatment + ORS"].iloc[0:5] = zinc_treatment_row
         self.calcscache.write_row("Programs target population", 10, 2, zinc_treatment_row)
         balanced_energy_row = food_insecure * np.ones(4)
