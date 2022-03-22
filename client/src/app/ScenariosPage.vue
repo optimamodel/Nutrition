@@ -370,6 +370,7 @@ Last update: 2019feb11
             this.addEditModal.mode = 'add'
             this.addEditModal.modalScenarioType = scen_type
             this.addEditModal.origName = this.addEditModal.scenSummary.name
+            this.addEditModal.scenSummary.model_name = this.datasetOptions[0]
             this.$modal.show('add-scen')
             console.log('Default scenario:')
             console.log(defaultScen)
