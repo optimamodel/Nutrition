@@ -191,7 +191,7 @@ def plot_prevs_reduce(all_res, all_reduce, locale=None):
             ax.set_ylim([0, ymax * 1.1])
             ax.set_xlabel(pgettext("plotting", "Years"))
             ax.set_title(utils.relabel(prev, locale=locale))
-            ax.legend(lines, [res for res in all_reduce if res != _("Excess budget not allocated")], **legend_loc)
+            ax.legend(lines, [res for res in all_reduce], **legend_loc)
             figs["prevs_%0i" % i] = fig
     return figs
 
@@ -288,7 +288,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
             else:
                 raise Exception("Scale value must be 1 or 1e6, not %s" % scale)
             ax.set_ylabel(ylabel)
-            ax.legend(bars, [res for res in all_reduce if res != _("Excess budget not allocated")], ncol=1, **legend_loc)
+            ax.legend(bars, [res for res in all_reduce], ncol=1, **legend_loc)
             ax.set_title(title)
             figs["%s_out_%0i" % (name, i)] = fig
 
@@ -514,6 +514,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
     """
 
     pgettext = utils.get_translator(locale, context=True)
+    _ = utils.get_translator(locale)
 
     res_list = [res for res in results if resampled_key_str not in res.name]
 
@@ -524,11 +525,11 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
     year = results[0].years
     ref = res_list[0]
     progset = ref.prog_info.base_progset()
+    progset.append(_("Excess budget not allocated"))
     colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
     leglabs = []
     fig = pl.figure(figsize=(20, 6))
     ax = fig.add_axes(ax_size)
-
     x_base = np.arange(len(res_list))
     x = np.multiply(x_base, width)
     year_ticks = np.arange(len(year))
@@ -541,7 +542,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
             thisprog = np.zeros(len(res_list))
             for i, res in enumerate(res_list):
                 _ = utils.get_translator(res.locale)
-                if not (optim or geo) or (res.name != _("Excess budget not allocated")):
+                if not (optim or geo):
 
                     alloc = res.get_allocs(ref=refprogs)  # slightly inefficient to do this for every program
                     try:
