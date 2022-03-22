@@ -250,13 +250,13 @@ Last update: 2019feb18
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
         countryList: [], // List of country databooks from LiST database
+        proj_name: i18n.t('projects.New project'),
         country: '',
       }
     },
 
     computed: {
       filterPlaceholder() { return i18n.t('projects.Type here to filter projects') },
-      proj_name() { return i18n.t('projects.New project') },
       projectID()    { return this.$store.getters.activeProjectID },
       anySelected() { return this.projectSummaries.some(x => x.selected) },
       sortedFilteredProjectSummaries() {
@@ -374,6 +374,7 @@ Last update: 2019feb18
           .then(response => {
             this.updateProjectSummaries(null); // Update the project summaries so the new project shows up on the list.
             this.$sciris.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
+            this.proj_name = i18n.t('projects.New project')
           })
           .catch(error => {
             this.$sciris.fail(this, i18n.t('projects.Could not add new project'), error)    // Indicate failure.
