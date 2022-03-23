@@ -337,7 +337,11 @@ Last update: 2019feb11
               scen.active = true;
             }
           })
-          response.data[response.data.length - 1].active = true
+          if (oldSummaries !== null) {
+            if (response.data.length > oldSummaries.length) {
+              response.data[response.data.length - 1].active = true
+            }
+          }
           this.scenSummaries = response.data
           this.scenariosLoaded = true
           this.$sciris.succeed(this)
