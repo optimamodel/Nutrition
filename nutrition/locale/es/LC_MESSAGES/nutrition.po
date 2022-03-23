@@ -1446,8 +1446,8 @@ msgstr "Minimizar el número de niños emaciados"
 
 #: nutrition/utils.py:168
 msgctxt "plotting"
-msgid "Minimize the number of anaemic children"
-msgstr "Minimizar el número de niños anémicos"
+msgid "Minimize the number of ID anaemic children"
+msgstr "Minimizar el número de niños anémicos DH"
 
 #: nutrition/utils.py:169
 msgctxt "plotting"
@@ -1461,8 +1461,8 @@ msgstr "Minimizar la prevalencia de la emaciación en los niños"
 
 #: nutrition/utils.py:171
 msgctxt "plotting"
-msgid "Minimize the prevalence of anaemia in children"
-msgstr "Minimizar la prevalencia de la anemia en los niños"
+msgid "Minimize the prevalence of ID anaemia in children"
+msgstr "Minimizar la prevalencia de la anemia DH en los niños"
 
 #: nutrition/utils.py:172
 msgctxt "plotting"
@@ -1471,23 +1471,23 @@ msgstr "Minimizar el número de muertes maternas"
 
 #: nutrition/utils.py:173
 msgctxt "plotting"
-msgid "Minimize the number of anaemic pregnant women"
-msgstr "Minimizar el número de mujeres embarazadas anémicas"
+msgid "Minimize the number of ID anaemic pregnant women"
+msgstr "Minimizar el número de mujeres embarazadas anémicas DH"
 
 #: nutrition/utils.py:174
 msgctxt "plotting"
-msgid "Minimize the prevalence of anaemia in pregnant women"
-msgstr "Minimizar la prevalencia de la anemia en las mujeres embarazadas"
+msgid "Minimize the prevalence of ID anaemia in pregnant women"
+msgstr "Minimizar la prevalencia de la anemia DH en las mujeres embarazadas"
 
 #: nutrition/utils.py:175
 msgctxt "plotting"
-msgid "Minimize the number of anaemic non-pregnant women"
-msgstr "Minimizar el número de mujeres anémicas no embarazadas"
+msgid "Minimize the number of ID anaemic non-pregnant women"
+msgstr "Minimizar el número de mujeres anémicas DH no embarazadas"
 
 #: nutrition/utils.py:176
 msgctxt "plotting"
-msgid "Minimize the prevalence of anaemia in non-pregnant women"
-msgstr "Minimizar la prevalencia de la anemia en las mujeres no embarazadas"
+msgid "Minimize the prevalence of ID anaemia in non-pregnant women"
+msgstr "Minimizar la prevalencia de la anemia DH en las mujeres no embarazadas"
 
 #: nutrition/utils.py:177
 msgctxt "plotting"
@@ -1522,8 +1522,8 @@ msgstr "Número de niños emaciados que cumplen 5 años"
 
 #: nutrition/utils.py:186
 msgctxt "plotting"
-msgid "Number of anaemic children turning age 5"
-msgstr "Número de niños anémicos que cumplen 5 años"
+msgid "Number of ID anaemic children turning age 5"
+msgstr "Número de niños anémicos DH que cumplen 5 años"
 
 #: nutrition/utils.py:187
 msgctxt "plotting"
@@ -1537,8 +1537,8 @@ msgstr "Prevalencia de la emaciación en los niños"
 
 #: nutrition/utils.py:189
 msgctxt "plotting"
-msgid "Prevalence of anaemia in children"
-msgstr "Prevalencia de la anemia en los niños"
+msgid "Prevalence of ID anaemia in children"
+msgstr "Prevalencia de la anemia DH en los niños"
 
 #: nutrition/utils.py:190
 msgctxt "plotting"
@@ -1547,23 +1547,23 @@ msgstr "Número de muertes maternas"
 
 #: nutrition/utils.py:191
 msgctxt "plotting"
-msgid "Number of anaemic pregnant women"
-msgstr "Número de mujeres embarazadas anémicas"
+msgid "Number of ID anaemic pregnant women"
+msgstr "Número de mujeres embarazadas anémicas DH"
 
 #: nutrition/utils.py:192
 msgctxt "plotting"
-msgid "Prevalence of anaemia in pregnant women"
-msgstr "Prevalencia de la anemia en las mujeres embarazadas"
+msgid "Prevalence of ID anaemia in pregnant women"
+msgstr "Prevalencia de la anemia DH en las mujeres embarazadas"
 
 #: nutrition/utils.py:193
 msgctxt "plotting"
-msgid "Number of anaemic non-pregnant women"
-msgstr "Número de mujeres anémicas no embarazadas"
+msgid "Number of ID anaemic non-pregnant women"
+msgstr "Número de mujeres anémicas DH no embarazadas"
 
 #: nutrition/utils.py:194
 msgctxt "plotting"
-msgid "Prevalence of anaemia in non-pregnant women"
-msgstr "Prevalencia de la anemia en mujeres no embarazadas"
+msgid "Prevalence of ID anaemia in non-pregnant women"
+msgstr "Prevalencia de la anemia DH en mujeres no embarazadas"
 
 #: nutrition/utils.py:195
 msgctxt "plotting"
@@ -1642,13 +1642,13 @@ msgstr "Costo económico de la muerte de una mujer embarazada"
 
 #: nutrition/utils.py:210
 msgctxt "plotting"
-msgid "Economic cost of anaemic child"
-msgstr "Costo económico del niño anémico"
+msgid "Economic cost of ID anaemic child"
+msgstr "Costo económico del niño anémico DH"
 
 #: nutrition/utils.py:211
 msgctxt "plotting"
-msgid "Economic cost of anaemic pregnant woman"
-msgstr "Costo económico de la mujer embarazada anémica"
+msgid "Economic cost of ID anaemic pregnant woman"
+msgstr "Costo económico de la mujer embarazada anémica DH"
 
 #: nutrition/utils.py:212
 msgctxt "plotting"
