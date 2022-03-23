@@ -378,7 +378,7 @@ def _write_results_outcomes(projname, filename, folder, years, locale):
     if projname is None:
         projname = ""
     outcomes = default_trackers()
-    labs = pretty_labels()
+    labs = pretty_labels(locale=locale)
     rows = [labs[out] for out in outcomes if "pop" not in out and "pw_mortrate" not in out]
     if filename is None:
         filename = "outputs.xlsx"
