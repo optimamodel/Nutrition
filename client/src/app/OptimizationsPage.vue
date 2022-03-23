@@ -333,7 +333,7 @@ Last update: 2019feb11
       } else if ((this.$store.state.activeProject.project !== undefined) &&
           (this.$store.state.activeProject.project.hasData)) {
         console.log('created() called')
-        this.getOptimSummaries()
+        this.getOptimSummaries(null)
         this.updateDatasets()
       }
     },
@@ -591,17 +591,22 @@ Last update: 2019feb11
         })
       },
 
-      async getOptimSummaries() {
+      async getOptimSummaries(oldSummaries) {
         console.log('getOptimSummaries() called');
         this.$sciris.start(this);
         try {
           let response = await this.$sciris.rpc('get_optim_info', [this.projectID]);
-          response.data.forEach(optimSum => { // For each of the optimization summaries...
+          response.data.forEach((optimSum, index) => { // For each of the optimization summaries...
             optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name; // Build a task and results cache ID from the project's hex UID and the optimization name.
             optimSum.status = 'not started'; // Set the status to 'not started' by default, and the pending and execution times to '--'.
             optimSum.pendingTime = '--';
             optimSum.executionTime = '--';
-            optimSum.active = true;
+            if (oldSummaries !== null) {
+              optimSum.active = oldSummaries[index].active;
+            }
+            else if (oldSummaries === null) {
+              optimSum.active = true;
+            }
           })
           this.optimSummaries = response.data; // Set the optimizations to what we received.
           this.doTaskPolling(true);  // start task polling, kicking off with running check_task() for all optimizations
@@ -620,6 +625,7 @@ Last update: 2019feb11
               this.addEditModal.optimSummary = response.data
               this.addEditModal.mode = 'add'
               this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
+              this.addEditModal.optimSummary.active = true
               this.$modal.show('add-optim')
               console.log('New optimization:')
               console.log(this.addEditModal.optimSummary)
@@ -674,6 +680,7 @@ Last update: 2019feb11
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
           let index = this.optimSummaries.map(x => x.uid).indexOf(newOptim.uid) // Get the index of the original (pre-edited) name
           this.optimSummaries[index] = newOptim
+          this.optimSummaries[index].active = true
           await this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         } else { // Else (we are adding a new optimization)...
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
@@ -682,7 +689,7 @@ Last update: 2019feb11
           this.optimSummaries.push(newOptim)
         }
         this.$sciris.succeed(this, 'Optimization added')
-        this.getOptimSummaries()  // Reload all optimizations so Vue state is correct
+        this.getOptimSummaries(this.optimSummaries)  // Reload all optimizations so Vue state is correct
       },
 
       async copyOptim(optimSummary) {
