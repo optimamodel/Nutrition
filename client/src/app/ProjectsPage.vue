@@ -250,7 +250,7 @@ Last update: 2019feb18
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
         countryList: [], // List of country databooks from LiST database
-        proj_name: i18n.t('projects.New project'),
+        proj_name: null,
         country: '',
       }
     },
@@ -361,6 +361,7 @@ Last update: 2019feb18
       // Open a model dialog for creating a new project
       createNewProjectModal() {
         console.log('createNewProjectModal() called');
+        this.proj_name = i18n.t('projects.New project'),
         this.$modal.show('create-project');
       },
 
