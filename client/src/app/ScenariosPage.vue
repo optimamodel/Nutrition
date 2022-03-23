@@ -304,7 +304,7 @@ Last update: 2019feb11
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        this.getScenSummaries()
+        this.getScenSummaries(null)
         this.updateDatasets()
       }
     },
@@ -325,13 +325,19 @@ Last update: 2019feb11
         return utils.scaleFigs(frac)
       },
 
-      async getScenSummaries() {
+      async getScenSummaries(oldSummaries) {
         this.$sciris.start(this)
         try {
           let response = await this.$sciris.rpc('get_scen_info', [this.projectID])
-          response.data.forEach(scen => {
-            scen.active = true;
+          response.data.forEach((scen, index) => {
+            if (oldSummaries !== null) {
+              scen.active = oldSummaries[index].active;
+            }
+            else if (oldSummaries === null) {
+              scen.active = true;
+            }
           })
+          response.data[response.data.length - 1].active = true
           this.scenSummaries = response.data
           this.scenariosLoaded = true
           this.$sciris.succeed(this)
@@ -431,6 +437,7 @@ Last update: 2019feb11
             this.scenSummaries[index].name = newScen.name // hack to make sure Vue table updated
             this.scenSummaries[index].model_name = newScen.model_name
             this.scenSummaries[index] = newScen
+            this.scenSummaries[index].active = true
           }
           else {
             console.log('Error: a mismatch in editing keys')
@@ -446,11 +453,11 @@ Last update: 2019feb11
           .then( response => {
             this.$sciris.succeed(this, 'Scenario added')
             this.$modal.hide('add-scen')
-            this.getScenSummaries()  // Reload all scenarios so Vue state is correct (hack).
+            this.getScenSummaries(this.scenSummaries)  // Reload all scenarios so Vue state is correct (hack).
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not add scenario', error)
-            this.getScenSummaries()
+            this.getScenSummaries(this.scenSummaries)
           })
       },
 
@@ -479,7 +486,7 @@ Last update: 2019feb11
         this.$sciris.rpc('convert_scen', [this.projectID, scenSummary.name])
           .then( response => {
             this.$sciris.succeed(this, 'Scenario converted')
-            this.getScenSummaries()
+            this.getScenSummaries(this.scenSummaries)
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not convert scenario', error)
