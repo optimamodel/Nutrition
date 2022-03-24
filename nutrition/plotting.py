@@ -205,9 +205,8 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.2
     figs = sc.odict()
-    base_results = [res for res in all_reduce.keys() if "baseline" in res.lower()]
-    if base_results == []:
-        base_results.append(all_reduce.keys()[0])
+    base_results = [res for r,res in enumerate(all_reduce.keys()) if "(baseline)" in res or r == 0]
+    base_results = baseline_sanitise(base_results)
 
     baseres = all_res[0]
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
@@ -736,6 +735,15 @@ def get_costeff(project, results):
 
 def round_elements(mylist, dec=1):
     return [round(np.float64(x) * 100, dec) for x in mylist]  # Type conversion to handle None
+
+def baseline_sanitise(base_names):
+    check_names = sc.dcp(base_names)
+    for n, name in enumerate(check_names):
+        name = name[:-11]
+        if '(baseline)' in name:
+            del base_names[n+1]
+    return base_names
+
 
 
 class TextHandlerB(HandlerBase):
