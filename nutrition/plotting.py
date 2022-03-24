@@ -591,7 +591,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
             xlab = pgettext("plotting", "Years")
     ax.set_title(title)
     ax.set_xticks(np.array(year[1:]) + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
-    # ax.set_xticklabels(year[1:], fontsize=10)
+    ax.set_xticklabels(year[1:], fontsize=14)
     ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax + ymax * 0.1))
     if scale == 1e1:
