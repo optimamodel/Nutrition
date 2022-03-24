@@ -75,7 +75,7 @@ Last update: 2019feb18
             <td v-if="projectSummary.renaming !== ''">
               <input type="text"
                      class="txbox renamebox"
-                     @keyup.enter="renameProject(projectSummary)"
+                     v-on:keyup.enter="renameProject(projectSummary)"
                      v-model="projectSummary.renaming"/>
             </td>
             <td v-else>
