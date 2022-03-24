@@ -205,6 +205,9 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.2
     figs = sc.odict()
+    base_results = [res for res in all_reduce.keys() if "baseline" in res.lower()]
+    if base_results == []:
+        base_results.append(all_reduce.keys()[0])
 
     baseres = all_res[0]
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
@@ -221,15 +224,20 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
             bars = []
 
             #baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
-            if seq:
-                baseout = sc.promotetoarray(all_reduce[0][outcome]['point'][1:])
-            else:
-                baseout = sc.promotetoarray(all_reduce[0][outcome]['point'][1:].sum())
-            scale = 1e6 if baseout.max() > 1e6 else 1
-            baseout /= scale
-            offsets = np.arange(len(all_reduce) + 1) * width  # Calculate offset so tick is in the center of the bars
-            offsets -= offsets.mean() - 0.5 * width
+            base_key = 0
             for r, res in enumerate(all_reduce):
+                if all_reduce.keys()[r] in base_results and r > 0:
+                    base_key += 1
+
+                if seq:
+                    baseout = sc.promotetoarray(all_reduce[base_results[base_key]][outcome]['point'][1:])
+                else:
+                    baseout = sc.promotetoarray(all_reduce[base_results[base_key]][outcome]['point'][1:].sum())
+                scale = 1e6 if baseout.max() > 1e6 else 1
+                baseout /= scale
+                offsets = np.arange(
+                    len(all_reduce) + 1) * width  # Calculate offset so tick is in the center of the bars
+                offsets -= offsets.mean() - 0.5 * width
 
                 offset = offsets[r]
                 xpos = years[1:] + offset if seq else offset
@@ -253,8 +261,6 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     ymax = thimax
                 change = round_elements([utils.get_change(base, out) for out, base in zip(output_p, baseout)], dec=1)
                 perchange.append(change)
-                if outcome == 'child_mam' or outcome == 'child_sam':
-                    print(outcome, change)
 
                 if seq:
                     bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2, **kwargs)
@@ -275,7 +281,8 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     rect = bar[-1]
                     change = perchange[j][0]
                     height = rect.get_height()
-                    ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="right", va="bottom", fontsize=14)
+                    if all_reduce.keys()[j] not in base_results:
+                        ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="right", va="bottom", fontsize=14)
 
             # formatting
             title = f"{utils.relabel(outcome, locale=locale)} ({seq_str})\n{baseres.years[pltstart]}-{baseres.years[-1]}"
