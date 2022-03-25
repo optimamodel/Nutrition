@@ -88,7 +88,7 @@ Last update: 2019feb18
             </td>
             <td style="text-align:left">
               <span v-if="sortedFilteredProjectSummaries.length>1">
-                <button class="btn __green"  @click="openProject(projectSummary.project.id)" :disabled="projectSummary.project.id === projectID" ><span>{{ $t("Open") }}</span></button>
+                <button class="btn __green"  @click="openProject(projectSummary.project.id, false)" :disabled="projectSummary.project.id === projectID" ><span>{{ $t("Open") }}</span></button>
               </span>
               <button class="btn btn-icon" @click="renameProject(projectSummary)"                  :data-tooltip="$t('Rename')">  <i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         :data-tooltip="$t('Copy')">    <i class="ti-files"></i></button>
@@ -333,7 +333,7 @@ Last update: 2019feb18
         if (setActiveID !== null) {
           let matchProject = this.projectSummaries.find(theProj => theProj.project.id === setActiveID);
           if (matchProject !== undefined) {
-            this.openProject(matchProject.project.id);
+            this.openProject(matchProject.project.id, true);
             return;
           }
         }
@@ -341,7 +341,7 @@ Last update: 2019feb18
         // Otherwise, open the most recent project (by modification time)
         let latest = Math.max(...Array.from(this.projectSummaries, x => x.project.updatedTime.getTime()));
         let matchProject = this.projectSummaries.find(x => x.project.updatedTime.getTime() === latest);
-        this.openProject(matchProject.project.id);
+        this.openProject(matchProject.project.id, false);
 
       },
 
@@ -441,11 +441,13 @@ Last update: 2019feb18
         )
       },
 
-      openProject(uid) {
+      openProject(uid, creation) {
         // Find the project that matches the UID passed in.
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
         console.log('openProject() called for ' + matchProject.project.name)
-        this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
+        if (!creation) {
+          this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
+        }
         // this.$sciris.succeed(this, i18n.t('projects.loaded_popup', {name:matchProject.project.name})) // Success popup.
       },
 

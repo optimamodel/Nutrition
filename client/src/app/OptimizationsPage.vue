@@ -653,6 +653,7 @@ Last update: 2019feb11
         console.log('Editing optimization:');
         console.log(this.addEditModal.optimSummary);
         this.addEditModal.mode = 'edit';
+        this.addEditModal.optimSummary.active = true
         this.$modal.show('add-optim')
       },
 

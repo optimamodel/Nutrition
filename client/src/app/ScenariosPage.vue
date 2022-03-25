@@ -347,11 +347,6 @@ Last update: 2019feb11
               scen.active = true;
             }
           })
-          if ((oldSummaries !== null)  &&  (oldSummaries !== undefined)) {
-            if (response.data.length > oldSummaries.length) {
-              response.data[response.data.length - 1].active = true
-            }
-          }
           this.scenSummaries = response.data
           this.scenariosLoaded = true
           this.$store.commit('newScenSummaries', this.scenSummaries)
@@ -392,6 +387,7 @@ Last update: 2019feb11
             this.addEditModal.modalScenarioType = scen_type
             this.addEditModal.origName = this.addEditModal.scenSummary.name
             this.addEditModal.scenSummary.model_name = this.datasetOptions[0]
+            this.addEditModal.scenSummary.active = true
             this.$modal.show('add-scen')
             console.log('Default scenario:')
             console.log(defaultScen)
@@ -411,6 +407,7 @@ Last update: 2019feb11
         console.log(this.addEditModal.scenSummary)
         this.addEditModal.origName = this.addEditModal.scenSummary.name
         this.addEditModal.mode = 'edit'
+        this.addEditModal.scenSummary.active = true
         this.$modal.show('add-scen')
       },
 
