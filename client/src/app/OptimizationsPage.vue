@@ -333,7 +333,12 @@ Last update: 2019feb11
       } else if ((this.$store.state.activeProject.project !== undefined) &&
           (this.$store.state.activeProject.project.hasData)) {
         console.log('created() called')
-        this.getOptimSummaries(null)
+        if (this.$store.state.activeProject === this.$store.state.checkProject) {
+          this.getOptimSummaries(this.$store.state.optimSummaries)
+        }
+        else {
+          this.getOptimSummaries(null)
+        }
         this.updateDatasets()
       }
     },
@@ -601,16 +606,22 @@ Last update: 2019feb11
             optimSum.status = 'not started'; // Set the status to 'not started' by default, and the pending and execution times to '--'.
             optimSum.pendingTime = '--';
             optimSum.executionTime = '--';
-            if (oldSummaries !== null) {
-              optimSum.active = oldSummaries[index].active;
+            if ((oldSummaries !== null)  &&  (oldSummaries !== undefined)) {
+              if (oldSummaries[index] !== undefined) {
+                optimSum.active = oldSummaries[index].active;
+              }
+              else {
+                optimSum.active = true;
+              }
             }
-            else if (oldSummaries === null) {
+            else if ((oldSummaries === null) ||  (oldSummaries === undefined)) {
               optimSum.active = true;
             }
           })
           this.optimSummaries = response.data; // Set the optimizations to what we received.
           this.doTaskPolling(true);  // start task polling, kicking off with running check_task() for all optimizations
           this.optimsLoaded = true;
+          this.$store.commit('newOptimSummaries', this.optimSummaries)
           this.$sciris.succeed(this)
         } catch (error) {
           this.$sciris.fail(this, 'Could not load optimizations', error);

@@ -22,6 +22,8 @@ const persist = store => {
           storage = JSON.parse(storage);
           store.commit('newUser', storage.currentUser);
           store.commit('newActiveProject', storage.activeProject);
+          store.commit('newScenSummaries', storage.scenSummaries);
+          store.commit('newOptimSummaries', storage.optimSummaries);
         }
       } catch (e) {
       }
@@ -36,6 +38,11 @@ const store = new Vuex.Store({
 
     // The project currently chosen by the user
     activeProject: null,
+
+    // The scenario/optim summaries for the currently active project
+    scenSummaries: null,
+    optimSummaries: null,
+    checkProject: null,
   },
   plugins: [persist],
   mutations: {
@@ -50,9 +57,22 @@ const store = new Vuex.Store({
       state.activeProject = project
     },
 
+    newScenSummaries(state, summaries) {
+      state.scenSummaries = summaries
+      state.checkProject = state.activeProject
+    },
+
+    newOptimSummaries(state, summaries) {
+      state.optimSummaries = summaries
+      state.checkProject = state.activeProject
+    },
+
     logOut(state) {
       state.currentUser = null;
       state.activeProject = null;
+      state.checkProject = null;
+      state.scenSummaries = null;
+      state.optimSummaries = null;
     },
 
   },

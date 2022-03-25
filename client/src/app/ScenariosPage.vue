@@ -304,7 +304,12 @@ Last update: 2019feb11
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        this.getScenSummaries(null)
+        if (this.$store.state.activeProject === this.$store.state.checkProject) {
+          this.getScenSummaries(this.$store.state.scenSummaries)
+        }
+        else {
+          this.getScenSummaries(null)
+        }
         this.updateDatasets()
       }
     },
@@ -330,20 +335,26 @@ Last update: 2019feb11
         try {
           let response = await this.$sciris.rpc('get_scen_info', [this.projectID])
           response.data.forEach((scen, index) => {
-            if (oldSummaries !== null) {
-              scen.active = oldSummaries[index].active;
+            if ((oldSummaries !== null)  &&  (oldSummaries !== undefined)) {
+              if (oldSummaries[index] !== undefined) {
+                scen.active = oldSummaries[index].active;
+              }
+              else {
+                scen.active = true;
+              }
             }
-            else if (oldSummaries === null) {
+            else if ((oldSummaries === null) ||  (oldSummaries === undefined)) {
               scen.active = true;
             }
           })
-          if (oldSummaries !== null) {
+          if ((oldSummaries !== null)  &&  (oldSummaries !== undefined)) {
             if (response.data.length > oldSummaries.length) {
               response.data[response.data.length - 1].active = true
             }
           }
           this.scenSummaries = response.data
           this.scenariosLoaded = true
+          this.$store.commit('newScenSummaries', this.scenSummaries)
           this.$sciris.succeed(this)
         } catch (error) {
           this.$sciris.fail(this, 'Could not get scenarios', error);
