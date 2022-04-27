@@ -1,9 +1,29 @@
 
 ### Changelog
 
-#### [1.6.6] - 2020-04-29
+#### [2.0.0]
 
-- Added Web interface changelog
+**Breaking change** - projects from Optima Nutrition 1.* must be recreated by reloading the databooks into Optima Nutrition 2.*
+
+- Added localization functionality to allow translation of the tool into different languages
+- Removed `nu.ONException`, now a standard `Exception` is raised
+- `nu.ONpath` is now a `Path` object rather than a function. Instead of `nu.ONpath('foo')`, use `nu.ONpath/'foo'`
+- Input files are now stored within locales by default e.g. `inputs/en/demo_region1_input.xlsx`. Files are read by locale by default
+- Times are captured in UTC and displayed in local time to users. Legacy projects may have times that show up offset by the timezone because they were previously captured in local time
+
+#### [1.7.4] - 2022-03-09
+
+- Corrected Zn + ORS treatemnt for only severe diarrhoea
+
+#### [1.7.2] - 2021-19-10
+
+- Fixed incorrect initialization of non-pregnant women population sizes
+
+#### [1.7.1] - 2021-02-09
+
+- Particle swarm optimization step removed from default optimizations in order to reduce variability in allocation when similar budget sizes are optimized.
+- Default maximum run time for adaptive stochastic descent algorithm increased to accommodate the removal of the PSO step
+- Optima Nutrition version number and date added to standard results output in 'Version' sheet
 
 #### [1.7.0] - 2020-06-18
 
@@ -16,19 +36,6 @@
 - Bugfix: when changing databooks in scenario and optimisation definitions, inputs are no longer reset
 - Bugfix: changing budget reallocation restrictions, in sequential optimisations, updates properly
 
-#### [1.7.1] - 2021-02-09
+#### [1.6.6] - 2020-04-29
 
-- Particle swarm optimization step removed from default optimizations in order to reduce variability in allocation when similar budget sizes are optimized.
-- Default maximum run time for adaptive stochastic descent algorithm increased to accommodate the removal of the PSO step
-- Optima Nutrition version number and date added to standard results output in 'Version' sheet
-
-#### [1.7.2] - 2021-19-10
-
-- Fixed incorrect initialization of non-pregnant women population sizes
-
-#### [1.7.4]
-
-- Removed `nu.ONException`, now a standard `Exception` is raised
-- `nu.ONpath` is now a `Path` object rather than a function. Instead of `nu.ONpath('foo')`, use `nu.ONpath/'foo'`
-- Input files are now stored within locales by default e.g. `inputs/en/demo_region1_input.xlsx`. Files are read by locale by default
-- Times are captured in UTC and displayed in local time to users. Legacy projects may have times that show up offset by the timezone because they were previously captured in local time
+- Added Web interface changelog

@@ -772,11 +772,11 @@ class ProgramData(object):
         else:
             treat_SAM_val = frac_children_health_facility
         treat_SAM_row = treat_SAM_val * np.ones(4)
-        targetPopSheet.loc[_("Children"), _("Treatment of SAM")].iloc[1:5] = treat_SAM_row
-        self.calcscache.write_row(_("Programs target population"), 9, 3, treat_SAM_row)
+        targetPopSheet.loc["Children", "Treatment of SAM"].iloc[1:5] = treat_SAM_row
+        self.calcscache.write_row("Programs target population", 8, 3, treat_SAM_row)
         zinc_treatment_row = diarr_incid * frac_diarr_severe
-        targetPopSheet.loc[_("Children"), _("Zinc for treatment + ORS")].iloc[0:5] = zinc_treatment_row
-        self.calcscache.write_row(_("Programs target population"), 11, 2, zinc_treatment_row)
+        targetPopSheet.loc["Children", "Zinc for treatment + ORS"].iloc[0:5] = zinc_treatment_row
+        self.calcscache.write_row("Programs target population", 10, 2, zinc_treatment_row)
         balanced_energy_row = food_insecure * np.ones(4)
         targetPopSheet.loc[_("Pregnant women"), _("Balanced energy-protein supplementation")].iloc[5:9] = balanced_energy_row
         self.calcscache.write_row(_("Programs target population"), 14, 7, balanced_energy_row)
@@ -935,6 +935,7 @@ class ProgramData(object):
         pop_data = self._spreadsheet.parse(_("Baseline year population inputs"), index_col=[0, 1]).loc[_("Population data")][_("Data")]
         frac_pw = float(pop_data.loc[_("Percentage of pregnant women attending health facility")])
         frac_child = float(pop_data.loc[_("Percentage of children attending health facility")])
+
         # target pop is the sum of fractions exposed to modality in each age band
         target = sc.odict()
         for name, package in package_modes.items():
@@ -1063,8 +1064,6 @@ class Dataset(object):
         resampled_or_stunting_prog = new._make_random(new.uncert.or_stunting_prog_lower.to_numpy(), new.uncert.or_stunting_prog_upper.to_numpy(), rng)  # stunting programs
         resampled_or_bf_prog = new._make_random(new.uncert.or_bf_prog_lower.to_numpy(), new.uncert.or_bf_prog_upper.to_numpy(), rng)  # breastfeeding progra
         resampled_or_space_prog = new._make_random(new.uncert.or_space_prog_lower.to_numpy(), new.uncert.or_space_prog_upper.to_numpy(), rng)  # birth spacing programs
-
-        # Replacing with original data and store in required dictionary formats
 
         # stunting
         rr = new._data_replace(new.uncert.rr_st_orig, resampled_rr_st).to_dict()
