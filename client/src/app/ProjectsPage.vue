@@ -7,21 +7,23 @@ Last update: 2019feb18
 <template>
   <div class="SitePage">
     <div class="card">
-      <help reflink="create-projects" label="Create project"></help>
+      <help reflink="create-projects" :label='$t("projects.Create project")'></help>
 
       <div class="ControlsRow">
-        <button class="btn __blue" @click="addDemoProject">Add demo project</button>
+        <button class="btn __blue" @click="addDemoProject">{{ $t("projects.Add demo project") }}</button>
         &nbsp; &nbsp;
-        <button class="btn __blue" @click="createNewProjectModal">Create new project</button>
+        <button class="btn __blue" @click="createNewProjectModal">{{ $t("projects.Create new project") }}</button>
         &nbsp; &nbsp;
-        <button class="btn __blue" @click="uploadProjectFromFile">Upload project from file</button>
+        <button class="btn __blue" @click="uploadProjectFromFile">{{ $t("projects.Upload project from file") }}</button>
+        &nbsp; &nbsp;
+        <button class="btn __blue" @click="addCountryProject" :data-tooltip="$t('Last extracted 1 Feb 2022')">{{ $t("Add country project from LiST database") }}</button>
         &nbsp; &nbsp;
       </div>
     </div>
 
     <div class="PageSection" v-if="projectSummaries.length > 0">
       <div class="card">
-        <help reflink="manage-projects" label="Manage projects"></help>
+        <help reflink="manage-projects" :label='$t("projects.Manage projects")'></help>
 
         <input type="text"
                class="txbox"
@@ -36,7 +38,7 @@ Last update: 2019feb18
               <input type="checkbox" @click="selectAll()" v-model="allSelected"/>
             </th>
             <th @click="updateSorting('name')" class="sortable">
-              Name
+              {{ $t("Name") }}
               <span v-show="sortColumn == 'name' && !sortReverse">
                 <i class="fas fa-caret-down"></i>
               </span>
@@ -47,9 +49,9 @@ Last update: 2019feb18
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
-            <th style="text-align:left">Project actions</th>
+            <th style="text-align:left">{{ $t("projects.Project actions") }}</th>
             <th @click="updateSorting('updatedTime')" class="sortable" style="text-align:left">
-              Last modified
+              {{ $t("projects.Last modified") }}
               <span v-show="sortColumn == 'updatedTime' && !sortReverse">
                 <i class="fas fa-caret-down"></i>
               </span>
@@ -60,23 +62,24 @@ Last update: 2019feb18
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
-            <th>Databook</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+            <th>{{ $t("projects.Language") }}</th>
+            <th>{{ $t("Databook") }}</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
           <tr v-for="projectSummary in sortedFilteredProjectSummaries"
-              :class="{ highlighted: projectIsActive(projectSummary.project.id) }">
+              :class="{ highlighted: projectSummary.project.id === projectID }">
             <td>
               <input type="checkbox" @click="uncheckSelectAll()" v-model="projectSummary.selected"/>
             </td>
             <td v-if="projectSummary.renaming !== ''">
               <input type="text"
                      class="txbox renamebox"
-                     @keyup.enter="renameProject(projectSummary)"
+                     v-on:keyup.enter="renameProject(projectSummary)"
                      v-model="projectSummary.renaming"/>
             </td>
             <td v-else>
-              <div v-if="projectLoaded(projectSummary.project.id)">
+              <div v-if="projectSummary.project.id === projectID">
                 <b>{{ projectSummary.project.name }}</b>
               </div>
               <div v-else>
@@ -85,21 +88,22 @@ Last update: 2019feb18
             </td>
             <td style="text-align:left">
               <span v-if="sortedFilteredProjectSummaries.length>1">
-                <button class="btn __green"  @click="openProject(projectSummary.project.id)"       data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
+                <button class="btn __green"  @click="openProject(projectSummary.project.id, false)" :disabled="projectSummary.project.id === projectID" ><span>{{ $t("Open") }}</span></button>
               </span>
-              <button class="btn btn-icon" @click="renameProject(projectSummary)"                  data-tooltip="Rename">  <i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         data-tooltip="Copy">    <i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" data-tooltip="Download"><i class="ti-download"></i></button>
+              <button class="btn btn-icon" @click="renameProject(projectSummary)"                  :data-tooltip="$t('Rename')">  <i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         :data-tooltip="$t('Copy')">    <i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" :data-tooltip="$t('Download')"><i class="ti-download"></i></button>
             </td>
             <td style="text-align:left">
-              {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
-              'No modification' }}</td>
+              {{ projectSummary.project.updatedTimeString ? projectSummary.project.updatedTimeString : 'No modification' }}
+            </td>
+            <td style="text-align:left">{{ projectSummary.project.localeName }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-              <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Rename databook"><i class="ti-pencil"></i></button>
-              <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Copy databook"><i class="ti-files"></i></button>
-              <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Delete databook"><i class="ti-trash"></i></button>            
-              <button class="btn __blue" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>
-              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>           
+              <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Rename databook")'><i class="ti-pencil"></i></button>
+              <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Copy databook")'><i class="ti-files"></i></button>
+              <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Delete databook")'><i class="ti-trash"></i></button>
+              <button class="btn __blue" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Download databook")'><i class="ti-download"></i></button>
+              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" :data-tooltip='$t("projects.Upload databook")'><i class="ti-upload"></i></button>
               <select v-if="projectSummary.project.dataSets.length>0" v-model="projectSummary.selectedDataSet">
                 <option v-for='dataset in projectSummary.project.dataSets'>
                   {{ dataset }}
@@ -111,9 +115,9 @@ Last update: 2019feb18
         </table>
 
         <div class="ControlsRow">
-          <button class="btn" @click="deleteModal()">Delete selected</button>
+          <button :disabled="!anySelected" class="btn __red" @click="deleteModal()">{{ $t("Delete selected") }}</button>
           &nbsp; &nbsp;
-          <button class="btn" @click="downloadSelectedProjects">Download selected</button>
+          <button :disabled="!anySelected" class="btn" @click="downloadSelectedProjects">{{ $t("Download selected") }}</button>
         </div>
       </div>
     </div>
@@ -129,21 +133,21 @@ Last update: 2019feb18
 
       <div class="dialog-content">
         <div class="dialog-c-title">
-          Create blank project
+          {{ $t("projects.Create blank project") }}
         </div>
         <div class="dialog-c-text">
-          Project name:<br>
+          {{ $t("projects.Project name") }}:<br>
           <input type="text"
                  class="txbox"
                  v-model="proj_name"/><br>
         </div>  <!-- ATOMICA-NUTRITION DIFFERENCE -->
         <div style="text-align:justify">
           <button @click="createNewProject()" class='btn __green' style="display:inline-block">
-            Create
+            {{ $t("Create") }}
           </button>
 
           <button @click="$modal.hide('create-project')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>
@@ -161,27 +165,68 @@ Last update: 2019feb18
 
       <div class="dialog-content">
         <div class="dialog-c-title">
-          Rename databook
+          {{ $t("projects.Rename databook") }}
         </div>
         <div class="dialog-c-text">
-          New name:<br>
+          {{ $t("projects.New name") }}:<br>
           <input type="text"
                  class="txbox"
                  v-model="modalRenameDataset"/><br>
         </div>
         <div style="text-align:justify">
           <button @click="renameDataset()" class='btn __green' style="display:inline-block">
-            Rename
+            {{ $t("Rename") }}
           </button>
 
           <button @click="$modal.hide('rename-dataset')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>
 
     </modal>
-    <!-- ### End: rename dataset modal ### -->    
+    <!-- ### End: rename dataset modal ### -->
+
+    <!-- ### Start: create country project modal ### -->
+    <modal name="country-proj"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="400"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="false"
+    >
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          {{ $t("Select country") }}
+        </div>
+        <div class="dialog-c-text">
+          {{ $t("projects.list_data_warning") }}
+        </div>
+        <br />
+        <span style="white-space: pre;"></span>
+
+            <select v-model="country">
+            <option v-for='entry in countryList' :value="entry">
+              {{ entry.name }}
+            </option>
+          </select>
+            <br><br>
+
+        <div style="text-align:justify">
+          <button @click="loadCountryProj(country); $modal.hide('country-proj')" class='btn __green' style="display:inline-block">
+            {{ $t("Load") }}
+          </button>
+
+          <button @click="$modal.hide('country-proj')" class='btn __red' style="display:inline-block">
+            {{ $t("Cancel") }}
+          </button>
+        </div>
+      </div>
+
+    </modal>
+    <!-- ### End: input uncertainty runs modal ### -->
   </div>
 
 </template>
@@ -189,114 +234,121 @@ Last update: 2019feb18
 <script>
   import utils from '../js/utils'
   import router from '../router'
+  import i18n from '../i18n'
 
   export default {
     name: 'ProjectsPage',
 
     data() {
       return {
-        filterPlaceholder: 'Type here to filter projects', // Placeholder text for table filter box
         filterText: '',  // Text in the table filter box
         allSelected: false, // Are all of the projects selected?
         projectToRename: null, // What project is being renamed?
-        sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
-        sortReverse: false, // Sort in reverse order?
+        sortColumn: 'updatedTime',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
+        sortReverse: true, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  'New project', // For creating a new project: number of populations 
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
-        // ATOMICA-NUTRITION DIFFERENCE
+        countryList: [], // List of country databooks from LiST database
+        proj_name: null,
+        country: '',
       }
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
+      filterPlaceholder() { return i18n.t('projects.Type here to filter projects') },
+      projectID()    { return this.$store.getters.activeProjectID },
+      anySelected() { return this.projectSummaries.some(x => x.selected) },
       sortedFilteredProjectSummaries() {
         return this.applyNameFilter(this.applySorting(this.projectSummaries))
       },
     },
 
     created() {
-      let projectID = null
-      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
-        router.push('/login')
-      } else {    // Otherwise...
-        if (this.$store.state.activeProject.project !== undefined) { // Get the active project ID if there is an active project.
-          projectID = this.$store.state.activeProject.project.id
-        }
-        this.updateProjectSummaries(projectID) // Load the project summaries of the current user.
+      if (this.$store.state.activeProject) { // Get the active project ID if there is an active project.
+        this.updateProjectSummaries(this.$store.state.activeProject.project.id) // Load the project summaries of the current user.
+      } else {
+        this.updateProjectSummaries()
       }
     },
 
     methods: {
 
-      projectLoaded(uid) {
-        console.log('projectLoaded called')
-        if (this.$store.state.activeProject.project !== undefined) {
-          if (this.$store.state.activeProject.project.id === uid) {
-            console.log('Project ' + uid + ' is loaded')
-            return true
-          } else {
-            return false
+      getLocaleName(locale) {
+        for (var i = 0; i < utils.locales.length; i++) {
+          if (utils.locales[i].locale === locale) {
+            return utils.locales[i].name;
           }
-        } else {
-          return false
         }
+        return locale;
       },
 
-      beforeOpen (event) {
-        console.log(event)
-        this.TEMPtime = Date.now() // Set the opening time of the modal
-      },
+      // beforeOpen (event) {
+      //   console.log(event)
+      //   this.TEMPtime = Date.now() // Set the opening time of the modal
+      // },
+      //
+      // beforeClose (event) {
+      //   console.log(event)
+      //   // If modal was open less then 5000 ms - prevent closing it
+      //   if (this.TEMPtime + this.TEMPduration < Date.now()) {
+      //     event.stop()
+      //   }
+      // },
 
-      beforeClose (event) {
-        console.log(event)
-        // If modal was open less then 5000 ms - prevent closing it
-        if (this.TEMPtime + this.TEMPduration < Date.now()) {
-          event.stop()
-        }
-      },
-
-      updateProjectSummaries(setActiveID) {
+      async updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
         this.$sciris.start(this)
-        this.$sciris.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
-          .then(response => {
-            let lastCreationTime = null
-            let lastCreatedID = null
-            this.projectSummaries = response.data.projects // Set the projects to what we received.
-            if (this.projectSummaries.length > 0) { // Initialize the last creation time stuff if we have a non-empty list.
-              lastCreationTime = new Date(this.projectSummaries[0].project.creationTime)
-              lastCreatedID = this.projectSummaries[0].project.id
-            }
-            this.projectToRename = null  // Unset the link to a project being renamed.
-            this.projectSummaries.forEach(theProj => { // Preprocess all projects.
-              theProj.selected = false // Set to not selected.
-              theProj.renaming = '' // Set to not being renamed.
-              theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
-              if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
-                lastCreationTime = theProj.project.creationTime
-                lastCreatedID = theProj.project.id
-              }
-            })
-            if (this.projectSummaries.length > 0) { // If we have a project on the list...
-              if (setActiveID === null) { // If no ID is passed in, set the active project to the last-created project.
-                this.openProject(lastCreatedID)
-              } else { // Otherwise, set the active project to the one passed in.
-                this.openProject(setActiveID)
-              }
-            }
-            this.$sciris.succeed(this, '')  // No green popup.
+        try {
+          let response = await this.$sciris.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
+
+          this.projectToRename = null  // Unset the link to a project being renamed.
+          let options = { year: 'numeric', month: 'short', day: 'numeric' , hour:'numeric',minute:'numeric',second:'numeric', timeZoneName:'short'};
+          response.data.projects.forEach(theProj => {
+            theProj.selected = false // Set to not selected.
+            theProj.renaming = '' // Set to not being renamed.
+            theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
+            theProj.project.localeName = this.getLocaleName(theProj.project.locale);
+
+            // Convert times to JS objects
+            theProj.project.creationTime = new Date(theProj.project.creationTime);
+            theProj.project.updatedTime = new Date(theProj.project.updatedTime);
+
+            // Localize the last modified time string
+            theProj.project.updatedTimeString = theProj.project.updatedTime.toLocaleString(undefined, options);
           })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not load projects', error)
-          })
+
+          this.projectSummaries = response.data.projects
+          this.$sciris.succeed(this, '')  // No green popup.
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not load projects', error);
+        }
+
+        if (this.projectSummaries.length === 0) {
+          this.$store.commit('newActiveProject', undefined);
+          return;
+        }
+
+        // Try to open the requested project (noting that it may not exist if the project has been deleted in the meantime)
+        if (setActiveID !== null) {
+          let matchProject = this.projectSummaries.find(theProj => theProj.project.id === setActiveID);
+          if (matchProject !== undefined) {
+            this.openProject(matchProject.project.id, true);
+            return;
+          }
+        }
+
+        // Otherwise, open the most recent project (by modification time)
+        let latest = Math.max(...Array.from(this.projectSummaries, x => x.project.updatedTime.getTime()));
+        let matchProject = this.projectSummaries.find(x => x.project.updatedTime.getTime() === latest);
+        this.openProject(matchProject.project.id, false);
+
       },
 
       addDemoProject() {
         console.log('addDemoProject() called');
         this.$sciris.start(this);
-        this.$sciris.rpc('add_demo_project', [this.$store.state.currentUser.username]) // Have the server create a new project.
+        this.$sciris.rpc('add_demo_project', [this.$store.state.currentUser.username, i18n.locale]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
             this.$sciris.succeed(this, '')
@@ -309,6 +361,7 @@ Last update: 2019feb18
       // Open a model dialog for creating a new project
       createNewProjectModal() {
         console.log('createNewProjectModal() called');
+        this.proj_name = i18n.t('projects.New project'),
         this.$modal.show('create-project');
       },
 
@@ -318,13 +371,14 @@ Last update: 2019feb18
         this.$modal.hide('create-project');
         this.$sciris.start(this) // Start indicating progress.
         var username = this.$store.state.currentUser.username
-        this.$sciris.download('create_new_project', [username, this.proj_name]) // Have the server create a new project.
+        this.$sciris.download('create_new_project', [username, this.proj_name, i18n.locale]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(null); // Update the project summaries so the new project shows up on the list.
             this.$sciris.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
+            this.proj_name = i18n.t('projects.New project')
           })
           .catch(error => {
-            this.$sciris.fail(this, 'Could not add new project', error)    // Indicate failure.
+            this.$sciris.fail(this, i18n.t('projects.Could not add new project'), error)    // Indicate failure.
           })
       },
 
@@ -334,19 +388,11 @@ Last update: 2019feb18
           .then(response => {
             this.$sciris.start(this)  // This line needs to be here to avoid the spinner being up during the user modal.
             this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the new project shows up on the list.
-            this.$sciris.succeed(this, 'New project uploaded')
+            this.$sciris.succeed(this, i18n.t('projects.New project uploaded'))
           })
           .catch(error => {
-            this.$sciris.fail(this, 'Could not upload file', error)
+            this.$sciris.fail(this, i18n.t('Could not upload file'), error)
           })
-      },
-
-      projectIsActive(uid) {
-        if (this.$store.state.activeProject.project === undefined) { // If the project is undefined, it is not active.
-          return false
-        } else { // Otherwise, the project is active if the UIDs match.
-          return (this.$store.state.activeProject.project.id === uid)
-        }
       },
 
       selectAll() {
@@ -395,12 +441,14 @@ Last update: 2019feb18
         )
       },
 
-      openProject(uid) {
+      openProject(uid, creation) {
         // Find the project that matches the UID passed in.
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
         console.log('openProject() called for ' + matchProject.project.name)
-        this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
-        this.$sciris.succeed(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
+        if (!creation) {
+          this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
+        }
+        // this.$sciris.succeed(this, i18n.t('projects.loaded_popup', {name:matchProject.project.name})) // Success popup.
       },
 
       copyProject(uid) {
@@ -472,7 +520,7 @@ Last update: 2019feb18
             this.$sciris.succeed(this, '')  // No green popup message.
           })
           .catch(error => { // Indicate failure.
-            this.$sciris.fail(this, 'Could not download project', error)
+            this.$sciris.fail(this, i18n.t('projects.Could not download project'), error)
           })
       },
       
@@ -494,7 +542,7 @@ Last update: 2019feb18
             this.$sciris.succeed(this, 'Databook "'+this.origDatasetName+'" renamed') // Indicate success.
           })
           .catch(error => {
-            this.$sciris.fail(this, 'Could not rename databook', error)
+            this.$sciris.fail(this, i18n.t('projects.Could not rename databook'), error)
           })
       },
 
@@ -555,10 +603,12 @@ Last update: 2019feb18
           theProj.selected).map(theProj => theProj.project.id)
         if (selectProjectsUIDs.length > 0) { // Only if something is selected...
           var obj = { // Alert object data
-            message: 'Are you sure you want to delete the selected projects?',
+            message: this.$t('projects.Are you sure you want to delete the selected projects?'),
             useConfirmBtn: true,
             customConfirmBtnClass: 'btn __red',
             customCloseBtnClass: 'btn',
+            customConfirmBtnText: this.$t('Delete projects'),
+            customCloseBtnText: this.$t('Cancel'),
             onConfirm: this.deleteSelectedProjects
           }
           this.$Simplert.open(obj)
@@ -566,18 +616,18 @@ Last update: 2019feb18
       },
 
       deleteSelectedProjects() {
-        let selectProjectsUIDs = this.projectSummaries.filter(theProj => // Pull out the names of the projects that are selected.
-          theProj.selected).map(theProj => theProj.project.id)
-        console.log('deleteSelectedProjects() called for ', selectProjectsUIDs)
-        if (selectProjectsUIDs.length > 0) { // Have the server delete the selected projects.
+        let selectProjectKeys = this.projectSummaries.filter(theProj => // Pull out the names of the projects that are selected.
+          theProj.selected).map(theProj => theProj.project.key)
+        console.log('deleteSelectedProjects() called for ', selectProjectKeys)
+        if (selectProjectKeys.length > 0) { // Have the server delete the selected projects.
           this.$sciris.start(this)
-          this.$sciris.rpc('delete_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
+          this.$sciris.rpc('delete_projects', [selectProjectKeys, this.$store.state.currentUser.username])
             .then(response => {
               let activeProjectId = this.$store.state.activeProject.project.id // Get the active project ID.
               if (activeProjectId === undefined) {
                 activeProjectId = null
               }
-              if (selectProjectsUIDs.find(theId => theId === activeProjectId)) { // If the active project ID is one of the ones deleted...
+              if (selectProjectKeys.find(theId => theId === activeProjectId)) { // If the active project ID is one of the ones deleted...
                 this.$store.commit('newActiveProject', {}) // Set the active project to an empty project.
                 activeProjectId = null // Null out the project.
               }
@@ -605,7 +655,36 @@ Last update: 2019feb18
               this.$sciris.fail(this, 'Could not download project(s)', error) // Indicate failure.
             })
         }
-      }
+      },
+
+      async pullCountryList() {
+        try {
+          let response = await this.$sciris.rpc('pull_country_list', [i18n.locale]);
+          this.countryList = response.data.sort((a, b) => a.name.localeCompare(b.name));
+          this.country = this.countryList[0];
+        } catch (error) {
+          this.$sciris.fail(this, i18n.t('Could not initialize LiST country set'), error);    // Indicate failure.
+        }
+      },
+
+      async addCountryProject() {
+        console.log('addCountryProject() called');
+        await this.pullCountryList() // Retrieve country list for selected locale
+        this.$modal.show('country-proj');
+      },
+
+      loadCountryProj() {
+        console.log('loadCountryProj() called');
+        this.$sciris.start(this) // Start indicating progress.
+        this.$sciris.rpc('create_country_project', [this.$store.state.currentUser.username, this.country, i18n.locale]) // Have the server create a new project.
+          .then(response => {
+            this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
+            this.$sciris.succeed(this, '') // Indicate success.
+          })
+          .catch(error => {
+            this.$sciris.fail(this, i18n.t('projects.Could not add new project'), error)    // Indicate failure.
+          })
+      },
     }
   }
 </script>

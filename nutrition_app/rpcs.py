@@ -17,6 +17,10 @@ import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
+import pandas as pd
+import openpyxl
+import openpyexcel
+import io
 
 pl.rc("font", size=14)
 
@@ -265,26 +269,41 @@ def admin_upload_db(pw, filename=None, host=None):
 ##################################################################################
 
 
-@RPC()  # Not usually called as an RPC
-def load_project(project_key, die=None):
-    output = datastore.loadblob(project_key, objtype="project", die=die)
+@RPC()
+def load_project(project_key):
+    output = datastore.loadblob(project_key, objtype="project", die=True)
     return output
 
 
-@RPC()  # Not usually called as an RPC
-def load_result(result_key, die=False):
-    output = datastore.loadblob(result_key, objtype="result", die=die)
+@RPC()
+def load_result(result_key):
+    output = datastore.loadblob(result_key, objtype="result", die=True)
     return output
 
 
-@RPC()  # Not usually called as an RPC
-def save_project(project, die=None):  # NB, only for saving an existing project
-    project.modified = sc.now()
-    output = datastore.saveblob(obj=project, objtype="project", die=die)
+@RPC()
+def save_project(project):  # NB, only for saving an existing project
+    project.modified = sc.now(utc=True)
+    output = datastore.saveblob(obj=project, objtype="project", die=True)
     return output
 
 
-@RPC()  # Not usually called as an RPC
+@RPC()
+def pull_country_list(locale):
+    # Read available files for locales
+    available_country_codes = [x.stem.split('_')[0] for x in (nu.ONpath/'inputs'/locale/'LiST countries').glob("*.xlsx")]
+
+    # Only keep 3 letter country codes - remove once all databooks are listed by country code only
+    available_country_codes = [x for x in available_country_codes if len(x) == 3]
+
+    # Read country names
+    country_names = pd.read_csv(nu.ONpath / "inputs" / "countries.csv" , index_col="iso_code")[locale]
+
+    outputs = [{'iso':x,'name':country_names[x]} for x in available_country_codes]
+
+    return outputs
+
+@RPC()
 def save_new_project(proj, username=None, uid=None):
     """
     If we're creating a new project, we need to do some operations on it to
@@ -385,10 +404,24 @@ def del_result(result_key, project_key, die=None):
 
 
 @RPC()
-def jsonify_project(project_id, verbose=False):
+def jsonify_project(project_key, verbose=False):
     """ Return the project json, given the Project UID. """
-    proj = load_project(project_id)  # Load the project record matching the UID of the project passed in.
-    json = {"project": {"id": str(proj.uid), "name": proj.name, "username": proj.webapp.username, "hasData": len(proj.datasets) > 0, "dataSets": proj.datasets.keys(), "creationTime": sc.getdate(proj.created), "updatedTime": sc.getdate(proj.modified), "n_results": len(proj.results), "n_tasks": len(proj.webapp.tasks)}}
+    proj = load_project(project_key)  # Load the project record matching the UID of the project passed in.
+    json = {
+        "project": {
+            "id": str(proj.uid),
+            "name": proj.name,
+            "username": proj.webapp.username,
+            "hasData": len(proj.datasets) > 0,
+            "dataSets": proj.datasets.keys(),
+            "creationTime": proj.created,
+            "updatedTime": proj.modified,
+            "n_results": len(proj.results),
+            "n_tasks": len(proj.webapp.tasks),
+            "locale": proj.locale,
+            "key": project_key,
+        }
+    }
     if verbose:
         sc.pp(json)
     return json
@@ -400,14 +433,17 @@ def jsonify_projects(username, verbose=False):
     output = {"projects": []}
     user = get_user(username)
     for project_key in user.projects:
-        json = jsonify_project(project_key)
-        output["projects"].append(json)
         try:
-            pass
+            json = jsonify_project(project_key)
+            output["projects"].append(json)
         except Exception as E:
-            print("Project load failed, removing: %s" % str(E))
-            user.projects.remove(project_key)
-            datastore.saveuser(user)
+            if not datastore.exists(project_key):
+                # Remove missing projects from the user's list of projects. This does NOT remove projects
+                # that exist but have an error - if we removed those here, we'd have orphaned blobs in the database
+                user.projects.remove(project_key)
+                datastore.saveuser(user)
+            else:
+                raise E
     if verbose:
         sc.pp(output)
     return output
@@ -418,33 +454,46 @@ def rename_project(project_json):
     """ Given the passed in project json, update the underlying project accordingly. """
     proj = load_project(project_json["project"]["id"])  # Load the project corresponding with this json.
     proj.name = project_json["project"]["name"]  # Use the json to set the actual project.
-    proj.modified = sc.now()  # Set the modified time to now.
+    proj.modified = sc.now(utc=True)  # Set the modified time to now.
     save_project(proj)  # Save the changed project to the DataStore.
     return None
 
 
 @RPC()
-def add_demo_project(username):
+def add_demo_project(username, locale):
     """ Add a demo Optima Nutrition project """
-    proj = nu.demo(scens=True, optims=True, geos=True)  # Create the project, loading in the desired spreadsheets.
-    proj.name = "Demo project"
+    _ = nu.get_translator(locale)
+    proj = nu.demo(scens=True, optims=True, geos=True, locale=locale)  # Create the project, loading in the desired spreadsheets.
+    proj.optims[0].weights[0] = proj.optims[0].weights[0]  # Overwrite optim weights to not be full array and avoid confusion.
+    proj.geos[0].weights[0] = proj.geos[0].weights[0]  # Overwrite geo weights to not be full array and avoid confusion.
+    proj.name = _("Demo project")
     print(">> add_demo_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
     return {"projectID": str(proj.uid)}  # Return the new project UID in the return message.
 
 
 @RPC(call_type="download")
-def create_new_project(username, proj_name):
+def create_new_project(username, proj_name, locale):
     """ Create a new Optima Nutrition project. """
-    proj = nu.Project(name=proj_name)  # Create the project
+    proj = nu.Project(name=proj_name, locale=locale)  # Create the project
     print(">> create_new_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
     return download_new_databook(key)
 
+@RPC()
+def create_country_project(username, country, locale):
+    """ Add a demo Optima Nutrition project """
+    _ = nu.get_translator(locale)
+    proj = nu.default_country(country['iso'], locale=locale)  # Create the project, loading in the desired spreadsheets.
+    proj.name = country["name"] + " " + _("project") # Use full name for project rather than ISO code
+    print(">> add_default_project %s" % (proj.name))  # Display the call information.
+    key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
+    return {"projectID": str(proj.uid)}  # Return the new project UID in the return message.
+
 
 @RPC(call_type="download")
 def download_new_databook(project_key):
-    proj = load_project(project_key, die=True)
+    proj = load_project(project_key)
     print(">> download_databook")
     return proj.templateinput.tofile(), "%s databook.xlsx" % proj.name
 
@@ -455,7 +504,7 @@ def copy_project(project_key):
     Given a project UID, creates a copy of the project with a new UID and
     returns that UID.
     """
-    proj = load_project(project_key, die=True)  # Get the Project object for the project to be copied.
+    proj = load_project(project_key)  # Get the Project object for the project to be copied.
     new_project = sc.dcp(proj)  # Make a copy of the project loaded in to work with.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
     key, new_project = save_new_project(new_project, proj.webapp.username)  # Save a DataStore projects record for the copy project.
@@ -489,7 +538,7 @@ def download_project(project_id):
     For the passed in project UID, get the Project on the server, save it in a
     file, minus results, and pass the full path of this file back.
     """
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     return sc.saveobj(None, proj), "%s.prj" % proj.name  # Return the full filename.
 
 
@@ -525,7 +574,7 @@ def download_databook(project_id, key=None):
     if key is None:
         return download_new_databook(project_id)
 
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     if key is not None:
         file_name = "%s_%s_databook.xlsx" % (proj.name, key)  # Create a filename containing the project name followed by the databook name, then a .prj suffix.
     print(">> download_databook %s" % (file_name))  # Display the call information.
@@ -536,9 +585,9 @@ def download_databook(project_id, key=None):
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.load_data(inputspath=databook_filename)  # Reset the project name to a new project name that is unique.
-    proj.modified = sc.now()
+    proj.modified = sc.now(utc=True)
     save_project(proj)  # Save the new project in the DataStore.
     return {"projectID": str(proj.uid)}  # Return the new project UID in the return message.
 
@@ -550,11 +599,12 @@ def upload_databook(databook_filename, project_id):
 editableformats = ["edit", "tick", "bdgt", "drop"]  # Define which kinds of format are editable and saveable
 
 
-def define_formats():
+def define_formats(locale):
     """ Hard-coded sheet formats """
+
     formats = sc.odict()
 
-    formats["Nutritional status distribution"] = [
+    formats["nutritional_status"] = [
         ["head", "head", "name", "name", "name", "name", "name", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
         ["name", "name", "calc", "calc", "calc", "calc", "calc", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
@@ -572,7 +622,7 @@ def define_formats():
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats["Breastfeeding distribution"] = [
+    formats["breastfeeding_distribution"] = [
         ["head", "head", "head", "head", "head", "head", "head"],
         ["name", "name", "edit", "edit", "edit", "edit", "edit"],
         ["blnk", "name", "edit", "edit", "edit", "edit", "edit"],
@@ -580,7 +630,7 @@ def define_formats():
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats["IYCF packages"] = [
+    formats["iycf_packages"] = [
         ["head", "head", "head", "head", "head"],
         ["head", "name", "tick", "tick", "blnk"],
         ["blnk", "name", "tick", "tick", "blnk"],
@@ -604,87 +654,102 @@ def define_formats():
         ["blnk", "name", "blnk", "blnk", "tick"],
     ]
 
-    formats["Treatment of SAM"] = [
+    formats["treat_sam"] = [
         ["blnk", "head", "head", "head"],
         ["head", "name", "name", "tick"],
         ["head", "name", "name", "tick"],
     ]
 
-    formats["Programs cost and coverage"] = [
-        ["head", "head", "head", "head", "head"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
-        ["name", "edit", "edit", "bdgt", "drop"],
+    formats["program_cost_cov"] = [
+        ["head", "head", "head", "head", "head", "head", "head"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
+        ["name", "edit", "edit", "bdgt", "drop", "edit", "edit"],
     ]
+
+    formats["program_dependencies"] = None
 
     return formats
 
 
 @RPC()
 def get_sheet_data(project_id, key=None, verbose=False):
-    sheets = [
-        "Nutritional status distribution",
-        "Breastfeeding distribution",
-        "IYCF packages",
-        "Treatment of SAM",
-        "Programs cost and coverage",
-    ]
-    proj = load_project(project_id, die=True)
-    wb = proj.inputsheet(key)  # Get the spreadsheet
-    calcscache = proj.dataset(key).calcscache  # Get the calculation cells cache
-    sheetdata = sc.odict()
-    for sheet in sheets:  # Read pandas DataFrames in for each worksheet
-        sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False, method='xlrd')
-    sheetformat = define_formats()
 
-    sheetjson = sc.odict()
-    for sheet in sheets:  # loop over each GUI worksheet
-        datashape = np.shape(sheetdata[sheet])
-        formatshape = np.shape(sheetformat[sheet])
+    proj = load_project(project_id)
+
+    dataset = proj.dataset(key)
+    locale = dataset.locale
+    _ = nu.get_translator(locale)
+
+    sheets = {
+        "nutritional_status": _("Nutritional status distribution"),
+        "breastfeeding_distribution": _("Breastfeeding distribution"),
+        "iycf_packages": _("IYCF packages"),
+        "treat_sam": _("Treatment of SAM"),
+        "program_cost_cov": _("Programs cost and coverage"),
+    }
+
+
+    ss = proj.inputsheet(key)
+    wb = openpyxl.load_workbook(io.BytesIO(ss.blob), read_only=True, data_only=True)
+    calcscache = dataset.calcscache  # Get the calculation cells cache
+
+    sheetdata = sc.odict()
+    for key, sheet in sheets.items():  # Read pandas DataFrames in for each worksheet
+        df = pd.DataFrame(wb[sheet].values)#   ss.readcells(sheetname=sheet, header=False)
+        # df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+        sheetdata[key] = df.loc[:df.last_valid_index()]
+    sheetformat = define_formats(locale)
+
+    tables = sc.odict()
+    for key, sheet in sheets.items():  # loop over each GUI worksheet
+        datashape = np.shape(sheetdata[key])
+        formatshape = np.shape(sheetformat[key])
         if datashape != formatshape:
             errormsg = 'Sheet data and formats have different shapes for sheet "%s": %s vs. %s' % (sheet, datashape, formatshape)
             raise Exception(errormsg)
         rows, cols = datashape
-        sheetjson[sheet] = []
+        tables[key] = []
         for r in range(rows):
-            sheetjson[sheet].append([])
+            tables[key].append([])
             for c in range(cols):
-                cellformat = sheetformat[sheet][r][c]
-                cellval = sheetdata[sheet][r][c]
+                cellformat = sheetformat[key][r][c]
+                cellval = sheetdata[key].iat[r,c]
                 if cellformat in ["calc"]:  # Pull from cache if 'calc'
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
@@ -704,27 +769,61 @@ def get_sheet_data(project_id, key=None, verbose=False):
                     else:
                         pass  # It's fine, just let it go, let it go, can't hold it back any more
                 cellinfo = {"format": cellformat, "value": cellval}
-                sheetjson[sheet][r].append(cellinfo)
+                tables[key][r].append(cellinfo)
 
-    sheetjson = sc.sanitizejson(sheetjson)
-    if verbose:
-        sc.pp(sheetjson)
-    return {"names": sheets, "tables": sheetjson}
+    output = {}
+    output["tables"] = tables
+
+    # Handle program dependencies
+    output["prog_names"] = dataset.prog_names
+
+    df = pd.DataFrame(wb[_("Program dependencies")].values)
+    df = df.loc[1:df.last_valid_index()]
+    df.columns = ['program', 'exclusion', 'threshold']
+    output["tables"]["program_dependencies"] = df.to_dict(orient='records')
+
+    sheets["program_dependencies"] = _("Program dependencies")
+    # Get cost types
+    output["cost_types"] = list(dataset.prog_data.settings.cost_types.keys())
+
+    output["sheet_names"] = list(sheets.items())
+
+    return sc.sanitizejson(output)
 
 
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
-    proj = load_project(project_id, die=True)
+
+    proj = load_project(project_id)
     if key is None:
         key = proj.datasets.keys()[-1]  # There should always be at least one
-    wb = proj.inputsheet(key)  # CK: Warning, might want to change
+
+    dataset = proj.datasets[key]
+    _ = nu.get_translator(dataset.locale)
+
+    sheetnames = {
+        "nutritional_status": _("Nutritional status distribution"),
+        "breastfeeding_distribution": _("Breastfeeding distribution"),
+        "iycf_packages": _("IYCF packages"),
+        "treat_sam": _("Treatment of SAM"),
+        "program_cost_cov": _("Programs cost and coverage"),
+    }
+
+    ss = proj.inputsheet(key)
+    wb = openpyexcel.load_workbook(io.BytesIO(ss.blob), data_only=False) # Must NOT read with data_only, otherwise the formulas will get removed
+
     for sheet in sheetdata.keys():
+
+        if sheet not in sheetnames:
+            continue
+
+        ws = wb[sheetnames[sheet]]
+
         if verbose:
             print("Saving sheet %s..." % sheet)
+
         datashape = np.shape(sheetdata[sheet])
         rows, cols = datashape
-        cells = []
-        vals = []
         for r in range(rows):
             for c in range(cols):
                 cellformat = sheetdata[sheet][r][c]["format"]
@@ -743,13 +842,32 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                             cellval = True
                     else:
                         pass
-                    cells.append([r + 1, c + 1])  # Excel uses 1-based indexing
-                    vals.append(cellval)
-                    if verbose:
-                        print("  Cell (%s,%s) = %s" % (r + 1, c + 1, cellval))
-        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={"data_only": False})  # Can turn on verbose
+
+                    ws.cell(row=r+1, column=c+1).value = cellval
+
+    # Write program dependencies
+    existing = ss.readcells(sheetname=_("Program dependencies"))
+    ws = wb[_("Program dependencies")]
+
+    for i, entry in enumerate(sheetdata["program_dependencies"]):
+        ws.cell(i + 2, 1).value = entry["program"]
+        ws.cell(i + 2, 2).value = entry["exclusion"]
+        ws.cell(i + 2, 3).value = entry["threshold"]
+
+    # If the user has deleted dependencies such that the total number is now less than the existing
+    # number of entries, we need to clear any extras
+    for i in range(len(sheetdata["program_dependencies"]), len(existing)):
+        ws.cell(i + 2, 1).value = None
+        ws.cell(i + 2, 2).value = None
+        ws.cell(i + 2, 3).value = None
+
+    # Save the modified spreadsheet and realculate values
+    wb.save(ss.freshbytes()) # Save workbook to ss.bytes
+    ss.load()  # Sync ss.bytes and ss.blob
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
+
     print("Saving project...")
+    ss.wb = None # Should not be needed if Sciris drops the cache automatically in the future
     save_project(proj)
     return None
 
@@ -757,7 +875,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
 @RPC()
 def get_dataset_keys(project_id):
     print("Returning dataset info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     dataset_names = proj.datasets.keys()
     model_names = proj.models.keys()
     if dataset_names != model_names:
@@ -772,7 +890,7 @@ def get_dataset_keys(project_id):
 @RPC()
 def rename_dataset(project_id, datasetname=None, new_name=None):
     print("Renaming dataset from %s to %s..." % (datasetname, new_name))
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.datasets.rename(datasetname, new_name)
     proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
@@ -793,7 +911,7 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
 @RPC()
 def copy_dataset(project_id, datasetname=None):
     print("Copying dataset %s..." % datasetname)
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     print("Number of datasets before copy: %s" % len(proj.datasets))
     new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
     print("Old name: %s; new name: %s" % (datasetname, new_name))
@@ -809,7 +927,7 @@ def copy_dataset(project_id, datasetname=None):
 @RPC()
 def delete_dataset(project_id, datasetname=None):
     print("Deleting dataset %s..." % datasetname)
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     print("Number of datasets before delete: %s" % len(proj.datasets))
     if len(proj.datasets) > 1:
         proj.datasets.pop(datasetname)
@@ -833,7 +951,7 @@ def download_dataset(project_id, datasetname=None):
     For the passed in project UID, get the Project on the server, save it in a
     file, minus results, and pass the full path of this file back.
     """
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     dataset = proj.datasets[datasetname]
     return sc.saveobj(None, dataset), "%s - %s.par" % (proj.name, datasetname)
 
@@ -845,7 +963,7 @@ def upload_dataset(dataset_filename, project_id):
     For the passed in project UID, get the Project on the server, save it in a
     file, minus results, and pass the full path of this file back.
     """
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     dataset = sc.loadobj(dataset_filename)
     datasetname = sc.uniquename(dataset.name, namelist=proj.datasets.keys())
     dataset.name = datasetname  # Reset the name
@@ -870,9 +988,9 @@ def is_included(prog_set, program, default_included):
 def py_to_js_scen(py_scen, proj, default_included=False):
     """ Convert a Python to JSON representation of a scenario """
     key = py_scen.model_name
-    prog_names = proj.dataset(key).prog_names()
+    prog_names = proj.dataset(key).prog_names
     scen_years = proj.dataset(key).t[1] - proj.dataset(key).t[0]  # First year is baseline
-    attrs = ["name", "active", "scen_type", "model_name"]
+    attrs = ["name", "scen_type", "model_name", "_optim_uid"]
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr)  # Copy the attributes into a dictionary
@@ -924,7 +1042,7 @@ def js_to_py_scen(js_scen):
     # WARNING - this is a destructive operation because the Python scenario doesn't record whether an intervention is included or not
     # Therefore, any interventions that aren't included are dropped and the text box values are discarded entirely
     py_json = sc.odict()
-    for attr in ["name", "scen_type", "model_name", "active"]:  # Copy these directly
+    for attr in ["name", "scen_type", "model_name", "_optim_uid"]:  # Copy these directly
         py_json[attr] = js_scen[attr]
     py_json["progvals"] = sc.odict()  # These require more TLC
     for js_spec in js_scen["progvals"]:
@@ -952,9 +1070,12 @@ def js_to_py_scen(js_scen):
 @RPC()
 def get_scen_info(project_id, verbose=False):
     print("Getting scenario info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     scenario_jsons = []
     for py_scen in proj.scens.values():
+        if py_scen._optim_uid:
+            # Skip listing scenarios that are linked to optimizations
+            continue
         js_scen = py_to_js_scen(py_scen, proj)
         scenario_jsons.append(js_scen)
     if verbose:
@@ -965,25 +1086,37 @@ def get_scen_info(project_id, verbose=False):
 
 @RPC()
 def set_scen_info(project_id, scenario_jsons):
-    print("Setting scenario info...")
-    proj = load_project(project_id, die=True)
-    proj.scens.clear()
+    # Set scenario info from scenarios page
+    proj = load_project(project_id)
+
+    _ = nu.get_translator(proj.locale)
+
+    # Delete all not-optim related scenarios
+    for scen in list(proj.scens):
+        if not proj.scens[scen]._optim_uid:
+            del proj.scens[scen]
+
+    # Add all scenarios by JSON
     for j, js_scen in enumerate(scenario_jsons):
         print("Setting scenario %s of %s..." % (j + 1, len(scenario_jsons)))
         scen = js_to_py_scen(js_scen)
         proj.add_scens(scen)
-    print("Saving project...")
+
     save_project(proj)
-    return None
 
 
 @RPC()
-def get_default_scen(project_id, scen_type=None, model_name=None):
+def get_default_scen(project_id, model_name, scen_type, locale=None):
     print("Creating default scenario...")
-    if scen_type is None:
-        scen_type = "coverage"
-    proj = load_project(project_id, die=True)
-    py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename="Default scenario (%s)" % scen_type)
+    _ = nu.get_translator(locale)
+    if scen_type == "coverage":
+        scen_name = _("Default scenario (coverage)")
+    elif scen_type == "budget":
+        scen_name = _("Default scenario (budget)")
+    else:
+        raise Exception("Unknown scenario type")
+    proj = load_project(project_id)
+    py_scen = nu.make_default_scen(scen_name, model_name, model=proj.model(model_name), scen_type=scen_type)
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     return js_scen
 
@@ -1003,7 +1136,7 @@ def scen_switch_dataset(project_id, js_scen: dict) -> dict:
     :return: An optimization summary for the FE
     """
 
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     scen_years = proj.dataset(js_scen["model_name"]).t[1] - proj.dataset(js_scen["model_name"]).t[0]  # First year is baseline
 
     original_progvals = sc.dcp({x["name"]: x for x in js_scen["progvals"]})
@@ -1031,7 +1164,7 @@ def scen_switch_dataset(project_id, js_scen: dict) -> dict:
 @RPC()
 def convert_scen(project_id, scenkey=None):
     print("Converting scenario...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.convert_scen(scenkey)
     save_project(proj)
     return None
@@ -1054,10 +1187,19 @@ def reformat_costeff(costeff):
 
 
 @RPC()
-def run_scens(project_id, doplot=True, do_costeff=False):
+def run_scens(project_id, scens_to_run, do_costeff=False, n_runs=0):
+    """
+
+    :param project_id:
+    :param scens_to_run: Collection of scenario names to run
+    :param doplot:
+    :param do_costeff:
+    :param n_runs:
+    :return:
+    """
 
     print("Running scenarios...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
 
     if "scens" in proj.results:
         try:
@@ -1065,7 +1207,10 @@ def run_scens(project_id, doplot=True, do_costeff=False):
         except:
             pass
 
-    proj.run_scens()
+    if isinstance(n_runs, str):
+        n_runs = int(n_runs)
+
+    proj.run_scens(scens_to_run=scens_to_run, n_samples=n_runs, name="scens")
 
     if do_costeff:
         # Get cost-effectiveness table
@@ -1076,15 +1221,14 @@ def run_scens(project_id, doplot=True, do_costeff=False):
 
     # Get graphs
     graphs = []
-    if doplot:
-        figs = proj.plot("scens")
-        for f, fig in enumerate(figs.values()):
-            for ax in fig.get_axes():
-                ax.set_facecolor("none")
-            graph_dict = sw.mpld3ify(fig, jsonify=False)
-            graphs.append(graph_dict)
-            pl.close(fig)
-            print("Converted figure %s of %s" % (f + 1, len(figs)))
+    figs = proj.plot("scens")
+    for f, fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor("none")
+        graph_dict = sw.mpld3ify(fig, jsonify=False)
+        graphs.append(graph_dict)
+        pl.close(fig)
+        print("Converted figure %s of %s" % (f + 1, len(figs)))
 
     # Store results in cache
     proj = cache_results(proj)
@@ -1102,16 +1246,22 @@ def run_scens(project_id, doplot=True, do_costeff=False):
 
 def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     """ Convert a Python to JSON representation of an optimization """
-    obj_labels = nu.pretty_labels(direction=True).values()
+    locale = proj.locale
+    obj_labels = nu.pretty_labels(direction=True, locale=locale).values()
     js_optim = {}
-    attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs"]
+    attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs", "uid"]
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr)  # Copy the attributes into a dictionary
-    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, py_optim.weights)]  # WARNING, ABS HACK
+    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_optim.weights))]  # WARNING, ABS HACK
+    growth = py_optim.growth
+    balanced_optimization = py_optim.balanced_optimization
+    js_optim["uid"] = py_optim.uid
     js_optim["weightslist"] = weightslist
+    js_optim["growth"] = growth
+    js_optim["balanced_optimization"] = balanced_optimization
     js_optim["objective_options"] = obj_labels  # Not modified but used on the FE
     js_optim["programs"] = []
-    for prog_name in proj.dataset(py_optim.model_name).prog_names():
+    for prog_name in proj.dataset(py_optim.model_name).prog_names:
         js_optim["programs"].append({"name": prog_name, "included": prog_name in py_optim.prog_set})
     return js_optim
 
@@ -1120,13 +1270,15 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
     """ Convert a JSON to Python representation of an optimization """
     obj_keys = nu.default_trackers()
     kwargs = sc.odict()
-    attrs = ["name", "model_name", "fix_curr", "filter_progs"]
+    attrs = ["name", "model_name", "fix_curr", "filter_progs", "growth", "balanced_optimization", "uid"]
     for attr in attrs:
         kwargs[attr] = js_optim[attr]
     try:
         kwargs["weights"] = sc.odict()
         for key, item in zip(obj_keys, js_optim["weightslist"]):
-            val = numberify(item["weight"], blank="zero", invalid="die", aslist=False)
+            if not isinstance(item["weight"], list):
+                item["weight"] = item["weight"].split(",")
+            val = numberify(item["weight"], blank="zero", invalid="die", aslist=True)
             kwargs["weights"][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim["weightslist"])
@@ -1150,7 +1302,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
 @RPC()
 def get_optim_info(project_id):
     print("Getting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     optim_jsons = []
     for py_optim in proj.optims.values():
         js_optim = py_to_js_optim(py_optim, proj)
@@ -1161,28 +1313,60 @@ def get_optim_info(project_id):
 @RPC()
 def set_optim_info(project_id, optim_jsons):
     print("Setting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
+    optim_uids = {x["uid"] for x in optim_jsons}
+
     proj.optims.clear()
     for j, js_optim in enumerate(optim_jsons):
         optim = js_to_py_optim(js_optim)
         proj.add_optims(optim)
-    print("Saving project...")
+
+    proj.scens = {k: v for k, v in proj.scens.items() if v._optim_uid is None or v._optim_uid in optim_uids}
     save_project(proj)
-    return None
 
 
 @RPC()
-def opt_new_optim(project_id, dataset):
+def delete_optim(project_id, optim_uid):
+    proj = load_project(project_id)
+    proj.scens = {k: v for k, v in proj.scens.items() if v._optim_uid != optim_uid}
+    proj.optims = {k: v for k, v in proj.optims.items() if v.uid != optim_uid}
+    save_project(proj)
+
+
+@RPC()
+def create_optim(project_id, js_optim):
+    proj = load_project(project_id)
+    js_optim["uid"] = sc.uuid()
+    optim = js_to_py_optim(js_optim)
+    proj.add_optims(optim)
+    save_project(proj)
+    return optim.uid
+
+
+@RPC()
+def opt_new_optim(project_id, dataset, locale):
+
+    _ = nu.get_translator(locale)
+
     print("Making new optimization...")
-    proj = load_project(project_id, die=True)
-    py_optim = nu.make_default_optim(modelname=dataset, basename="Maximize thrive")
+    proj = load_project(project_id)
+    py_optim = nu.make_default_optim(modelname=dataset, basename=_("Maximize thrive"), locale=proj.locale)
     prog_set = []
     for program in proj.model(py_optim.model_name).prog_info.programs.values():
         if is_included(py_optim.prog_set, program, True):
             prog_set.append(program.name)
     py_optim.prog_set = prog_set
     js_optim = py_to_js_optim(py_optim, proj)
+    js_optim["uid"] = None
     return js_optim
+
+
+@RPC()
+def clear_optim_scens(project_id, uid):
+    # Remove the scenarios associated with a project
+    proj = load_project(project_id)
+    proj.scens = {k: v for k, v in proj.scens.items() if v._optim_uid != uid}
+    save_project(proj)
 
 
 @RPC()
@@ -1199,7 +1383,7 @@ def opt_switch_dataset(project_id, js_optim: dict) -> dict:
     :param js_optim: Dict from `py_to_js_optim`
     :return: An optimization summary for the FE
     """
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     included = {x["name"]: x["included"] for x in js_optim["programs"]}
     programs = []
     for program in proj.model(js_optim["model_name"]).prog_info.programs.values():
@@ -1210,8 +1394,9 @@ def opt_switch_dataset(project_id, js_optim: dict) -> dict:
 
 @RPC()
 def plot_optimization(project_id, cache_id, do_costeff=False):
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj = retrieve_results(proj)
+
     figs = proj.plot(key=cache_id, optim=True)  # Only plot allocation
     graphs = []
     for f, fig in enumerate(figs.values()):
@@ -1232,6 +1417,50 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
     return {"graphs": graphs, "table": table}
 
 
+@RPC()
+def run_opt_scens(project_id, uids, do_costeff=False, n_runs=1):
+
+    proj = load_project(project_id)
+
+    if "opts" in proj.results:
+        try:
+            datastore.delete(key=proj.results["opts"])
+        except:
+            pass
+
+    n_runs = int(n_runs) if sc.isstring(n_runs) else n_runs
+
+    scens_to_run = [k for k, v in proj.scens.items() if v._optim_uid in uids]
+
+    proj.run_scens(scens_to_run=scens_to_run, n_samples=n_runs, name="opts")
+
+    if do_costeff:
+        # Get cost-effectiveness table
+        costeff = nu.get_costeff(project=proj, results=proj.result("opts"))
+        table = reformat_costeff(costeff)
+    else:
+        table = []
+
+    # Get graphs
+    graphs = []
+    figs = proj.plot("opts")
+    for f, fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor("none")
+        graph_dict = sw.mpld3ify(fig, jsonify=False)
+        graphs.append(graph_dict)
+        pl.close(fig)
+        print("Converted figure %s of %s" % (f + 1, len(figs)))
+
+    # Store results in cache
+    proj = cache_results(proj)
+
+    print("Saving project...")
+    save_project(proj)
+    output = {"graphs": graphs, "table": table}
+    return output
+
+
 ##################################################################################
 ### Geospatial functions and RPCs
 ##################################################################################
@@ -1241,14 +1470,17 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     """ Convert a Python to JSON representation of an optimization """
     # NB. The list of programs may not be quite right if a project has datasets with
     # different programs. This should be debugged when there is a specific use case
-    obj_labels = nu.pretty_labels(direction=True).values()
-    prog_names = proj.dataset(key).prog_names()
+    locale = proj.locale
+    obj_labels = nu.pretty_labels(direction=True, locale=locale).values()
+    prog_names = proj.dataset(key).prog_names
     js_geo = {}
     attrs = ["name", "modelnames", "mults", "add_funds", "fix_curr", "fix_regionalspend", "filter_progs"]
     for attr in attrs:
         js_geo[attr] = getattr(py_geo, attr)  # Copy the attributes into a dictionary
-    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, py_geo.weights)]  # WARNING, ABS HACK
+    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_geo.weights))]  # WARNING, ABS HACK
     js_geo["weightslist"] = weightslist
+    growth = py_geo.growth
+    js_geo["growth"] = growth
     js_geo["spec"] = []
     for prog_name in prog_names:
         program = proj.model(key).prog_info.programs[prog_name]
@@ -1269,13 +1501,15 @@ def js_to_py_geo(js_geo):
     """ Convert a JSON to Python representation of an optimization """
     obj_keys = nu.default_trackers()
     json = sc.odict()
-    attrs = ["name", "modelnames", "fix_curr", "fix_regionalspend", "filter_progs"]
+    attrs = ["name", "modelnames", "fix_curr", "fix_regionalspend", "filter_progs", "growth"]
     for attr in attrs:
         json[attr] = js_geo[attr]
     try:
         json["weights"] = sc.odict()
         for key, item in zip(obj_keys, js_geo["weightslist"]):
-            val = numberify(item["weight"], blank="zero", invalid="die", aslist=False)
+            if not isinstance(item["weight"], list):
+                item["weight"] = item["weight"].split(",")
+            val = numberify(item["weight"], blank="zero", invalid="die", aslist=True)
             json["weights"][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_geo["weightslist"])
@@ -1302,7 +1536,7 @@ def js_to_py_geo(js_geo):
 @RPC()
 def get_geo_info(project_id):
     print("Getting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     geo_jsons = []
     for py_geo in proj.geos.values():
         js_geo = py_to_js_geo(py_geo, proj)
@@ -1315,7 +1549,7 @@ def get_geo_info(project_id):
 @RPC()
 def set_geo_info(project_id, geo_jsons):
     print("Setting optimization info...")
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj.geos.clear()
     for j, js_geo in enumerate(geo_jsons):
         print("Setting optimization %s of %s..." % (j + 1, len(geo_jsons)))
@@ -1331,8 +1565,8 @@ def set_geo_info(project_id, geo_jsons):
 @RPC()
 def get_default_geo(project_id):
     print("Getting default optimization...")
-    proj = load_project(project_id, die=True)
-    py_geo = nu.make_default_geo(basename="Geospatial optimization")
+    proj = load_project(project_id)
+    py_geo = nu.make_default_geo(basename="Geospatial optimization", locale=proj.locale)
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print("Created default JavaScript optimization:")
     sc.pp(js_geo)
@@ -1341,7 +1575,7 @@ def get_default_geo(project_id):
 
 @RPC()
 def plot_geospatial(project_id, cache_id):
-    proj = load_project(project_id, die=True)
+    proj = load_project(project_id)
     proj = retrieve_results(proj)
     figs = proj.plot(key=cache_id, geo=True)  # Only plot allocation
     graphs = []
@@ -1350,11 +1584,12 @@ def plot_geospatial(project_id, cache_id):
             ax.set_facecolor("none")
         graph_dict = sw.mpld3ify(fig, jsonify=False)
         graphs.append(graph_dict)
+        pl.close(fig)
         print("Converted figure %s of %s" % (f + 1, len(figs)))
 
     # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
-    table = reformat_costeff(costeff)
+    #costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+    table = [] #reformat_costeff(costeff)
 
     return {"graphs": graphs, "table": table}
 
@@ -1388,19 +1623,19 @@ def retrieve_results(proj, verbose=True):
 
 
 @RPC(call_type="download")
-def export_results(project_id, cache_id):
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+def export_results(project_id, cache_id, with_uncert=False):
+    proj = load_project(project_id)  # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = "%s outputs.xlsx" % proj.name  # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username)  # Generate the full file name with path.
-    proj.write_results(full_file_name, key=cache_id)
+    proj.write_results(full_file_name, key=cache_id, reduce=with_uncert)
     blobject = sc.Blobject(full_file_name)
     return blobject.tofile(), file_name
 
 
 @RPC(call_type="download")
 def export_graphs(project_id, cache_id):
-    proj = load_project(project_id, die=True)  # Load the project with the matching UID.
+    proj = load_project(project_id)  # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = "%s graphs.pdf" % proj.name  # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username)  # Generate the full file name with path.

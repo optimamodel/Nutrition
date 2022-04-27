@@ -1,15 +1,20 @@
 import numpy as np
 import sciris as sc
+from . import utils
+import multiprocessing
+from .migration import migrate
 
 
 class Scen(sc.prettyobj):
-    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, active=True):
+    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, _optim_uid=None):
         """
         Structure to define a scenario which can be used to fully instantiate a model instance in the project class.
         :param name: The name of the scenario (string)
         :param model_name: The name of the corresponding model object stored in Project (string)
         :param scen_type: Either 'coverage' or 'budget', depending on whether vals is an array of coverages or spending (string)
         :param progvals: an odict of lists, structured (progname, scenario)
+        :param enforce_constraints_year: the model year (starting from zero) from which to enforce constraints such as ramping and fixed budget
+        :param growth: whether there should be population growth or not in this scenario
         :param active: whether or not the scenario is to be run (boolean)
         """
         self.name = name
@@ -17,20 +22,42 @@ class Scen(sc.prettyobj):
         self.scen_type = scen_type
         self.vals = list(progvals.values())
         self.prog_set = list(progvals.keys())
-        self.active = active
+        self._optim_uid = _optim_uid  # Link this scenario to an Optim - for FE use
+
+        if growth is None:
+            if "budget" in self.scen_type:
+                self.growth = "fixed budget"
+            elif "coverage" in self.scen_type:
+                self.growth = "fixed coverage"
+            else:
+                self.growth = "fixed budget"  # False?
+        else:
+            self.growth = growth
+        if enforce_constraints_year is None:
+            self.enforce_constraints_year = max([len(sv) if sv else 0.0 for sv in self.vals])  # e.g. by default for a scenario, if it is defined for 3 years only enforce constraints like fixed spending after that
+        else:
+            self.enforce_constraints_year = enforce_constraints_year
 
     def get_attr(self):
         return self.__dict__
 
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
-def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True):
+
+def run_scen(scen, model, name=None, obj=None, mult=None, weight=None, setcovs=True, restrictcovs=True):  # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """
     from .results import ScenResult  # This is here to avoid a potentially circular import
 
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
+    model.growth = scen.growth
     model.run_sim()
-    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
+    if name is None:
+        name = scen.name
+    res = ScenResult(name, scen.model_name, model, obj=obj, mult=mult, weight=weight, growth=scen.growth)
     return res
 
 
@@ -67,7 +94,7 @@ def convert_scen(scen, model):
     return converted
 
 
-def make_default_scen(modelname=None, model=None, scen_type=None, basename="Baseline"):
+def make_default_scen(name, modelname, model, scen_type=None):
     """
     Creates and returns a prototype / default scenario for a particular Model.
     """
@@ -80,7 +107,7 @@ def make_default_scen(modelname=None, model=None, scen_type=None, basename="Base
     progset = model.prog_info.base_progset()
     progvals = sc.odict([(prog, []) for prog in progset])
 
-    kwargs1 = {"name": basename, "model_name": modelname, "scen_type": scen_type, "progvals": progvals}
+    kwargs1 = {"name": name, "model_name": modelname, "scen_type": scen_type, "progvals": progvals}
 
     default = Scen(**kwargs1)
     return default

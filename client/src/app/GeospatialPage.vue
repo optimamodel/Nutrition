@@ -9,25 +9,25 @@ Last update: 2019jan10
 
     <div v-if="projectID ==''">
       <div style="font-style:italic">
-        <p>No project is loaded.</p>
+        <p>{{ $t("common.no_project_loaded") }}.</p>
       </div>
     </div>
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>Data not yet uploaded for the project.  Please upload a databook in the Projects page.</p>
+        <p>{{ $t("common.no_data_loaded") }}</p>
       </div>
     </div>
 
     <div v-else>
       <div class="card">
-        <help reflink="geospatial" label="Define geospatial optimizations"></help>
+        <help reflink="geospatial" :label='$t("geospatial.Define geospatial optimizations")'></help>
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>{{ $t("Name") }}</th>
+            <th>{{ $t("Status") }}</th>
+            <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
           <tbody>
@@ -40,20 +40,20 @@ Last update: 2019jan10
               {{ timeFormatStr(geoSummary) }}
             </td>
             <td style="white-space: nowrap">
-              <button class="btn __green" :disabled="!canRunTask(geoSummary)"     @click="runGeo(geoSummary, 'full')">Run</button>
-              <button class="btn" :disabled="!canRunTask(geoSummary)"             @click="runGeo(geoSummary, 'test')">Test run</button>
-              <button class="btn __green" :disabled="!canPlotResults(geoSummary)" @click="plotGeospatial(geoSummary)">Plot results</button>
-              <button class="btn" :disabled="!canCancelTask(geoSummary)"          @click="clearTask(geoSummary)">Clear run</button>
-              <button class="btn btn-icon" @click="editGeoModal(geoSummary)" data-tooltip="Edit geospatial optimization"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyGeo(geoSummary)" data-tooltip="Copy geospatial optimization"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteGeo(geoSummary)" data-tooltip="Delete geospatial optimization"><i class="ti-trash"></i></button>
+              <button class="btn __green" :disabled="!canRunTask(geoSummary)"     @click="runGeo(geoSummary, 'full')">{{ $t("common.Run") }}</button>
+              <button class="btn" :disabled="!canRunTask(geoSummary)"             @click="runGeo(geoSummary, 'test')">{{ $t("common.Test run") }}</button>
+              <button class="btn __green" :disabled="!canPlotResults(geoSummary)" @click="plotGeospatial(geoSummary)">{{ $t("common.Plot results") }}</button>
+              <button class="btn __red" :disabled="!canCancelTask(geoSummary)"          @click="clearTask(geoSummary)">{{ $t("common.Clear results") }}</button>
+              <button class="btn btn-icon" @click="editGeoModal(geoSummary)" :data-tooltip='$t("geospatial.Edit geospatial optimization")'><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyGeo(geoSummary)" :data-tooltip='$t("geospatial.Copy geospatial optimization")'><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteGeo(geoSummary)" :data-tooltip='$t("geospatial.Delete geospatial optimization")'><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
         </table>
 
         <div>
-          <button class="btn" :disabled="!geosLoaded" @click="addGeoModal()">Add geospatial optimization</button>
+          <button class="btn" :disabled="!geosLoaded" @click="addGeoModal()">{{ $t("geospatial.Add geospatial optimization") }}</button>
         </div>
       </div>
     </div>
@@ -64,12 +64,12 @@ Last update: 2019jan10
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" :data-tooltip='$t("common.Zoom out")'>&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">Export plots</button>
-          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">Export data</button>
+          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("common.Export data") }}</button>
         </div>
       </div>
 
@@ -90,8 +90,8 @@ Last update: 2019jan10
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
-              <th>Optimization/program</th>
-              <th>Outcomes</th>
+              <th>{{ $t("geospatial.Optimization/program") }}</th>
+              <th>{{ $t("Outcomes") }}</th>
               <th v-for="i in table[0].length-3"></th>
             </tr>
             </thead>
@@ -122,22 +122,21 @@ Last update: 2019jan10
            :classes="['v--modal', 'vue-dialog']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
+           :clickToClose="clickToClose">
 
       <div class="dialog-content">
         <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-          Add geospatial optimization
+          {{ $t("geospatial.Add geospatial optimization") }}
         </div>
         <div class="dialog-c-title" v-else>
-          Edit geospatial optimization
+          {{ $t("geospatial.Edit geospatial optimization") }}
         </div>
         <div class="dialog-c-text" style="display:inline-block">
-          <b>Geospatial optimization name</b><br>
+          <b>{{ $t("geospatial.Geospatial optimization name") }}</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.geoSummary.name"/><br>
-          <b>Select regions</b><br>
+          <b>{{ $t("geospatial.Select regions") }}</b><br>
           <div v-for="selection in addEditModal.geoSummary.dataset_selections">
             <input type="checkbox" :value="selection.active" v-model="selection.active">
             {{selection.name}}</input>
@@ -146,8 +145,8 @@ Last update: 2019jan10
             <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
-                <th>Optimization objective</th>
-                <th>Weight</th>
+                <th>{{ $t("geospatial.Optimization objective") }}</th>
+                <th>{{ $t("geospatial.Weight") }}</th>
               </tr>
               </thead>
               <tbody>
@@ -166,13 +165,16 @@ Last update: 2019jan10
           </div>
 
           <br>
-          <b>Existing spending</b><br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;Can be reallocated<br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;Cannot be reallocated<br><br>
-          <b>Regional spending</b><br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">&nbsp;Can be reallocated between regions<br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">&nbsp;Cannot be reallocated between regions<br><br>
-          <b>Additional funds to allocate</b><br>
+          <b>{{ $t("geospatial.Existing spending") }}</b><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;{{ $t("common.Can be reallocated") }}<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;{{ $t("common.Cannot be reallocated") }}<br><br>
+          <b>{{ $t("geospatial.Regional spending") }}</b><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">&nbsp;{{ $t("geospatial.Can be reallocated between regions") }}<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">&nbsp;{{ $t("geospatial.Cannot be reallocated between regions") }}<br><br>
+          <b>{{ $t("optimization.Growth type") }}</b><br>
+          <input type="radio" v-model="addEditModal.geoSummary.growth" value="fixed budget">&nbsp;{{ $t("optimization.Fixed budget") }}<br>
+          <input type="radio" v-model="addEditModal.geoSummary.growth" value="fixed coverage">&nbsp;{{ $t("optimization.Fixed coverage") }}<br><br>
+          <b>{{ $t("geospatial.Additional funds to allocate") }}</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.geoSummary.add_funds"/><br>
@@ -181,8 +183,8 @@ Last update: 2019jan10
             <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
-                <th>Program name</th>
-                <th style="text-align: center">Include?</th>
+                <th>{{ $t("common.Program name") }}</th>
+                <th style="text-align: center">{{ $t("Include") }}?</th>
               </tr>
               </thead>
               <tbody>
@@ -201,11 +203,11 @@ Last update: 2019jan10
         </div>
         <div style="text-align:center">
           <button @click="modalSave()" class='btn __green' style="display:inline-block">
-            Save
+            {{ $t("Save") }}
           </button>
           &nbsp;&nbsp;&nbsp;
           <button @click="$modal.hide('add-geo')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>
@@ -247,7 +249,7 @@ Last update: 2019jan10
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
+      projectID()    { return this.$store.getters.activeProjectID },
       hasData()      { return utils.hasData(this) },
       placeholders() { return utils.placeholders() },
     },
@@ -503,7 +505,7 @@ Last update: 2019jan10
             })
             this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
             this.geosLoaded = true
-            this.$sciris.succeed(this, 'Geospatial optimizations loaded')
+            this.$sciris.succeed(this)
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not load geospatial optimizations', error)
@@ -661,20 +663,19 @@ Last update: 2019jan10
         this.$sciris.rpc('delete_task', ['run_optim'])
       },
 
-      plotGeospatial(geoSummary) {
+      async plotGeospatial(geoSummary) {
         console.log('plotGeospatial() called')
         this.$sciris.start(this)
-        this.$sciris.rpc('plot_geospatial', [this.projectID, geoSummary.serverDatastoreId])
-          .then(response => {
-            this.table = response.data.table
-            this.makeGraphs(response.data.graphs)
-            this.displayResultName = geoSummary.name
-            this.displayResultDatastoreId = geoSummary.serverDatastoreId
-            this.$sciris.succeed(this, 'Graphs created')
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
-          })
+        try{
+          let response = await this.$sciris.rpc('plot_geospatial', [this.projectID, geoSummary.serverDatastoreId]) // Go to the server to get the results
+          this.table = null //response.data.table
+          this.makeGraphs(response.data.graphs)
+          this.displayResultName = geoSummary.name
+          this.displayResultDatastoreId = geoSummary.serverDatastoreId
+          this.$sciris.succeed(this, '')
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not plot geospatial optimization', error)
+        }
       },
     }
   }

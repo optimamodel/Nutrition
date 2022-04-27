@@ -21,6 +21,10 @@ Last update: 2018sep22
             </a>
             <Changelog v-if="showChangelog" @close="showChangelog=false" />
           </div>
+
+          <br/><br/>
+          <LocaleSwitcher />
+
         </div>
       </div>
     </div>
@@ -28,7 +32,13 @@ Last update: 2018sep22
       <form name="LogInForm" @submit.prevent="tryLogin" style="max-width: 500px; min-width: 100px; margin: 0 auto">
 
         <div class="modal-body">
-          <h2>Login</h2>
+          <h2>{{ $t("Login") }}</h2>
+          <div class="section">
+            {{ $t("login.deprecation_warning") }}
+            <a href="http://nutrition.legacy.optimamodel.com" target="_blank">
+            {{ $t("Access the legacy version here") }}
+            </a>
+          </div>
 
           <div class="section" v-if="loginResult != ''">{{ loginResult }}</div>
 
@@ -36,7 +46,7 @@ Last update: 2018sep22
             <input class="txbox __l"
                    type="text"
                    name="username"
-                   placeholder="User name"
+                   :placeholder="$t('placeholder.Username')"
                    required="required"
                    v-model='loginUserName'/>
           </div>
@@ -45,17 +55,17 @@ Last update: 2018sep22
             <input class="txbox __l"
                    type="password"
                    name="password"
-                   placeholder="Password"
+                   :placeholder="$t('placeholder.Password')"
                    required="required"
                    v-model='loginPassword'/>
           </div>
 
-          <button type="submit" class="section btn __l __block">Login</button>
+          <button type="submit" class="section btn __l __block">{{ $t("Login") }}</button>
 
           <div class="section">
-            New user?
+            {{ $t("login.New user?") }}
             <router-link to="/register">
-              Register here
+              {{ $t("login.Register here") }}
             </router-link>
           </div>
         </div>
@@ -67,10 +77,11 @@ Last update: 2018sep22
 <script>
   import router from '../router.js'
   import Changelog from './Changelog.vue'
+  import LocaleSwitcher from "./LocaleSwitcher.vue"
 
   export default {
     name: 'LoginPage',
-    components: {Changelog},
+    components: {Changelog, LocaleSwitcher},
 
     data () {
       return {

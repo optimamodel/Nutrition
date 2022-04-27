@@ -1,24 +1,41 @@
 #######################################################################################################
-#%% Imports
+# %% Imports
 #######################################################################################################
-
+import io
 import os
+
+import openpyxl
+
 import sciris as sc
+import numpy as np
+import multiprocessing
 from .version import version
+from .utils import default_trackers, add_dummy_prog_data, pretty_labels, run_parallel
+from .version import version, gitinfo
 from .utils import default_trackers, add_dummy_prog_data
+
 from .data import Dataset
 from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results
-from .plotting import make_plots, get_costeff, plot_costcurve
-from .demo import demo_scens, demo_optims, demo_geos
+from .results import write_results, resampled_key_str
+from .plotting import make_plots, get_costeff, plot_costcurve, save_figs
 from . import settings
+from .settings import Settings
+import pandas as pd
+import random
+from .results import write_results, reduce_results
+from .plotting import make_plots, get_costeff, plot_costcurve
+from . import settings
+from . import utils as utils
+from .migration import migrate
+from .utils import get_translator, translate
+from datetime import timezone
 
 
 #######################################################################################################
-#%% Project class -- this contains everything else!
+# %% Project class -- this contains everything else!
 #######################################################################################################
 
 
@@ -48,8 +65,10 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name="default", loadsheets=True, inputspath=None, defaultspath=None):
+    def __init__(self, name="default", loadsheets=True, inputspath=None, defaultspath=None, locale=None):
         """ Initialize the project """
+
+        self.locale = locale or utils.locale  # Fall back to module's default locale if no locale is provided
 
         ## Define the structure sets
         self.datasets = sc.odict()
@@ -59,21 +78,20 @@ class Project(object):
         self.geos = sc.odict()
         self.results = sc.odict()
         self.spreadsheets = sc.odict()
+
         if loadsheets:
             if not inputspath:
-                template_name = "template_input.xlsx"
-                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath("inputs"))
-                self.templateinput = sc.Spreadsheet(filename=inputspath)
+                self.templateinput = sc.Spreadsheet(settings.ONpath / "inputs" / self.locale / "template_input.xlsx")
             else:
                 self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
         ## Define other quantities
         self.name = name
         self.uid = sc.uuid()
-        self.created = sc.now()
-        self.modified = sc.now()
+        self.created = sc.now(utc=True)
+        self.modified = sc.now(utc=True)
         self.version = version
-        self.gitinfo = sc.gitinfo(__file__)
+        self.gitinfo = gitinfo
         self.filename = None  # File path, only present if self.save() is used
 
         return None
@@ -90,14 +108,19 @@ class Project(object):
         output += "        Geospatial: %i\n" % len(self.geos)
         output += "      Results sets: %i\n" % len(self.results)
         output += "\n"
-        output += "      Date created: %s\n" % sc.getdate(self.created)
-        output += "     Date modified: %s\n" % sc.getdate(self.modified)
+        output += "      Date created: %s\n" % sc.getdate(self.created.replace(tzinfo=timezone.utc).astimezone(tz=None), dateformat="%Y-%b-%d %H:%M:%S %Z")
+        output += "     Date modified: %s\n" % sc.getdate(self.modified.replace(tzinfo=timezone.utc).astimezone(tz=None), dateformat="%Y-%b-%d %H:%M:%S %Z")
         output += "               UID: %s\n" % self.uid
         output += "  Optima Nutrition: v%s\n" % self.version
         output += "        Git branch: %s\n" % self.gitinfo["branch"]
         output += "          Git hash: %s\n" % self.gitinfo["hash"]
         output += "============================================================\n"
         return output
+
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
     def getinfo(self):
         """ Return an odict with basic information about the project"""
@@ -125,12 +148,12 @@ class Project(object):
     def storeinputs(self, inputspath=None, country=None, region=None, name=None):
         """ Reload the input spreadsheet into the project """
         if inputspath is None:
-            inputspath = settings.data_path(country, region)
+            inputspath = settings.data_path(self.locale, country, region)
         name = self._sanitizename(name, country, region, inputspath)
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
 
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, growth=False):
         """Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model """
 
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -138,16 +161,27 @@ class Project(object):
         if fromfile:
             name = sc.uniquename(name, self.datasets.keys())
 
-        # Optionally (but almost always) reload the spreadsheets from file.
+        # The fromfile path is used if loading a file for the first time e.g. when creating a project
+        # Otherwise, we might be reloading a modified Dataset to recompute its value via the loading process
+        # In that case, there is no need to store the inputs because they are already stored within the Project
         if fromfile:
             if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
 
-        # Optionally (but almost always) use these to make a model (do not do if blank sheets).
-        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
+        ss = self.inputsheet(name)
+        wb = openpyxl.load_workbook(io.BytesIO(ss.blob), read_only=False, data_only=True)
+        databook = pd.ExcelFile(wb, engine='openpyxl')
+
+        dataset = Dataset(databook=databook, country=country, region=region, name=name)
+        if dataset.locale != self.locale:
+            if not self.datasets:
+                self.locale = dataset.locale
+            else:
+                raise Exception(f'Data locale "{dataset.locale}" does not match project locale "{self.locale}"')
+
         self.datasets[name] = dataset
         dataset.name = name
-        self.add_model(name)  # add model associated with the dataset
+        self.add_model(name, growth=growth)  # add model associated with the dataset or datasets
 
         # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
         # in the project.
@@ -187,12 +221,16 @@ class Project(object):
             del tmpproject  # Don't need it hanging around any more
         return fullpath
 
-    def write_results(self, filename=None, folder=None, key=None):
-        """ Blargh, this really needs some tidying """
+    def write_results(self, filename=None, folder=None, key=None, reduce=False):
+        """Blargh, this really needs some tidying
+        - This function calls write_results function in results.py"""
         if key is None:
             key = -1
         results = self.result(key)
-        write_results(results, projname=self.name, filename=filename, folder=folder)
+        reduced_results = {}
+        if reduce:
+            reduced_results = reduce_results(results)
+        write_results(results, reduced_results=reduced_results, projname=self.name, filename=filename, folder=folder)
         return
 
     def add(self, name, item, what=None):
@@ -200,7 +238,7 @@ class Project(object):
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print('Item "{}" added to "{}"'.format(name, what))
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
 
     def remove(self, what, name=None):
         structlist = self.getwhat(what=what)
@@ -210,7 +248,7 @@ class Project(object):
         else:
             structlist.pop(name)
         print('{} "{}" removed'.format(what, name))
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
 
     def getwhat(self, what):
         """
@@ -231,7 +269,7 @@ class Project(object):
         elif what in ["r", "res", "result", "results"]:
             structlist = self.results
         else:
-            raise settings.ONException("Item not found")
+            raise Exception("Item not found")
         return structlist
 
     #######################################################################################################
@@ -323,16 +361,15 @@ class Project(object):
         self.add_geos(geos)
         return geos
 
-    def add_model(self, name=None):
+    @translate
+    def add_model(self, name=None, growth=False):
         """Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
         """
         dataset = self.dataset(name)
-        pops = dataset.pops
-        prog_info = dataset.prog_info
         t = dataset.t
-        model = Model(pops, prog_info, t)
+        model = Model(dataset, t, growth=growth)
         self.add(name=name, item=model, what="model")
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -340,11 +377,13 @@ class Project(object):
         #         defaults = make_default_scen(name, model, self.scens[scen_name].scen_type, scen_name)
         #         self.add_scens(defaults)
         # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
-        basename = "Baseline"
+        basename = _("Baseline")
         if basename not in self.scens.keys():
-            defaults = make_default_scen(name, model, "coverage", basename)
+            defaults = make_default_scen(modelname=name, model=model, scen_type="coverage", name=basename)
             self.add_scens(defaults)
-        self.modified = sc.now()
+
+        self.modified = sc.now(utc=True)
+
         return model
 
     def add_scens(self, scens, overwrite=False):
@@ -360,7 +399,7 @@ class Project(object):
         scens = sc.promotetolist(scens)
         for scen in scens:
             self.add(name=scen.name, item=scen, what="scen")
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return scens
 
     def convert_scen(self, key=-1):
@@ -373,14 +412,17 @@ class Project(object):
         self.add_scens(converted)
         return
 
-    def run_baseline(self, model_name, prog_set, dorun=True):
+    @translate
+    def run_baseline(self, model_name, prog_set, growth, dorun=True):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
-        if "Excess budget not allocated" in prog_set:
-            excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+        if _("Excess budget not allocated") in prog_set:
+            excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
-        base = Scen(name="Baseline", model_name=model_name, scen_type="coverage", progvals=progvals)
+
+        base = Scen(name=_("Baseline"), model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1)
+
         if dorun:
             return run_scen(base, model)
         else:
@@ -392,7 +434,7 @@ class Project(object):
         optims = sc.promotetolist(optims)
         for optim in optims:
             self.add(name=optim.name, item=optim, what="optim")
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return optims
 
     def add_geos(self, geos, overwrite=False):
@@ -401,7 +443,7 @@ class Project(object):
         geos = sc.promotetolist(geos)
         for geo in geos:
             self.add(name=geo.name, item=geo, what="geo")
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return geos
 
     def add_result(self, result, name=None):
@@ -416,7 +458,7 @@ class Project(object):
         return result
 
     def demo_scens(self, dorun=None, doadd=True):
-        scens = demo_scens()
+        scens = demo_scens(self.locale)
         if doadd:
             self.add_scens(scens)
             if dorun:
@@ -426,7 +468,7 @@ class Project(object):
             return scens
 
     def demo_optims(self, dorun=False, doadd=True):
-        optims = demo_optims()
+        optims = demo_optims(self.locale)
         if doadd:
             self.add_optims(optims)
             if dorun:
@@ -436,7 +478,7 @@ class Project(object):
             return optims
 
     def demo_geos(self, dorun=False, doadd=True):
-        geos = demo_geos()
+        geos = demo_geos(self.locale)
         if doadd:
             self.add_geos(geos)
             if dorun:
@@ -445,55 +487,133 @@ class Project(object):
         else:
             return geos
 
-    def run_scens(self, scens=None):
-        """Function for running scenarios
-        If scens is specified, they are added to self.scens"""
-        results = []
-        if scens is not None:
-            self.add_scens(scens)
-        for scen in self.scens.values():
-            if scen.active:
-                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
-                    raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
-                model = self.model(scen.model_name)
-                res = run_scen(scen, model)
-                results.append(res)
-        self.add_result(results, name="scens")
-        return None
+    @translate
+    def run_scen(self, scen, n_samples=0, seed=None):
+        """Function for running a single scenario that may or may not be saved in P.scens
+        NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
+        NOTE this does not add the scenario to P.scens or save the results to the project
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True):
+        :param scen: a single Scenario
+        :param n_samples: number of times to run with sampling. n_samples==0 implies run without sampling
+        :return a list of Results
+        """
+
+        _ = utils.get_translator(self.locale)
+
+        if seed is None:
+            seed = 0
+
+        results = []
+        if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+            raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
+
+        def _add_excess_budget(scen, model):
+            # unclear why this is needed?
+            if _("Excess budget not allocated") in scen.prog_set:  # add a dummy program to the model
+                excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
+                model.prog_info.add_prog(excess_spend, model.pops)
+                model.prog_info.prog_data = excess_spend["prog_data"]
+
+        dataset = self.dataset(scen.model_name)  # WARNING - assumes that model names are always the same as dataset names
+
+        if n_samples == 0:
+            model = Model(dataset, dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+            result_name = scen.name
+            _add_excess_budget(scen, model)
+            res = run_scen(scen, model, name=result_name)
+            results.append(res)
+        else:
+            for i in range(n_samples):
+                model = Model(dataset.resample(seed=seed + i), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+                result_name = scen.name + resampled_key_str + str(i)
+                _add_excess_budget(scen, model)
+                res = run_scen(scen, model, name=result_name)
+                results.append(res)
+
+        return results
+
+    def run_scens(self, scens_to_run=None, n_samples=0, seed=None, name="scens"):
+        """
+        Run scenarios
+
+        :param scens_to_run: Optionally specify a collection of scenario names to run (default is to run all scenarios)
+        :param n_samples: Set to 0 to do no sampling, otherwise, the number of sampled runs to perform
+        :param seed:
+        :return:
+        """
+
+        if scens_to_run is None:
+            scens_to_run = self.scens.keys()
+
+        results = []
+
+        for scen_name, scen in self.scens.items():
+            if scen_name in scens_to_run:
+                results += self.run_scen(scen, n_samples=0)  # best estimate (no random seed relevant)
+                if n_samples > 0:
+                    results += self.run_scen(scen, n_samples=n_samples, seed=seed)  # actual samples
+
+        self.add_result(results, name=name)
+        return results
+
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=False, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
+        _ = utils.get_translator(self.locale)
         if optim is not None:
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
         optim = self.optim(key)
-        results = []
-        # run baseline
-        if runbaseline:
-            optim.prog_set.append("Excess budget not allocated")
-            base = self.run_baseline(optim.model_name, optim.prog_set)
-            results.append(base)
-            optim.prog_set.remove("Excess budget not allocated")
-        # run optimization
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
+
+        results, scens = [], []
+        # run baseline
+        if runbaseline or runbalanced:
+            base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
+            base_scen.name = optim.name + " (" + _("baseline") + ")"
+            base_scen._optim_uid = optim.uid
+            base = self.run_scen(scen=base_scen, n_samples=0)[0]  # noting that run_scen returns a list
+            if runbaseline:  # don't append this to the results if runbaseline=False
+                results.append(base)
+                scens.append(base_scen)
+        else:
+            base = None
+
+        # run optimization
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
-        # add by optim name
+        opt_results, opt_scens = optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
+
+        results += opt_results
+        scens += opt_scens
+
+        if n_samples >= 1:  # we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
+            results += self.run_scen(scen=base_scen, n_samples=n_samples, seed=seed)
+
+            for opt_result in opt_results:
+                optim_alloc = opt_result.get_allocs()
+                scen_name = opt_result.name
+                scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
+                results += self.run_scen(scen=scen, n_samples=n_samples, seed=seed)
+
         if dosave:
             self.add_result(results, name=optim.name)
-        return results
+        return results, scens
 
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False):
+    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=200, dosave=True, parallel=False, runbalanced=False, n_samples=0, seed=None):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""
+
         if geo is not None:
             self.add_geos(geo)
             key = geo.name  # this to handle parallel calls of this function
         geo = self.geo(key)
-        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel)
+
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_samples=n_samples)
+
+        # TODO needs to do sampling here?
+
         if dosave:
             self.add_result(results, name="geospatial")
         return results
@@ -511,8 +631,10 @@ class Project(object):
     def sensitivity(self):
         print("Not implemented")
 
-    def plot(self, key=-1, toplot=None, optim=False, geo=False):
-        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
+    def plot(self, key=-1, toplot=None, optim=False, geo=False, save_plots_folder=None):
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo, locale=self.locale)
+        if figs and save_plots_folder:
+            save_figs(figs, path=save_plots_folder)
         return figs
 
     def get_costeff(self, resultname=None):
@@ -533,21 +655,187 @@ class Project(object):
         plot_costcurve(results)
         return
 
+    def __len__(self):
+        try:
+            return len(self.results)
+        except:
+            return 0
 
-def demo(scens=False, optims=False, geos=False):
+    def __bool__(self):
+        return True
+
+
+### DEMO VALUES
+
+
+def demo_scens(locale):
+    _ = get_translator(locale)
+
+    # stunting reduction
+    kwargs1 = {
+        "name": _("Stunting example (coverage)"),
+        "model_name": _("demo"),
+        "scen_type": "coverage",
+        "progvals": sc.odict(
+            {
+                _("IYCF 1"): [1],
+                _("Vitamin A supplementation"): [1],
+            }
+        ),
+    }
+
+    kwargs2 = {
+        "name": _("Stunting example (budget)"),
+        "model_name": _("demo"),
+        "scen_type": "budget",
+        "progvals": sc.odict(
+            {
+                _("IYCF 1"): [2e6],
+                _("Vitamin A supplementation"): [2e6],
+            }
+        ),
+    }
+
+    # wasting reduction
+    kwargs3 = {
+        "name": _("Wasting example"),
+        "model_name": _("demo"),
+        "scen_type": "coverage",
+        "progvals": sc.odict(
+            {
+                _("Treatment of SAM"): [1],
+            }
+        ),
+    }
+
+    # anaemia reduction
+    kwargs4 = {
+        "name": _("Anaemia example"),
+        "model_name": _("demo"),
+        "scen_type": "coverage",
+        "progvals": sc.odict(
+            {
+                _("Micronutrient powders"): [1],
+                _("IFAS (community)"): [1],
+                _("IFAS (retailer)"): [1],
+                _("IFAS (school)"): [1],
+            }
+        ),
+    }
+
+    scens = [Scen(**kwargs) for kwargs in [kwargs1, kwargs2, kwargs3, kwargs4]]
+    return scens
+
+
+def demo_optims(locale):
+    _ = get_translator(locale)
+
+    kwargs1 = {
+        "name": _("Maximize thrive"),
+        "model_name": _("demo"),
+        "mults": [1],
+        "weights": sc.odict({"thrive": [1]}),
+        "prog_set": [
+            _("Vitamin A supplementation"),
+            _("IYCF 1"),
+            _("IFA fortification of maize"),
+            _("Balanced energy-protein supplementation"),
+            _("Public provision of complementary foods"),
+            _("Iron and iodine fortification of salt"),
+        ],
+        "fix_curr": False,
+        "add_funds": 0,
+        "filter_progs": True,
+    }
+
+    optims = [Optim(**kwargs1, locale=locale)]
+    return optims
+
+
+def demo_geos(locale):
+    _ = get_translator(locale)
+
+    kwargs1 = {
+        "name": _("Geospatial optimization"),
+        "modelnames": [_("demoregion1"), _("demoregion2"), _("demoregion3")],
+        "weights": sc.odict({"thrive": [1.0]}),
+        "fix_curr": False,
+        "fix_regionalspend": False,
+        "add_funds": 0,
+        "prog_set": [
+            _("IFA fortification of maize"),
+            _("IYCF 1"),
+            _("Lipid-based nutrition supplements"),
+            _("Multiple micronutrient supplementation"),
+            _("Micronutrient powders"),
+            _("Kangaroo mother care"),
+            _("Public provision of complementary foods"),
+            _("Treatment of SAM"),
+            _("Vitamin A supplementation"),
+            _("Mg for eclampsia"),
+            _("Zinc for treatment + ORS"),
+            _("Iron and iodine fortification of salt"),
+        ],
+    }
+
+    geos = [Geospatial(**kwargs1, locale=locale)]
+    return geos
+
+
+def demo(scens=False, optims=False, geos=False, locale=None):
     """ Create a demo project with demo settings """
 
+    _ = utils.get_translator(locale)
+
     # Parameters
-    name = "Demo project"
+    name = _("Demo project")
     country = "demo"
-    region = "national"
 
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
-    P = Project(name)
-    P.load_data(country, region, name="demo")
-    P.load_data(country, "region1", name="demoregion1")
-    P.load_data(country, "region2", name="demoregion2")
-    P.load_data(country, "region3", name="demoregion3")
+    P = Project(name, locale=locale)
+    P.load_data(country, "national", name=_("demo"))
+    P.load_data(country, "region1", name=_("demoregion1"))
+    P.load_data(country, "region2", name=_("demoregion2"))
+    P.load_data(country, "region3", name=_("demoregion3"))
+
+    # Create demo scenarios and optimizations
+    if scens:
+        P.demo_scens()
+    if optims:
+        P.demo_optims()
+    if geos:
+        P.demo_geos()
+    return P
+
+def default_country(country:str, scens=False, optims=False, geos=False, locale=None):
+    """
+    Create a default country project with demo settings
+
+    :param country: Country ISO code e.g. "AFG"
+    :param scens:
+    :param optims:
+    :param geos:
+    :param locale: Optionally specify locale (e.g. "en")
+    :return:
+
+    """
+
+    from .settings import ONpath
+
+    if locale is None:
+        locale = utils.locale # Use default locale
+
+    # Get country name
+    country_name = pd.read_csv(ONpath / "inputs" / "countries.csv" , index_col="iso_code").loc[country, locale]
+    # country_name = country_names.loc[country]
+
+    # Create project
+    _ = utils.get_translator(locale)
+    P = Project(country_name + " " + _("project"), locale=locale)
+
+    # Load demo databook
+    file_loc = str(ONpath / "inputs" / locale / "LiST countries" / country) + "_databook.xlsx"
+    P.load_data(country_name, name=country_name, inputspath=file_loc)
 
     # Create demo scenarios and optimizations
     if scens:

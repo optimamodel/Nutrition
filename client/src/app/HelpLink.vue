@@ -7,7 +7,7 @@ Last update: 2019-02-22
 <template>
   <span>
     <div v-if="label!==''" style="display:inline-block; font-size:1.4em; margin: 0px 5px 10px 0px;">{{ label }}</div> <!-- Was <h4> -->
-      <button class="btn __blue small-button" @click="openLink(reflink)" data-tooltip="Help" style="padding-top:2px; margin-bottom:5px">
+      <button class="btn __blue small-button" @click="openLink(reflink)" :data-tooltip='$t("Help")' style="padding-top:2px; margin-bottom:5px">
         <i class="ti-help"></i>
       </button>
   </span>

@@ -5,7 +5,6 @@
 *.rds
 *.png
 .pkl
-*.xls
 *.csv
 ~$*
 
@@ -74,8 +73,8 @@ coverage.xml
 .hypothesis/
 
 # Translations
-*.mo
-*.pot
+#*.mo
+#*.pot
 
 # Django stuff:
 *.log
@@ -132,5 +131,5 @@ package-lock.json
 *.obj
 tests/testing.xlsx
 inputs/costed_baseline*xlsx
-*.xlsx
+
 *.xlsm

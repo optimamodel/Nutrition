@@ -1,0 +1,1243 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+msgid "1-5 months"
+msgstr "1-5 meses"
+
+msgid "12-23 months"
+msgstr "12-23 meses"
+
+msgid "18-23 months"
+msgstr "18-23 meses"
+
+msgid "24 months or greater"
+msgstr "24 meses o más"
+
+msgid "24-59 months"
+msgstr "24-59 meses"
+
+msgid "6-11 months"
+msgstr "6-11 meses"
+
+msgid "<1 month"
+msgstr "<1 mes"
+
+msgid "=\"Baseline (\"&start_year&\") coverage\""
+msgstr "=\"Cobertura de referencia (\"&start_year&\")\""
+
+msgid ""
+"=\"Percentage of children in each category in baseline year (\"&start_year&"
+"\")\""
+msgstr ""
+"=\"Porcentaje de niños en cada categoría en el año de referencia "
+"(\"&start_year&\")\""
+
+msgid ""
+"=\"Percentage of deaths in baseline year (\"&start_year&\") attributable to "
+"cause\""
+msgstr ""
+"=\"Porcentaje de muertes en el año de referencia (\"&start_year&\") "
+"atribuible a la causa\""
+
+msgid ""
+"=\"Percentage of population in each category in baseline year "
+"(\"&start_year&\")\""
+msgstr ""
+"=\"Porcentaje de población en cada categoría en el año de referencia "
+"(\"&start_year&\")\""
+
+msgid "AIDS"
+msgstr "SIDA"
+
+msgid "Abortion"
+msgstr "Aborto"
+
+msgid "Add extension"
+msgstr "Añadir extensión"
+
+msgid "Affected fraction"
+msgstr "Fracción afectada"
+
+msgid "Age distribution of pregnant women"
+msgstr "Distribución de edad de las mujeres embarazadas"
+
+msgid "Age group"
+msgstr "Rango de edades"
+
+msgid "All"
+msgstr "Todo"
+
+msgid "Anaemia"
+msgstr "Anemia"
+
+msgid "Anaemia prevalence (%)"
+msgstr "Prevalencia de anemia (%)"
+
+msgid "Anaemia status"
+msgstr "Estado de anemia"
+
+msgid "Anaemic"
+msgstr "Anémico"
+
+msgid "Anaemic child (per year)"
+msgstr "Niño anémico (por año)"
+
+msgid "Anaemic pregnant woman (per pregnancy)"
+msgstr "Mujer embarazada anémica (por embarazo)"
+
+msgid "Antepartum haemorrhage"
+msgstr "Hemorragia pre-parto"
+
+msgid "Average episodes per year: 1-5 months"
+msgstr "Promedio de episodios por año: 1-5 meses"
+
+msgid "Average episodes per year: 12-23 months"
+msgstr "Promedio de episodios por año: 12-23 meses"
+
+msgid "Average episodes per year: 24-59 months"
+msgstr "Promedio de episodios por año: 24-59 meses"
+
+msgid "Average episodes per year: 6-11 months"
+msgstr "Promedio de episodios por año: 6-11 meses"
+
+msgid "Average episodes per year: <1 month"
+msgstr "Promedio de episodios por año: <1 mes"
+
+msgid "Balanced energy-protein supplementation"
+msgstr "Suplemento energético-proteico equilibrado"
+
+msgid "Baseline (2017) coverage"
+msgstr "Cobertura de referencia (2017)"
+
+msgid "Baseline (2019) coverage"
+msgstr "Cobertura de referencia (2019)"
+
+msgid "Baseline year (projection start year)"
+msgstr "Año de referencia (año de inicio de la proyección)"
+
+msgid "Baseline year data"
+msgstr "Datos del año de referencia"
+
+msgid "Baseline year mortality and risk factors"
+msgstr "Mortalidad y factores de riesgo en el año de referencia"
+
+# Translation must be 31 characters or less in length
+msgid "Baseline year population inputs"
+msgstr "Entradas de población-año base"
+
+msgid "Behaviour"
+msgstr "Comportamiento"
+
+msgid "Birth number"
+msgstr "Número de nacimiento"
+
+# birth outcome means for example °term°, °preterm°, appropriate for gestational age° etc. Not sure if resultado is interpreted in the same way
+msgid "Birth outcome distribution"
+msgstr "Distribución del desenlace del nacimiento"
+
+# Translation must be 31 characters or less in length
+# Risks here refers to for example neonatal prematurity, naonatal sepsis, neonatal pneumonia
+msgid "Birth outcome risks"
+msgstr "Riesgos desenlace de nacimiento"
+
+msgid "Birth outcomes"
+msgstr "Desenlaces del nacimiento"
+
+msgid "Birth spacing"
+msgstr "Espaciamiento entre los nacimientos"
+
+msgid "Breastfeeding"
+msgstr "Lactancia materna"
+
+# Translation must be 31 characters or less in length
+msgid "Breastfeeding distribution"
+msgstr "Distribución de lactancia"
+
+msgid "Breastfeeding status"
+msgstr "Situación de lactancia materna"
+
+msgid "Broad population group"
+msgstr "Amplio grupo de población"
+
+msgid "By program"
+msgstr "Por programa"
+
+msgid "By program - lower"
+msgstr "Por programa - inferior"
+
+msgid "By program - upper"
+msgstr "Por programa - superior"
+
+msgid "Calcium supplementation"
+msgstr "Suplemento con calcio"
+
+msgid "Cash transfers"
+msgstr "Transferencias de efectivo"
+
+msgid "Cause of death"
+msgstr "Causa de muerte"
+
+msgid "Causes"
+msgstr "Causas"
+
+# Translation must be 31 characters or less in length
+msgid "Causes of death"
+msgstr "Causas de muerte"
+
+msgid "Child death"
+msgstr "Muerte del niño"
+
+msgid "Child turning 5 stunted (over lifetime)"
+msgstr ""
+"Niño que cumple 5 años con retraso en el crecimiento (a lo largo de su vida)"
+
+msgid "Child turning age 5 stunted (over lifetime)"
+msgstr ""
+"Niño que cumple 5 años con retraso en el crecimiento (a lo largo de su vida)"
+
+msgid "Child wasting episode"
+msgstr "Episodio de emaciación infantil"
+
+msgid "Children"
+msgstr "Niños"
+
+msgid "Children 0-5 months"
+msgstr "Niños de 0 a 5 meses"
+
+msgid "Children 0-59 months"
+msgstr "Niños de 0 a 59 meses"
+
+msgid "Children 6-23 months"
+msgstr "Niños de 6 a 23 meses"
+
+msgid "Children under 5 population"
+msgstr "Población infantil menor de 5 años"
+
+msgid "Community"
+msgstr "Comunidad"
+
+msgid "Community based"
+msgstr "Basado en la comunidad"
+
+msgid "Community-based"
+msgstr "Basado en la comunidad"
+
+msgid "Condom"
+msgstr "Preservativo/condón"
+
+msgid "Cost"
+msgstr "Costo"
+
+# Translation must be 31 characters or less in length
+msgid "Cost curve options"
+msgstr "Opciones de la curva de costos"
+
+msgid "Cost-coverage relationship"
+msgstr "Relación costo-cobertura"
+
+msgid "Curved with decreasing marginal cost"
+msgstr "Curva con costo marginal decreciente"
+
+msgid "Curved with increasing marginal cost"
+msgstr "Curva con costo marginal creciente"
+
+msgid "Data"
+msgstr "Datos"
+
+msgid "Default"
+msgstr "Por defecto"
+
+msgid "Delayed cord clamping"
+msgstr "Retraso en el pinzamiento del cordón umbilical"
+
+msgid "Delivery mode"
+msgstr "Método de entrega"
+
+# Translation must be 31 characters or less in length
+msgid "Demographic projections"
+msgstr "Proyecciones demográficas"
+
+msgid "Diarrhoea"
+msgstr "Diarrea"
+
+msgid "Diarrhoea (per additional episode)"
+msgstr "Diarrea (por episodio adicional)"
+
+msgid "Diarrhoea (per additional episode) - lower"
+msgstr "Diarrea (por episodio adicional) - inferior"
+
+msgid "Diarrhoea (per additional episode) - upper"
+msgstr "Diarrea (por episodio adicional) - superior"
+
+msgid "Diarrhoea incidence"
+msgstr "Incidencia de la diarrea"
+
+# Translation must be 31 characters or less in length
+msgid "Economic loss"
+msgstr "Pérdida económica"
+
+msgid "Effectiveness"
+msgstr "Efectividad"
+
+# effectiveness in reducing incidence
+msgid "Effectiveness incidence"
+msgstr "Efectividad en incidencia"
+
+# effectiveness in reducing mortality
+msgid "Effectiveness mortality"
+msgstr "Efectividad en mortalidad"
+
+msgid "Embolism"
+msgstr "Embolia"
+
+msgid "End year"
+msgstr "Año final"
+
+msgid "Estimated pregnant women"
+msgstr "Estimación de mujeres embarazadas"
+
+msgid "Exclusion dependency"
+msgstr "Exclusión de intervención dependiente"
+
+msgid "Exclusive"
+msgstr "Exclusivo"
+
+msgid "Extension"
+msgstr "Extensión"
+
+msgid "Family planning"
+msgstr "Planificación familiar"
+
+msgid "Family planning - lower"
+msgstr "Planificación familiar - más baja"
+
+msgid "Family planning - upper"
+msgstr "Planificación familiar - superior"
+
+msgid "Female sterilization"
+msgstr "Esterilización femenina"
+
+# tracking ovulation to prevent pregnancy (sometimes called natural family planning) - Planificación Familiar Natural?
+msgid "Fertility awareness"
+msgstr "Planificación Familiar Natural"
+
+msgid "First birth"
+msgstr "El primer nacimiento"
+
+msgid "Food"
+msgstr "Alimento"
+
+msgid "For MAM per additional episode of diarrhoea"
+msgstr "Para MAM por episodio adicional de diarrea"
+
+msgid "For MAM per additional episode of diarrhoea - lower"
+msgstr "Para MAM por episodio adicional de diarrea - inferior"
+
+msgid "For MAM per additional episode of diarrhoea - upper"
+msgstr "Para MAM por episodio adicional de diarrea - superior"
+
+msgid "For SAM per additional episode of diarrhoea"
+msgstr "Para MAS por episodio adicional de diarrea"
+
+msgid "For SAM per additional episode of diarrhoea - lower"
+msgstr "Para MAS por episodio adicional de diarrea - inferior"
+
+msgid "For SAM per additional episode of diarrhoea - upper"
+msgstr "Para MAS por episodio adicional de diarrea - superior"
+
+msgid "For anaemia per additional episode of severe diarrhoea"
+msgstr "Para anemia por episodio adicional de diarrea grave"
+
+msgid "For anaemia per additional episode of severe diarrhoea - lower"
+msgstr "Para anemia por episodio adicional de diarrea grave - inferior"
+
+msgid "For anaemia per additional episode of severe diarrhoea - upper"
+msgstr "Para anemia por episodio adicional de diarrea grave - superior"
+
+msgid "Fraction eating maize as main staple food"
+msgstr "Fracción que consume maíz como principal alimento básico"
+
+msgid "Fraction eating rice as main staple food"
+msgstr "Fracción que consume arroz como principal alimento básico"
+
+msgid "Fraction eating wheat as main staple food"
+msgstr "Fracción que consume trigo como principal alimento básico"
+
+msgid "Fraction of pregnancies ending in spontaneous abortion"
+msgstr "Fracción de embarazos que terminan en aborto espontáneo"
+
+msgid "Fraction of subsistence farming"
+msgstr "Fracción de agricultura de subsistencia"
+
+msgid "Fraction on other staples as main staple food"
+msgstr "Fracción de otros alimentos básicos como alimento principal"
+
+msgid "General population"
+msgstr "Población general"
+
+msgid "Given previous stunting (HAZ < -2 in previous age band)"
+msgstr "Dada la baja talla previa  (HAZ < -2 en la banda de edad anterior)"
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - lower"
+msgstr ""
+"Dada a baja talla previa (HAZ < -2 en la banda de edad anterior) - inferior"
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - upper"
+msgstr ""
+"Dada la baja talla previa (HAZ < -2 en la banda de edad anterior) - superior"
+
+msgid "HAZ status"
+msgstr "Estado de HAZ (baja talla)"
+
+msgid "Health facility"
+msgstr "Centro de salud"
+
+msgid "High"
+msgstr "Alto"
+
+msgid "High (HAZ-score < -3)"
+msgstr "Alto (puntuación HAZ < -3)"
+
+msgid "Hypertensive disorders"
+msgstr "Trastornos hipertensivos"
+
+msgid "IFA fortification of maize"
+msgstr "Enriquecimiento del maíz con hierro y ácido fólico"
+
+msgid "IFA fortification of rice"
+msgstr "Enriquecimiento del arroz con hierro y ácido fólico"
+
+msgid "IFA fortification of wheat flour"
+msgstr "Enriquecimiento de la harina de trigo con hierro y ácido fólico"
+
+msgid "IFAS (community)"
+msgstr "Suplementación con hierro y ácido fólico (comunidad)"
+
+msgid "IFAS (health facility)"
+msgstr "Suplementación con hierro y ácido fólico (centro de salud)"
+
+# commercially available for women who can afford it
+msgid "IFAS (retailer)"
+msgstr "Suplementación con hierro y ácido fólico (minorista)"
+
+msgid "IFAS (school)"
+msgstr "Suplementación con hierro y ácido fólico (escuela)"
+
+msgid "IFAS for pregnant women (community)"
+msgstr ""
+"Suplementación con hierro y ácido fólico para mujeres embarazadas "
+"(comunidad)"
+
+msgid "IFAS for pregnant women (health facility)"
+msgstr ""
+"Suplementación con hierro y ácido fólico para mujeres embarazadas (centro "
+"de salud)"
+
+msgid "IPTp"
+msgstr "IPTp-Tratamiento preventivo intermitente de la malaria en el embarazo"
+
+msgid "IUD"
+msgstr "Dispositivo Intrauterino (DIU)"
+
+msgid "IYCF 1"
+msgstr "IYCF 1-alimentación del lactante y del niño pequeño"
+
+msgid "IYCF 2"
+msgstr "IYCF 2-alimentación del lactante y del niño pequeño"
+
+msgid "IYCF 3"
+msgstr "IYCF 3-alimentación del lactante y del niño pequeño"
+
+# Translation must be 31 characters or less in length
+msgid "IYCF odds ratios"
+msgstr "Razón de momios IYCF"
+
+msgid "IYCF package"
+msgstr "Paquete alimentación del lactante y del niño pequeño (IYCF)"
+
+# Translation must be 31 characters or less in length
+msgid "IYCF packages"
+msgstr "Paquetes de IYCF"
+
+msgid "Implant"
+msgstr "Implante"
+
+# Translation must be 31 characters or less in length
+msgid "Incidence of conditions"
+msgstr "Incidencia de las afecciones"
+
+msgid "Indirect causes"
+msgstr "Causas indirectas"
+
+msgid "Infant mortality (per 1,000 live births)"
+msgstr "Mortalidad infantil (por cada 1.000 nacidos vivos)"
+
+msgid "Injectable"
+msgstr "Inyectable"
+
+msgid "Injury"
+msgstr "Lesión"
+
+msgid "Intrapartum haemorrhage"
+msgstr "Hemorragia intraparto"
+
+msgid "Iron and iodine fortification of salt"
+msgstr "Fortificación de la sal con hierro y yodo"
+
+msgid "Kangaroo mother care"
+msgstr "Método de la madre canguro"
+
+msgid "Kangaroo mother care - lower"
+msgstr "Método madre canguro - inferior"
+
+msgid "Kangaroo mother care - upper"
+msgstr "Método madre canguro - superior"
+
+msgid "Linear (constant marginal cost) [default]"
+msgstr "Lineal (costo marginal constante) [por defecto]"
+
+msgid "Lipid-based nutrition supplements"
+msgstr "Suplementos nutricionales a base de lípidos"
+
+msgid "Lipid-based nutrition supplements - lower"
+msgstr "Suplementos nutricionales a base de lípidos: más bajos"
+
+msgid "Lipid-based nutrition supplements - upper"
+msgstr "Suplementos nutricionales a base de lípidos - superior"
+
+msgid "Long-lasting insecticide-treated bednets"
+msgstr "Mosquiteros tratados con insecticida de larga duración"
+
+msgid "Lower bound"
+msgstr "Límite inferior"
+
+msgid "Lower bounds"
+msgstr "Límites inferiores"
+
+msgid "MAM"
+msgstr "MAM"
+
+msgid "MAM (WHZ-score between -3 and -2)"
+msgstr "MAM (puntuación WHZ entre -3 y -2)"
+
+msgid "MAM (WHZ-score between -3 and -2)-l"
+msgstr "MAM (puntuación WHZ entre -3 y -2)-inferior"
+
+msgid "MAM (WHZ-score between -3 and -2)-u"
+msgstr "MAM (puntuación WHZ entre -3 y -2)-superior"
+
+msgid "Malaria"
+msgstr "Malaria"
+
+msgid "Male sterilization"
+msgstr "Esterilización masculina"
+
+msgid "Management of MAM"
+msgstr "Manejo de la Malnutrición Aguda Moderada (MAM)"
+
+msgid "Mass media"
+msgstr "Medios de comunicación masivos"
+
+msgid "Maternal (deaths per 1,000 births)"
+msgstr "Materna (muertes por cada 1.000 nacimientos)"
+
+msgid "Maternal death"
+msgstr "Muerte materna"
+
+msgid "Maternal mortality (per 1,000 live births)"
+msgstr "Mortalidad materna (por cada 1.000 nacidos vivos)"
+
+msgid "Maternal risk factors leading to birth outcomes"
+msgstr ""
+"Factores de riesgo materno que conducen a los resultados del nacimiento"
+
+msgid "Max-decrease per annum"
+msgstr "Disminución máxima anual"
+
+msgid "Max-increase per annum"
+msgstr "Aumento máximo anual"
+
+msgid "Measles"
+msgstr "Sarampión"
+
+msgid "Meningitis"
+msgstr "Meningitis"
+
+msgid "Method"
+msgstr "Método"
+
+msgid "Mg for eclampsia"
+msgstr "Magnesio para la eclampsia"
+
+msgid "Mg for pre-eclampsia"
+msgstr "Magnesio para la preeclampsia"
+
+msgid "Micronutrient powders"
+msgstr "Micronutrientes en polvo"
+
+msgid "Mild"
+msgstr "Leve"
+
+msgid "Mild (HAZ-score between -2 and -1)"
+msgstr "Leve (score HAZ entre -2 y -1)"
+
+msgid "Mild (WHZ-score between -2 and -1)"
+msgstr "Leve (score WHZ entre -2 y -1)"
+
+msgid "Moderate"
+msgstr "Moderado"
+
+msgid "Moderate (HAZ-score between -3 and -2)"
+msgstr "Moderado (score HAZ entre -3 y -2)"
+
+msgid "Mortality"
+msgstr "Mortalidad"
+
+msgid "Multiple micronutrient supplementation"
+msgstr "Suplementación con micronutrientes múltiples"
+
+msgid "Neonatal"
+msgstr "Neonatal"
+
+msgid "Neonatal asphyxia"
+msgstr "Asfixia neonatal"
+
+msgid "Neonatal congenital anomalies"
+msgstr "Anomalías congénitas neonatales"
+
+msgid "Neonatal diarrhoea"
+msgstr "Diarrea neonatal"
+
+msgid "Neonatal mortality (per 1,000 live births)"
+msgstr "Mortalidad neonatal (por cada 1.000 nacidos vivos)"
+
+msgid "Neonatal other"
+msgstr "Neonatal otros"
+
+msgid "Neonatal pneumonia"
+msgstr "Neumonía neonatal"
+
+msgid "Neonatal prematurity"
+msgstr "Prematuridad neonatal"
+
+msgid "Neonatal sepsis"
+msgstr "Sepsis neonatal"
+
+msgid "Neonatal tetanus"
+msgstr "Tétanos neonatal"
+
+msgid "Non-pregnant WRA"
+msgstr "Mujeres en edad reproductiva no embarazadas"
+
+msgid "None"
+msgstr "Ninguno"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Normal (HAZ-score > -1)"
+msgstr "Normal (score HAZ > -1)"
+
+msgid "Normal (WHZ-score > -1)"
+msgstr "Normal (score WHZ > -1)"
+
+msgid "Not anaemic"
+msgstr "No anémico"
+
+msgid "Number of births"
+msgstr "Número de nacimientos"
+
+# Translation must be 31 characters or less in length
+msgid "Nutritional status distribution"
+msgstr "Distribución estado nutricional"
+
+msgid "Odds ratio for correct breastfeeding"
+msgstr "Razón de momios para lactancia materna adecuada"
+
+msgid "Odds ratio for correct breastfeeding - lower"
+msgstr "Razón de momios para lactancia materna adecuada- inferior"
+
+msgid "Odds ratio for correct breastfeeding - upper"
+msgstr "Razón de momios para lactancia materna adecuada - superior"
+
+msgid "Odds ratio for correct breastfeeding by program"
+msgstr "Razón de momios para lactancia materna adecuada por programa"
+
+msgid "Odds ratio for correct complementary feeding"
+msgstr "Razón de momios para alimentación complementaria correcta"
+
+msgid "Odds ratio for correct complementary feeding - lower"
+msgstr "Razón de momios para alimentación complementaria correcta - inferior"
+
+msgid "Odds ratio for correct complementary feeding - upper"
+msgstr "Razón de momios para alimentación complementaria correcta - superior"
+
+msgid "Odds ratio for stunting"
+msgstr "Razón de momios para baja talla o retraso en el crecimiento"
+
+msgid "Odds ratio for stunting - lower"
+msgstr "Razón de momios para baja talla - inferior"
+
+msgid "Odds ratio for stunting - upper"
+msgstr "Razón de momios para baja talla - superior"
+
+msgid "Odds ratio for women with maternal anaemia"
+msgstr "Razón de momios para mujeres con anemia materna"
+
+msgid "Odds ratio of MAM when covered by program"
+msgstr "Razón de momios de MAM cuando está cubierto por el programa"
+
+msgid "Odds ratio of MAM when covered by program - lower"
+msgstr ""
+"Razón de momios de MAM cuando está cubierto por el programa - inferior"
+
+msgid "Odds ratio of MAM when covered by program - upper"
+msgstr ""
+"Razón de momios de MAM cuando está cubierto por el programaa - superior"
+
+msgid "Odds ratio of SAM when covered by program"
+msgstr "Razón de momios de MAS cuando está cubierto por el programa"
+
+msgid "Odds ratio of SAM when covered by program - lower"
+msgstr ""
+"Razón de momios de MAS cuando está cubierto por el programa - inferior"
+
+msgid "Odds ratio of SAM when covered by program - upper"
+msgstr ""
+"Razón de momios de MAS cuando está cubierto por el programa - superior"
+
+msgid "Odds ratio of being anaemic when covered by intervention"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención"
+
+# Translation must be 31 characters or less in length
+msgid "Odds ratios"
+msgstr "Razón de momios"
+
+msgid "Odds ratios for conditions"
+msgstr "Razón de momios para las condiciones"
+
+msgid "Odds ratios for conditions - lower"
+msgstr "Razón de momios para las condiciones - inferior"
+
+msgid "Odds ratios for conditions - upper"
+msgstr "Razón de momios para las condiciones - superior"
+
+msgid "Odds ratios for correct breastfeeding by program"
+msgstr "Razón de momios de lactancia materna adecuada por programa"
+
+msgid "Odds ratios for correct breastfeeding by program - lower"
+msgstr "Razón de momios de lactancia materna adecuada por programa - inferior"
+
+msgid "Odds ratios for correct breastfeeding by program - upper"
+msgstr "Razón de momios de lactancia materna adecuada por programa - superior"
+
+msgid "Odds ratios for optimal birth spacing by program"
+msgstr ""
+"Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
+
+msgid "Odds ratios for optimal birth spacing by program - lower"
+msgstr ""
+"Razón de momios para el espaciamiento óptimo de los nacimientos por "
+"programa - inferior"
+
+msgid "Odds ratios for optimal birth spacing by program - upper"
+msgstr ""
+"Razón de momios para el espaciamiento óptimo de los nacimientos por "
+"programa - superior"
+
+msgid "Odds ratios for stunting"
+msgstr "Razón de momios de baja talla o retraso en el crecimiento"
+
+msgid "Odds ratios for women with maternal anaemia"
+msgstr "Razón de momios para mujeres con anemia materna"
+
+msgid "Odds ratios for women with maternal anaemia - lower"
+msgstr "Razón de momios para mujeres con anemia materna-inferior"
+
+msgid "Odds ratios for women with maternal anaemia - upper"
+msgstr "Razón de momios para mujeres con anemia materna-superior"
+
+msgid "Odds ratios of being anaemic when covered by intervention"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención"
+
+msgid "Odds ratios of being anaemic when covered by intervention - lower"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención-"
+"menor"
+
+msgid "Odds ratios of being anaemic when covered by intervention - upper"
+msgstr ""
+"Razón de momios de ser anémico cuando está cubierto por la intervención - "
+"superior"
+
+msgid "Oral rehydration salts"
+msgstr "Sales de rehidratación oral"
+
+msgid "Other"
+msgstr "Otro"
+
+msgid "Other direct causes"
+msgstr "Otras causas directas"
+
+msgid "Other odds ratios"
+msgstr "Otras razones de momios"
+
+msgid "Other risks"
+msgstr "Otros riesgos"
+
+msgid "PW: 15-19 years"
+msgstr "PW: 15-19 años"
+
+msgid "PW: 20-29 years"
+msgstr "PW: 20-29 años"
+
+msgid "PW: 30-39 years"
+msgstr "PW: 30-39 años"
+
+msgid "PW: 40-49 years"
+msgstr "PW: 40-49 años"
+
+msgid "Partial"
+msgstr "Parcial"
+
+msgid "Percentage of anaemia that is iron deficient"
+msgstr "Porcentaje de anemia que es deficiente en hierro"
+
+msgid "Percentage of children attending health facility"
+msgstr "Porcentaje de niños que acuden a un centro de salud"
+
+msgid "Percentage of children in each category in baseline year (2019)"
+msgstr "Porcentaje de niños en cada categoría en el año de referencia (2019)"
+
+msgid "Percentage of deaths in baseline year (2017) attributable to cause"
+msgstr ""
+"Porcentaje de muertes en el año de referencia (2017) atribuible a la causa"
+
+msgid "Percentage of diarrhea that is severe"
+msgstr "Porcentaje de diarrea grave"
+
+msgid "Percentage of population at risk of malaria"
+msgstr "Porcentaje de población con riesgo de malaria"
+
+# by default this can be equivalent to the percentage of the population living below the poverty line.
+msgid "Percentage of population food insecure (default poor)"
+msgstr ""
+"Porcentaje de población con inseguridad alimentaria (pobre por defecto)"
+
+msgid "Percentage of population in each category in baseline year (2017)"
+msgstr ""
+"Porcentaje de población en cada categoría en el año de referencia (2017)"
+
+msgid "Percentage of pregnant women 15-19 years"
+msgstr "Porcentaje de mujeres embarazadas de 15 a 19 años"
+
+msgid "Percentage of pregnant women 20-29 years"
+msgstr "Porcentaje de mujeres embarazadas de 20 a 29 años"
+
+msgid "Percentage of pregnant women 30-39 years"
+msgstr "Porcentaje de mujeres embarazadas de 30 a 39 años"
+
+msgid "Percentage of pregnant women 40-49 years"
+msgstr "Porcentaje de mujeres embarazadas de 40 a 49 años"
+
+msgid "Percentage of pregnant women attending health facility"
+msgstr "Porcentaje de mujeres embarazadas que acuden a un centro de salud"
+
+msgid "Pertussis"
+msgstr "Tosferina"
+
+msgid "Pill"
+msgstr "Cápsula/píldora"
+
+msgid "Pneumonia"
+msgstr "Neumonía"
+
+msgid "Population"
+msgstr "Población"
+
+msgid "Population data"
+msgstr "Datos poblacionales"
+
+# used to label a sheet in the input databook, where we outline that for example that the model considers stunting, wasting anaemia and mortality for children, whereas for pregnant women it only considered anaemia and mortality. So it is more what outcome/health risks are modelled for each population
+msgid "Population risk areas"
+msgstr "Riegos para la población"
+
+msgid "Postpartum haemorrhage"
+msgstr "Hemorragia posparto"
+
+msgid "Pre-term AGA"
+msgstr "Prematuro AEG (adecuado para edad gestacional)"
+
+msgid "Pre-term SGA"
+msgstr "Prematuro PEG (pequeño para la edad gestacional)"
+
+msgid "Predominant"
+msgstr "Predominante"
+
+msgid "Pregnant women"
+msgstr "Mujeres embarazadas"
+
+msgid "Prevalence of age-appropriate breastfeeding"
+msgstr "Prevalencia de lactancia materna adecuada para la edad"
+
+msgid "Prevalence of anaemia"
+msgstr "Prevalencia de anemia"
+
+msgid "Prevalence of eclampsia"
+msgstr "Prevalencia de eclampsia"
+
+msgid "Prevalence of iron deficiency anaemia"
+msgstr "Prevalencia de anemia por deficiencia de hierro"
+
+msgid "Prevalence of pre-eclampsia"
+msgstr "Prevalencia de preeclampsia"
+
+msgid "Program"
+msgstr "Programa"
+
+# Translation must be 31 characters or less in length
+msgid "Program dependencies"
+msgstr "Dependencias del programa"
+
+# Translation must be 31 characters or less in length
+msgid "Program risk areas"
+msgstr "Riesgos que impacta programa"
+
+# Translation must be 31 characters or less in length
+msgid "Programs anaemia"
+msgstr "Programas de anemia"
+
+# Translation must be 31 characters or less in length
+msgid "Programs birth outcomes"
+msgstr "Resultados de nacimiento- prog"
+
+# Translation must be 31 characters or less in length
+msgid "Programs cost and coverage"
+msgstr "Costo y cobertura del programa"
+
+# Translation must be 31 characters or less in length
+msgid "Programs family planning"
+msgstr "Prog. de planificación familiar"
+
+# Translation must be 31 characters or less in length
+msgid "Programs for PW"
+msgstr "Prog. para mujeres embarazadas"
+
+# Translation must be 31 characters or less in length
+msgid "Programs for children"
+msgstr "Programas para niños"
+
+# Translation must be 31 characters or less in length
+msgid "Programs impacted population"
+msgstr "Programas población afectada"
+
+# Translation must be 31 characters or less in length
+msgid "Programs target population"
+msgstr "Población objetivo del programa"
+
+# Translation must be 31 characters or less in length
+msgid "Programs wasting"
+msgstr "Programas para emaciación"
+
+msgid "Projection years"
+msgstr "Años de proyección"
+
+msgid "Proportional Cost"
+msgstr "Costo proporcional"
+
+msgid "Public provision of complementary foods"
+msgstr "Suministro público de alimentos complementarios"
+
+msgid "Public provision of complementary foods - lower"
+msgstr "Suministro público de alimentos complementarios - inferior"
+
+msgid "Public provision of complementary foods - upper"
+msgstr "Suministro público de alimentos complementarios - superior"
+
+# Translation must be 31 characters or less in length
+msgid "Reference programs"
+msgstr "Programas de referencia"
+
+msgid "Relative risk by birth spacing"
+msgstr "Riesgo relativo según el espaciamiento de los nacimientos"
+
+msgid "Relative risk by birth spacing - lower"
+msgstr "Riesgo relativo según el espaciamiento de los nacimientos-inferior"
+
+msgid "Relative risk by birth spacing - upper"
+msgstr "Riesgo relativo según el espaciamiento de los nacimientos - superior"
+
+msgid "Relative risk of causes of death by anaemia status"
+msgstr "Riesgo relativo de las causas de muerte según el estado de la anemia"
+
+msgid "Relative risk of causes of death by breastfeeding status"
+msgstr ""
+"Riesgo relativo de las causas de muerte según el estado de la lactancia "
+"materna"
+
+msgid ""
+"Relative risk of causes of death by height-for-age (stunting) distribution"
+msgstr ""
+"Riesgo relativo de las causas de muerte según la distribución de talla para "
+"la edad (retraso en el crecimiento)"
+
+msgid ""
+"Relative risk of causes of death by weight-for-height (wasting) distribution"
+msgstr ""
+"Riesgo relativo de las causas de muerte según la distribución del peso para "
+"la talla (emaciación)"
+
+# Translation must be 31 characters or less in length
+msgid "Relative risks"
+msgstr "Riesgos relativos"
+
+msgid "Relative risks of anaemia when receiving intervention"
+msgstr "Riesgos relativos de anemia cuando está cubierto por la intervención"
+
+msgid "Relative risks of anaemia when receiving intervention - lower"
+msgstr ""
+"Riesgos relativos de anemia cuando está cubierto por la intervención - "
+"inferior"
+
+msgid "Relative risks of anaemia when receiving intervention - upper"
+msgstr ""
+"Riesgos relativos de anemia cuando está cubierto por la intervención - "
+"superior"
+
+msgid "Relative risks of experiencing diarrhoea by breastfeeding status"
+msgstr ""
+"Riesgos relativos de sufrir diarrea según el estado de la lactancia materna"
+
+msgid "Relative risks of neonatal causes of death"
+msgstr "Riesgos relativos de las causas de muerte neonatal"
+
+msgid "Relative risks of neonatal causes of death - lower"
+msgstr "Riesgos relativos de las causas de muerte neonatal - inferior"
+
+msgid "Relative risks of neonatal causes of death - upper"
+msgstr "Riesgos relativos de las causas de muerte neonatal - superior"
+
+msgid "Risk"
+msgstr "Riesgo"
+
+msgid "Risks for children who experience birth outcomes"
+msgstr "Riesgos para los niños que experimentan desenlaces al nacimiento"
+
+msgid "S-shaped (decreasing then increasing marginal cost)"
+msgstr "En forma de S (costo marginal decreciente y luego creciente)"
+
+msgid "SAM"
+msgstr "MAS"
+
+msgid "SAM (WHZ-score < -3)"
+msgstr "MAS (score WHZ < -3)"
+
+msgid "SAM (WHZ-score < -3)-l"
+msgstr "MAS (score WHZ < -3)-Inferior"
+
+msgid "SAM (WHZ-score < -3)-u"
+msgstr "MAS (score WHZ < -3)-superior"
+
+msgid "Saturation coverage of target population"
+msgstr "Cobertura de saturación de la población objetivo"
+
+msgid "School attendance (percentage of 15-19 year women)"
+msgstr "Asistencia a la escuela (porcentaje de mujeres de 15 a 19 años)"
+
+msgid "Sepsis"
+msgstr "Sepsis"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Stillbirths (per 1,000 total births)"
+msgstr "Nacidos muertos (por cada 1.000 nacimientos totales)"
+
+msgid "Stunting"
+msgstr "Baja talla o retraso en el crecimiento"
+
+msgid "Stunting (HAZ-score < -2)"
+msgstr "Retraso en el crecimiento (score HAZ < -2)"
+
+msgid "Stunting (HAZ-score < -2)-l"
+msgstr "Retraso en el crecimiento (score HAZ < -2)-Inferior"
+
+msgid "Stunting (HAZ-score < -2)-u"
+msgstr "Retraso en el crecimiento (score HAZ < -2)-superior"
+
+msgid "Stunting (height-for-age)"
+msgstr "Retraso en el crecimiento (Talla para la edad)"
+
+msgid "Stunting prevalence (%)"
+msgstr "Prevalencia del retraso del crecimiento (%)"
+
+msgid "Target population"
+msgstr "Población objetivo"
+
+msgid "Targetted condition"
+msgstr "Condición objetivo"
+
+msgid "Term AGA"
+msgstr "Nacido a término AEG (Adecuado para la edad gestacional)"
+
+msgid "Term SGA"
+msgstr "Nacido a término PEG (pequeño para la edad gestacional)"
+
+msgid "Threshold dependency"
+msgstr "Dependencia de otra intervención"
+
+# Translation must be 31 characters or less in length
+msgid "Time trends"
+msgstr "Tendencias temporales"
+
+msgid "Total (must be 100%)"
+msgstr "Total (debe ser el 100%)"
+
+msgid "Total WRA"
+msgstr "Total mujeres en edad reproductiva"
+
+# Translation must be 31 characters or less in length
+msgid "Treatment of SAM"
+msgstr "Tratamiento de la MAS"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Under 5 mortality (per 1,000 live births)"
+msgstr "Mortalidad de menores de 5 años (por cada 1.000 nacidos vivos)"
+
+msgid "Under five (deaths per 1,000 births)"
+msgstr "Menores de cinco años (muertes por cada 1.000 nacimientos)"
+
+msgid "Unit cost (US$ per person per year)"
+msgstr "Costo unitario (US$ por persona al año)"
+
+msgid "Unit cost (US$)"
+msgstr "Costo unitario (US$)"
+
+msgid "Unmet need for family planning"
+msgstr "Necesidad insatisfecha de planificación familiar"
+
+msgid "Upper bound"
+msgstr "Límite superior"
+
+msgid "Upper bounds"
+msgstr "Límites superiores"
+
+msgid "Vitamin A supplementation"
+msgstr "Suplementación con vitamina A"
+
+msgid "WASH: Handwashing"
+msgstr "WASH: Lavado de manos"
+
+msgid "WASH: Hygenic disposal"
+msgstr "WASH: Eliminación higiénica de residuos"
+
+msgid "WASH: Improved sanitation"
+msgstr "WASH: Mejora del saneamiento"
+
+msgid "WASH: Improved water source"
+msgstr "WASH: Mejora de la fuente de agua"
+
+msgid "WASH: Piped water"
+msgstr "WASH: Agua corriente o entubada"
+
+msgid "WHZ status"
+msgstr "Estado de la peso para la talla (WHZ)"
+
+msgid "WRA: 15-19 years"
+msgstr "WRA: 15-19 años  (mujeres en edad reproductiva)"
+
+msgid "WRA: 20-29 years"
+msgstr "WRA: 20-29 años (mujeres en edad reproductiva)"
+
+msgid "WRA: 30-39 years"
+msgstr "WRA: 30-39 años (mujeres en edad reproductiva)"
+
+msgid "WRA: 40-49 years"
+msgstr "WRA: 40-49 años (mujeres en edad reproductiva)"
+
+msgid "Wasting"
+msgstr "Emaciación"
+
+msgid "Wasting (weight-for-height)"
+msgstr "Emaciación (peso para la talla)"
+
+msgid "Wasting prevalence (%)"
+msgstr "Prevalencia de emaciación (%)"
+
+msgid "Wasting prevention"
+msgstr "Prevención de la emaciación"
+
+msgid "Wasting treatment"
+msgstr "Tratamiento de la emaciación"
+
+msgid "Withdrawal"
+msgstr "Retiro"
+
+msgid "Women of reproductive age"
+msgstr "Mujeres en edad reproductiva"
+
+msgid "Year"
+msgstr "Año"
+
+msgid "Zinc for treatment + ORS"
+msgstr "Zinc para el tratamiento + SRO"
+
+msgid "Zinc supplementation"
+msgstr "Suplementación con zinc"
+
+msgid "Zinc supplementation - lower"
+msgstr "Suplementación con zinc - inferior"
+
+msgid "Zinc supplementation - upper"
+msgstr "Suplementación con zinc- superior"
+
+msgid "affected fraction"
+msgstr "fracción afectada"
+
+msgid "effectiveness"
+msgstr "efectividad"
+
+msgid "less than 18 months"
+msgstr "menos de 18 meses"
+
+msgid "non-pregnant WRA"
+msgstr "mujeres en edad reproductiva no embarazadas"
+
+msgid "year"
+msgstr "año"
+
+msgid "Low birth weight"
+msgstr "Bajo peso al nacer"
+
+msgid "Small quantity lipid-based nutrition supplements"
+msgstr "Suplementos nutricionales a base de lípidos en pequeñas cantidades"
+
+msgid "Small quantity lipid-based nutrition supplements - lower"
+msgstr ""
+"Suplementos nutricionales a base de lípidos en pequeñas cantidades: lower"
+
+msgid "Small quantity lipid-based nutrition supplements - upper"
+msgstr ""
+"Suplementos nutricionales a base de lípidos en pequeñas cantidades - "
+"superior"
+
+msgid "Condition"
+msgstr "Condición"
+
+msgid "Distribution"
+msgstr "Distribución"

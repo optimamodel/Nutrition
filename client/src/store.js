@@ -22,6 +22,8 @@ const persist = store => {
           storage = JSON.parse(storage);
           store.commit('newUser', storage.currentUser);
           store.commit('newActiveProject', storage.activeProject);
+          store.commit('newScenSummaries', storage.scenSummaries);
+          store.commit('newOptimSummaries', storage.optimSummaries);
         }
       } catch (e) {
       }
@@ -32,10 +34,15 @@ const persist = store => {
 const store = new Vuex.Store({
   state: {
     // The currently logged in user
-    currentUser: {},
+    currentUser: null,
 
     // The project currently chosen by the user
-    activeProject: {}
+    activeProject: null,
+
+    // The scenario/optim summaries for the currently active project
+    scenSummaries: null,
+    optimSummaries: null,
+    checkProject: null,
   },
   plugins: [persist],
   mutations: {
@@ -50,15 +57,32 @@ const store = new Vuex.Store({
       state.activeProject = project
     },
 
+    newScenSummaries(state, summaries) {
+      state.scenSummaries = summaries
+      state.checkProject = state.activeProject
+    },
+
+    newOptimSummaries(state, summaries) {
+      state.optimSummaries = summaries
+      state.checkProject = state.activeProject
+    },
+
     logOut(state) {
-      state.currentUser = {};
-      state.activeProject = {};
+      state.currentUser = null;
+      state.activeProject = null;
+      state.checkProject = null;
+      state.scenSummaries = null;
+      state.optimSummaries = null;
     },
 
   },
   getters: {
-    isLoggedIn: state => "displayname" in state.currentUser && state.currentUser.displayname !== undefined,
-    projectOpen: state => state.activeProject !== null,
+    activeProjectName: state => state.activeProject ? state.activeProject.project.name : 'none',
+    activeProjectID: state => state.activeProject ? state.activeProject.project.id : undefined,
+    isLoggedIn: state => !!state.currentUser,
+    projectOpen: state => !!state.activeProject,
+    activeUserName: state => state.currentUser ?  state.currentUser.displayname || state.currentUser.username : 'none',
+    projectLocale: state => state.activeProject?  state.activeProject.project.locale : undefined,
   },
 });
 

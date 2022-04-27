@@ -1,0 +1,672 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Could not upload file"
+msgstr "Impossible de télécharger le fichier"
+
+msgid "Create"
+msgstr "Créer"
+
+msgid "Databook"
+msgstr "Databook"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Delete selected"
+msgstr "Supprimer la sélection"
+
+msgid "Deselect all"
+msgstr "Tout désélectionner"
+
+msgid "Download"
+msgstr "Télécharger"
+
+msgid "Download selected"
+msgstr "Télécharger la sélection"
+
+msgid "Help"
+msgstr "Aide"
+
+msgid "Include"
+msgstr "Inclure"
+
+msgid "Login"
+msgstr "Connexion"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Open"
+msgstr "Ouvrir"
+
+msgid "Outcomes"
+msgstr "Résultats"
+
+msgid "Register"
+msgstr "S'inscrire"
+
+msgid "Rename"
+msgstr "Renommer"
+
+msgid "Save"
+msgstr "Sauvegarder"
+
+msgid "Status"
+msgstr "État"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Upload"
+msgstr "Télécharger"
+
+msgid "Zoom out"
+msgstr "Faire un zoom arrière"
+
+msgctxt "common"
+msgid "Can be reallocated"
+msgstr "Peuvent être réaffectées"
+
+msgctxt "common"
+msgid "Cannot be reallocated"
+msgstr "Ne peuvent pas être réaffectées"
+
+msgctxt "common"
+msgid "Clear results"
+msgstr "Effacer les résultats"
+
+msgctxt "common"
+msgid "Export data"
+msgstr "Exporter les données"
+
+msgctxt "common"
+msgid "Export plots"
+msgstr "Exporter les graphiques"
+
+msgctxt "common"
+msgid "Export results"
+msgstr "Exporter les résultats"
+
+msgctxt "common"
+msgid "Plot results"
+msgstr "Tracer les résultats"
+
+msgctxt "common"
+msgid "Program name"
+msgstr "Nom du programme"
+
+msgctxt "common"
+msgid "Reset zoom"
+msgstr "Réinitialiser le zoom"
+
+msgctxt "common"
+msgid "Run"
+msgstr "Exécuter"
+
+msgctxt "common"
+msgid "Test run"
+msgstr "Essai"
+
+msgctxt "common"
+msgid "Zoom in"
+msgstr "Zoomer"
+
+msgctxt "common"
+msgid "Zoom out"
+msgstr "Faire un zoom arrière"
+
+msgctxt "common"
+msgid "no_data_loaded"
+msgstr ""
+"Les données n'ont pas encore été téléchargées pour le projet.  Veuillez "
+"télécharger un livre de données dans la page Projets."
+
+msgctxt "common"
+msgid "no_project_loaded"
+msgstr "Aucun projet n'est chargé"
+
+msgctxt "footer"
+msgid "Terms and conditions"
+msgstr "Termes et conditions"
+
+msgctxt "geospatial"
+msgid "Add geospatial optimization"
+msgstr "Ajouter une optimisation géospatiale"
+
+msgctxt "geospatial"
+msgid "Additional funds to allocate"
+msgstr "Fonds supplémentaires à allouer"
+
+msgctxt "geospatial"
+msgid "Can be reallocated between regions"
+msgstr "Peuvent être réaffectées entre les régions"
+
+msgctxt "geospatial"
+msgid "Cannot be reallocated between regions"
+msgstr "Ne peuvent pas être réaffectées entre les régions"
+
+msgctxt "geospatial"
+msgid "Copy geospatial optimization"
+msgstr "Copier l'optimisation géospatiale"
+
+msgctxt "geospatial"
+msgid "Define geospatial optimizations"
+msgstr "Définir les optimisations géospatiales"
+
+msgctxt "geospatial"
+msgid "Delete geospatial optimization"
+msgstr "Supprimer l'optimisation géospatiale"
+
+msgctxt "geospatial"
+msgid "Edit geospatial optimization"
+msgstr "Modifier l'optimisation géospatiale"
+
+msgctxt "geospatial"
+msgid "Existing spending"
+msgstr "Dépenses existantes"
+
+msgctxt "geospatial"
+msgid "Geospatial optimization name"
+msgstr "Nom de l'optimisation géospatiale"
+
+msgctxt "geospatial"
+msgid "Optimization objective"
+msgstr "Objectif de l'optimisation"
+
+msgctxt "geospatial"
+msgid "Optimization/program"
+msgstr "Optimisation/programme"
+
+msgctxt "geospatial"
+msgid "Select regions"
+msgstr "Sélectionner les régions"
+
+msgctxt "geospatial"
+msgid "Weight"
+msgstr "Poids"
+
+msgctxt "inputs"
+msgid "Current sheet"
+msgstr "Fiche actuelle"
+
+msgctxt "inputs"
+msgid "Edit input data"
+msgstr "Modifier les données saisies"
+
+msgctxt "inputs"
+msgid "Switch to this sheet"
+msgstr "Passer à cette fiche"
+
+msgctxt "inputs"
+msgid "data_not_loaded"
+msgstr "Données non chargées"
+
+msgctxt "inputs"
+msgid "no_project_loaded"
+msgstr "Aucun projet chargé"
+
+msgctxt "inputs"
+msgid "revert"
+msgstr "Revenir en arrière"
+
+msgctxt "inputs"
+msgid "revert_tooltip"
+msgstr "Revenir aux dernières données enregistrées"
+
+msgctxt "inputs"
+msgid "save_changes"
+msgstr "Enregistrer les changements"
+
+msgctxt "inputs"
+msgid "save_tooltip"
+msgstr "Sauvegarder les données dans le projet"
+
+msgctxt "login"
+msgid "New user?"
+msgstr "Nouvel utilisateur?"
+
+msgctxt "login"
+msgid "Register here"
+msgstr "Inscrivez-vous ici"
+
+msgctxt "navbar"
+msgid "About"
+msgstr "À propos"
+
+msgctxt "navbar"
+msgid "Change password"
+msgstr "Changer le mot de passe"
+
+msgctxt "navbar"
+msgid "Edit account"
+msgstr "Modifier le compte"
+
+msgctxt "navbar"
+msgid "Geospatial"
+msgstr "Géospatial"
+
+msgctxt "navbar"
+msgid "Help"
+msgstr "Aide"
+
+msgctxt "navbar"
+msgid "Inputs"
+msgstr "Données"
+
+msgctxt "navbar"
+msgid "Log out"
+msgstr "Déconnexion"
+
+msgctxt "navbar"
+msgid "Optimizations"
+msgstr "Optimisations"
+
+msgctxt "navbar"
+msgid "Project"
+msgstr "Projet"
+
+msgctxt "navbar"
+msgid "Projects"
+msgstr "Projets"
+
+msgctxt "navbar"
+msgid "Scenarios"
+msgstr "Scénarios"
+
+msgctxt "navbar"
+msgid "Toggle navigation"
+msgstr "Basculer la navigation"
+
+msgctxt "navbar"
+msgid "User"
+msgstr "Utilisateur"
+
+msgctxt "optimization"
+msgid "Add optimization"
+msgstr "Ajouter une optimisation"
+
+msgctxt "optimization"
+msgid "Additional funds to allocate"
+msgstr "Fonds supplémentaires à allouer"
+
+msgctxt "optimization"
+msgid "Budget multipliers"
+msgstr "Multiplicateurs budgétaires"
+
+msgctxt "optimization"
+msgid "Copy optimization"
+msgstr "Copier l'optimisation"
+
+msgctxt "optimization"
+msgid "Define optimizations"
+msgstr "Définir les optimisations"
+
+msgctxt "optimization"
+msgid "Delete optimization"
+msgstr "Supprimer l'optimisation"
+
+msgctxt "optimization"
+msgid "Deselect all interventions"
+msgstr "Désélectionner toutes les interventions"
+
+msgctxt "optimization"
+msgid "Edit optimization"
+msgstr "Modifier l'optimisation"
+
+msgctxt "optimization"
+msgid "Existing spending"
+msgstr "Dépenses existantes"
+
+msgctxt "optimization"
+msgid "Optimization name"
+msgstr "Nom de l'optimisation"
+
+msgctxt "optimization"
+msgid "Optimization objective"
+msgstr "Objectif de l'optimisation"
+
+msgctxt "optimization"
+msgid "Optimization/program"
+msgstr "Optimisation/programme"
+
+msgctxt "optimization"
+msgid "Weight"
+msgstr "Poids"
+
+msgctxt "optimization"
+msgid "current budget"
+msgstr "budget actuel"
+
+msgctxt "optimization"
+msgid "perform_costeff"
+msgstr "Effectuer une analyse coût-efficacité de l'intervention"
+
+msgctxt "placeholder"
+msgid "Enter new password"
+msgstr "Saisissez un nouveau mot de passe"
+
+msgctxt "placeholder"
+msgid "Reenter old password"
+msgstr "Saisissez à nouveau l'ancien mot de passe"
+
+msgctxt "placeholder"
+msgid "Password"
+msgstr "Mot de passe"
+
+msgctxt "placeholder"
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+msgctxt "projects"
+msgid "Add demo project"
+msgstr "Ajouter un projet de démonstration"
+
+msgctxt "projects"
+msgid "Copy databook"
+msgstr "Copier le recueil de données"
+
+msgctxt "projects"
+msgid "Could not add new project"
+msgstr "Impossible d'ajouter un nouveau projet"
+
+msgctxt "projects"
+msgid "Could not download project"
+msgstr "Impossible de télécharger le projet"
+
+msgctxt "projects"
+msgid "Could not rename databook"
+msgstr "Impossible de renommer le recueil de données"
+
+msgctxt "projects"
+msgid "Create blank project"
+msgstr "Créer un projet vierge"
+
+msgctxt "projects"
+msgid "Create new project"
+msgstr "Créer un nouveau projet"
+
+msgctxt "projects"
+msgid "Create project"
+msgstr "Créer un projet"
+
+msgctxt "projects"
+msgid "Delete databook"
+msgstr "Supprimer le recueil de données"
+
+msgctxt "projects"
+msgid "Download databook"
+msgstr "Télécharger le receuil de données"
+
+msgctxt "projects"
+msgid "Last modified"
+msgstr "Dernière modification"
+
+msgctxt "projects"
+msgid "Manage projects"
+msgstr "Gérer des projets"
+
+msgctxt "projects"
+msgid "New name"
+msgstr "Nouveau nom"
+
+msgctxt "projects"
+msgid "New project"
+msgstr "Nouveau projet"
+
+msgctxt "projects"
+msgid "New project uploaded"
+msgstr "Nouveau projet téléchargé"
+
+msgctxt "projects"
+msgid "Project actions"
+msgstr "Actions du projet"
+
+msgctxt "projects"
+msgid "Project name"
+msgstr "Nom du projet"
+
+msgctxt "projects"
+msgid "Rename databook"
+msgstr "Renommer le recueil de données"
+
+msgctxt "projects"
+msgid "Type here to filter projects"
+msgstr "Taper ici pour filtrer les projets"
+
+msgctxt "projects"
+msgid "Upload databook"
+msgstr "Télécharger le recueil de données"
+
+msgctxt "projects"
+msgid "Upload project from file"
+msgstr "Télécharger le projet à partir d'un fichier"
+
+msgctxt "projects"
+msgid "loaded_popup"
+msgstr "Projet \"{name}\" chargé"
+
+msgctxt "projects"
+msgid "Language"
+msgstr "Langue"
+
+msgctxt "register"
+msgid "Already registered?"
+msgstr "Déjà inscrit.e?"
+
+msgctxt "scenarios"
+msgid "Add budget scenario"
+msgstr "Ajouter un scénario budgétaire"
+
+msgctxt "scenarios"
+msgid "Add coverage scenario"
+msgstr "Ajouter un scénario de couverture"
+
+msgctxt "scenarios"
+msgid "Add scenario"
+msgstr "Ajouter un scénario"
+
+msgctxt "scenarios"
+msgid "Convert scenario type"
+msgstr "Convertir le type de scénario"
+
+msgctxt "scenarios"
+msgid "Copy scenario"
+msgstr "Copier le scénario"
+
+msgctxt "scenarios"
+msgid "Databook"
+msgstr "Databook"
+
+msgctxt "scenarios"
+msgid "Define scenarios"
+msgstr "Définir des scénarios"
+
+msgctxt "scenarios"
+msgid "Delete scenario"
+msgstr "Supprimer le scénario"
+
+msgctxt "scenarios"
+msgid "Edit scenario"
+msgstr "Modifier le scénario"
+
+msgctxt "scenarios"
+msgid "Perform intervention cost-effectiveness analysis"
+msgstr "Effectuer une analyse coût-efficacité de l'intervention"
+
+msgctxt "scenarios"
+msgid "Program cost-effectiveness"
+msgstr "Rentabilité du programme"
+
+msgctxt "scenarios"
+msgid "Program coverages"
+msgstr "Couvertures du programme"
+
+msgctxt "scenarios"
+msgid "Program spending"
+msgstr "Dépenses du programme"
+
+msgctxt "scenarios"
+msgid "Run scenarios"
+msgstr "Exécuter des scénarios"
+
+msgctxt "scenarios"
+msgid "Scenario name"
+msgstr "Nom du scénario"
+
+msgctxt "scenarios"
+msgid "Scenario/program"
+msgstr "Scénario/programme"
+
+msgctxt "placeholder"
+msgid "Display name (optional)"
+msgstr "Nom d'utilisateur (facultatif)"
+
+msgctxt "placeholder"
+msgid "Email (optional)"
+msgstr "E-mail (facultatif)"
+
+msgid "please_wait_spinner"
+msgstr "Veuillez patienter..."
+
+msgctxt "inputs"
+msgid "Add dependency"
+msgstr "Ajouter une dépendance"
+
+msgctxt "inputs"
+msgid "Program"
+msgstr "Programme"
+
+msgctxt "inputs"
+msgid "Exclusion dependency"
+msgstr "Dépendance incompatible"
+
+msgctxt "inputs"
+msgid "Threshold dependency"
+msgstr "Dépendance de seuil"
+
+msgctxt "optimization"
+msgid "Plot optimizations"
+msgstr "Tracer les optimisations"
+
+msgctxt "optimization"
+msgid "Plot optimizations with uncertainty"
+msgstr "Tracer les optimisations avec incertitude"
+
+msgctxt "scenarios"
+msgid "Run scenarios with uncertainty"
+msgstr "Exécuter les scénarios avec incertitude"
+
+msgctxt "uncertainty"
+msgid "Input uncertainty runs"
+msgstr "Exécutions d'incertitude d'entrée"
+
+msgctxt "uncertainty"
+msgid "Number of runs"
+msgstr "Nombre d'exécutions"
+
+msgctxt "geospatial"
+msgid "Regional spending"
+msgstr "Dépenses régionales"
+
+msgctxt "optimization"
+msgid "Growth type"
+msgstr "Type de croissance"
+
+msgctxt "optimization"
+msgid "Fixed budget"
+msgstr "Budget fixe"
+
+msgctxt "optimization"
+msgid "Fixed coverage"
+msgstr "Couverture fixe"
+
+msgctxt "optimization"
+msgid "Run balanced optimization?"
+msgstr "Exécuter une optimisation équilibrée?"
+
+msgctxt "navbar"
+msgid "language_warning"
+msgstr ""
+"La langue sélectionnée ne correspond pas au projet actuel. Certains aspects "
+"de l’interface apparaitront dans la langue originale du projet"
+
+msgctxt "scenarios"
+msgid "budget"
+msgstr "budget"
+
+msgctxt "scenarios"
+msgid "coverage"
+msgstr "couverture"
+
+msgid "Initializing"
+msgstr "Initialisation"
+
+msgid "Running for"
+msgstr "Temps d'exécution: "
+
+msgid "Completed after"
+msgstr "Achevé après"
+
+msgid "Error after"
+msgstr "Erreur après"
+
+msgctxt "projects"
+msgid "Are you sure you want to delete the selected projects?"
+msgstr "Voulez-vous vraiment supprimer les projets sélectionnés ?"
+
+msgid "Delete projects"
+msgstr "Supprimer les projets"
+
+msgid "Parameters"
+msgstr "Paramètres"
+
+msgid "Last extracted 1 Feb 2022"
+msgstr "Dernier extrait le 1 février 2022"
+
+msgid "Add country project from LiST database"
+msgstr "Ajouter un pays depuis la base de données LiST"
+
+msgid "Select country"
+msgstr "Sélectionner un pays"
+
+msgid "Load"
+msgstr "Charger"
+
+msgid "Could not initialize LiST country set"
+msgstr "Impossible d'initialiser les pays LiST"
+
+msgctxt "login"
+msgid "deprecation_warning"
+msgstr ""
+"Optima Nutrition a été mis à jour en version 2,0. L'ancienne version, aussi "
+"bien que les projets existants, seront maintenus jusqu'à juin 2022."
+
+msgid "Access the legacy version here"
+msgstr "Accéder à l'ancienne version ici"
+
+msgctxt "projects"
+msgid "list_data_warning"
+msgstr ""
+"Attention : les recueils de données ont des champs invalidés qui doivent "
+"être vérifiés avant d'utiliser les résultats"

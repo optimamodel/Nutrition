@@ -9,48 +9,50 @@ Last update: 2019feb11
 
     <div v-if="projectID ==''">
       <div style="font-style:italic">
-        <p>No project is loaded.</p>
+        <p>{{ $t("common.no_project_loaded") }}.</p>
       </div>
     </div>
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>Data not yet uploaded for the project.  Please upload a databook in the Projects page.</p>
+        <p>{{ $t("common.no_data_loaded") }}</p>
       </div>
     </div>
 
     <div v-else>
       <div class="card">
-        <help reflink="scenarios" label="Define scenarios"></help>
+        <help reflink="scenarios" :label='$t("scenarios.Define scenarios")'></help>
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Databook</th>
-            <th>Active?</th>
-            <th>Actions</th>
+            <th style="text-align:center">
+              <input type="checkbox" @click="modalDeselectAllScens()" v-model="allActive"/>
+            </th>
+            <th>{{ $t("Name") }}</th>
+            <th>{{ $t("Type") }}</th>
+            <th>{{ $t("Databook") }}</th>
+            <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
           <tbody>
           <tr v-for="scenSummary in scenSummaries">
+            <td style="text-align: center">
+              <input type="checkbox" @click="uncheckSelectAll()" v-model="scenSummary.active"/>
+            </td>
             <td>
               <b>{{ scenSummary.name }}</b>
             </td>
             <td>
-              {{ scenSummary.scen_type }}
+              {{ scenSummary.scen_type === "budget" ? $t("scenarios.budget") : $t("scenarios.coverage") }}
             </td>
             <td>
               {{ scenSummary.model_name }}
-            </td>			
-            <td style="text-align: center">
-              <input type="checkbox" v-model="scenSummary.active"/>
             </td>
             <td style="white-space: nowrap">
-              <button class="btn btn-icon" @click="editScenModal(scenSummary)" data-tooltip="Edit scenario"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyScen(scenSummary)"      data-tooltip="Copy scenario"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="convertScen(scenSummary)"   data-tooltip="Convert scenario type"><i class="ti-control-shuffle"></i></button>
-              <button class="btn btn-icon" @click="deleteScen(scenSummary)"    data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="editScenModal(scenSummary)" :data-tooltip='$t("scenarios.Edit scenario")'><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyScen(scenSummary)"      :data-tooltip='$t("scenarios.Copy scenario")'><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="convertScen(scenSummary)"   :data-tooltip='$t("scenarios.Convert scenario type")'><i class="ti-control-shuffle"></i></button>
+              <button class="btn btn-icon" @click="deleteScen(scenSummary)"    :data-tooltip='$t("scenarios.Delete scenario")'><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -58,13 +60,14 @@ Last update: 2019feb11
 
         <div>
             <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
-            <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+            <label for="costeff_checkbox">{{ $t("scenarios.Perform intervention cost-effectiveness analysis") }}</label>
         </div>
 
         <div>
-          <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
-          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
-          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
+          <button class="btn __green" :disabled="!scenariosLoaded || !anySelected" @click="runScens(0)">{{ $t("scenarios.Run scenarios") }}</button>
+          <button class="btn __green" :disabled="!scenariosLoaded || calculateCostEff || !anySelected" @click="UncertScensModal(10)">{{ $t("scenarios.Run scenarios with uncertainty") }}</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">{{ $t("scenarios.Add coverage scenario") }}</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">{{ $t("scenarios.Add budget scenario") }}</button>
         </div>
       </div>
     </div>
@@ -74,12 +77,12 @@ Last update: 2019feb11
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" :data-tooltip='$t("Zoom out")'>&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, 'scens')">Export plots</button>
-          <button class="btn" @click="exportResults(projectID, 'scens')">Export results</button>
+          <button class="btn" @click="exportGraphs(projectID, 'scens')">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, 'scens')">{{ $t("common.Export results") }}</button>
         </div>
       </div>
 
@@ -100,13 +103,13 @@ Last update: 2019feb11
 
       <br>
       <div v-if="hasTable">
-        <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
+        <help reflink="cost-effectiveness" :label='$t("scenarios.Program cost-effectiveness")'></help>
         <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
-              <th>Scenario/program</th>
-              <th>Outcomes</th>
+              <th>{{ $t("scenarios.Scenario/program") }}</th>
+              <th>{{ $t("Outcomes") }}</th>
               <th v-for="i in table[0].length-3"></th>
             </tr>
             </thead>
@@ -138,40 +141,41 @@ Last update: 2019feb11
            :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="false"
-           :transition="transition">
+           :clickToClose="false">
 
         <div class="dialog-content">
           <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-            Add scenario
+            {{ $t("scenarios.Add scenario") }}
           </div>
           <div class="dialog-c-title" v-else>
-            Edit scenario
+            {{ $t("scenarios.Edit scenario") }}
           </div>
           <div class="dialog-c-text">
-            <b>Scenario name:</b><br>
+            <b>{{ $t("scenarios.Scenario name") }}:</b><br>
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
-            <b>Databook:</b><br>
-            <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
-              <option v-for='dataset in datasetOptions'>
-                {{ dataset }}
-              </option>
-            </select><br><br>		   
+            <b>{{ $t("scenarios.Databook") }}:</b><br>
+            <tr>
+              <th><select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
+                <option v-for='dataset in datasetOptions'>
+                  {{ dataset }}
+                </option>
+              </select><br><br></th>
+            </tr>
             <div class="scrolltable" style="max-height: 80vh;">
               <table class="table table-bordered table-striped table-hover">
                 <thead>
                 <tr>
                   <th colspan=100><div class="dialog-header">
-                    <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
-                    <span v-else>Program spending</span>
+                    <span v-if="addEditModal.modalScenarioType==='coverage'">{{ $t("scenarios.Program coverages") }} (%)</span>
+                    <span v-else>{{ $t("scenarios.Program spending") }}</span>
                   </div></th>
                 </tr>
                 <tr>
-                  <th>Name</th>
-                  <th>Include?</th>
-                  <th>2017</th>
+                  <th>{{ $t("Name") }}</th>
+                  <th>{{ $t("Include") }}?</th>
+                  <th v-for="year in defaultScenYears.slice(0, 1)">{{ year - 1 }}</th>
                   <th v-for="year in defaultScenYears">{{ year }}</th>
                 </tr>
                 </thead>
@@ -197,15 +201,17 @@ Last update: 2019feb11
                 </tbody>
               </table>
             </div>
-            <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
+            <button class="btn" @click="modalDeselectAllProgs()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
           </div>
           <div style="text-align:center">
             <button @click="modalSave()" class='btn __green' style="display:inline-block">
-              Save
+              {{ $t("Save") }}
             </button>
             &nbsp;&nbsp;&nbsp;
             <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
-              Cancel
+              <!--<editor-fold desc="Description">-->
+              {{ $t("Cancel") }}
+              <!--</editor-fold>-->
             </button>
           </div>
         </div>
@@ -214,8 +220,41 @@ Last update: 2019feb11
 
     <!-- END ADD-SCENARIO MODAL -->
 
+    <!-- ### Start: input uncertainty runs modal ### -->
+    <modal name="uncert-nruns"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="400"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="false"
+    >
 
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          {{ $t("uncertainty.Input uncertainty runs") }}
+        </div>
+        <div class="dialog-c-text">
+          {{ $t("uncertainty.Number of runs") }}:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="modalUncertRuns"/><br>
+        </div>
+        <div style="text-align:justify">
+          <button @click="runScens(modalUncertRuns) | $modal.hide('uncert-nruns')" class='btn __green' style="display:inline-block">
+            {{ $t("scenarios.Run scenarios") }}
+          </button>
+
+          <button @click="$modal.hide('uncert-nruns')" class='btn __red' style="display:inline-block">
+            {{ $t("Cancel") }}
+          </button>
+        </div>
+      </div>
+
+    </modal>
+    <!-- ### End: input uncertainty runs modal ### -->
   </div>
+
 </template>
 
 
@@ -223,34 +262,39 @@ Last update: 2019feb11
 
   import utils from '../js/utils.js'
   import router from '../router.js'
+  import i18n from "../i18n";
 
   export default {
     name: 'ScenariosPage',
 
     data() {
       return {
+        allActive: true,
         scenSummaries: [],
         defaultScenYears: [],
         scenariosLoaded: false,
-        datasetOptions: [],
+        datasets: [],
         addEditModal: {
           scenSummary: {},
           origName: '',
           mode: 'add',
           modalScenarioType: 'coverage',
         },
+        modalUncertRuns: 10,  // Number of runs in the uncertainty nruns modal dialog
         figscale: 1.0,
         hasGraphs: false,
         calculateCostEff: false,
         hasTable: false,
         table: [],
+        withUncert: false,
       }
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
+      projectID()    { return this.$store.getters.activeProjectID },
       hasData()      { return utils.hasData(this) },
       placeholders() { return utils.placeholders() },
+      anySelected() { return this.scenSummaries.some(x => x.active) },
     },
 
     created() {
@@ -260,7 +304,12 @@ Last update: 2019feb11
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        this.getScenSummaries()
+        if (this.$store.state.activeProject === this.$store.state.checkProject) {
+          this.getScenSummaries(this.$store.state.scenSummaries)
+        }
+        else {
+          this.getScenSummaries(null)
+        }
         this.updateDatasets()
       }
     },
@@ -281,20 +330,30 @@ Last update: 2019feb11
         return utils.scaleFigs(frac)
       },
 
-      getScenSummaries() {
-        console.log('getScenSummaries() called')
+      async getScenSummaries(oldSummaries) {
         this.$sciris.start(this)
-        this.$sciris.rpc('get_scen_info', [this.projectID])
-          .then(response => {
-            this.scenSummaries = response.data // Set the scenarios to what we received.
-            console.log('Scenario summaries:')
-            console.log(this.scenSummaries)
-            this.scenariosLoaded = true
-            this.$sciris.succeed(this, 'Scenarios loaded')
+        try {
+          let response = await this.$sciris.rpc('get_scen_info', [this.projectID])
+          response.data.forEach((scen, index) => {
+            if ((oldSummaries !== null)  &&  (oldSummaries !== undefined)) {
+              if (oldSummaries[index] !== undefined) {
+                scen.active = oldSummaries[index].active;
+              }
+              else {
+                scen.active = true;
+              }
+            }
+            else if ((oldSummaries === null) ||  (oldSummaries === undefined)) {
+              scen.active = true;
+            }
           })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not get scenarios', error)
-          })
+          this.scenSummaries = response.data
+          this.scenariosLoaded = true
+          this.$store.commit('newScenSummaries', this.scenSummaries)
+          this.$sciris.succeed(this)
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not get scenarios', error);
+        }
       },
 
       setScenSummaries() {
@@ -319,7 +378,7 @@ Last update: 2019feb11
       addScenModal(scen_type) {
         // Open a model dialog for creating a new scenario
         console.log('addScenModal() called for type ' + scen_type)
-        this.$sciris.rpc('get_default_scen', [this.projectID, scen_type, this.datasetOptions[0]])
+        this.$sciris.rpc('get_default_scen', [this.projectID, this.datasets[0],scen_type, i18n.locale])
           .then(response => {
             let defaultScen = response.data
             this.setScenYears(defaultScen)
@@ -327,6 +386,8 @@ Last update: 2019feb11
             this.addEditModal.mode = 'add'
             this.addEditModal.modalScenarioType = scen_type
             this.addEditModal.origName = this.addEditModal.scenSummary.name
+            this.addEditModal.scenSummary.model_name = this.datasetOptions[0]
+            this.addEditModal.scenSummary.active = true
             this.$modal.show('add-scen')
             console.log('Default scenario:')
             console.log(defaultScen)
@@ -346,6 +407,7 @@ Last update: 2019feb11
         console.log(this.addEditModal.scenSummary)
         this.addEditModal.origName = this.addEditModal.scenSummary.name
         this.addEditModal.mode = 'edit'
+        this.addEditModal.scenSummary.active = true
         this.$modal.show('add-scen')
       },
 
@@ -359,10 +421,18 @@ Last update: 2019feb11
         }
       },
 
-      modalDeselectAll() {
+      modalDeselectAllProgs() {
         this.addEditModal.scenSummary.progvals.forEach(progval => {
           progval.included = false;
         })
+      },
+
+      modalDeselectAllScens() {
+        this.scenSummaries.forEach(scenSummary => scenSummary.active = !this.allActive)
+      },
+
+      uncheckSelectAll() {
+        this.allActive = false
       },
 
       modalSave() {
@@ -379,6 +449,7 @@ Last update: 2019feb11
             this.scenSummaries[index].name = newScen.name // hack to make sure Vue table updated
             this.scenSummaries[index].model_name = newScen.model_name
             this.scenSummaries[index] = newScen
+            this.scenSummaries[index].active = true
           }
           else {
             console.log('Error: a mismatch in editing keys')
@@ -394,11 +465,11 @@ Last update: 2019feb11
           .then( response => {
             this.$sciris.succeed(this, 'Scenario added')
             this.$modal.hide('add-scen')
-            this.getScenSummaries()  // Reload all scenarios so Vue state is correct (hack).
+            this.getScenSummaries(this.scenSummaries)  // Reload all scenarios so Vue state is correct (hack).
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not add scenario', error)
-            this.getScenSummaries()
+            this.getScenSummaries(this.scenSummaries)
           })
       },
 
@@ -427,7 +498,7 @@ Last update: 2019feb11
         this.$sciris.rpc('convert_scen', [this.projectID, scenSummary.name])
           .then( response => {
             this.$sciris.succeed(this, 'Scenario converted')
-            this.getScenSummaries()
+            this.getScenSummaries(this.scenSummaries)
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not convert scenario', error)
@@ -451,28 +522,26 @@ Last update: 2019feb11
           })
       },
 
-      runScens() {
-        console.log('runScens() called')
+      async runScens(n_uncert_runs) {
         this.$sciris.start(this)
-        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
-          .then(response => {
-            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff]) // Go to the server to get the results
-              .then(response => {
-                this.hasTable = this.calculateCostEff
-                this.table = response.data.table
-                this.makeGraphs(response.data.graphs)
-                this.$sciris.succeed(this, '') // Success message in graphs function
-              })
-              .catch(error => {
-                console.log('There was an error', error) // Pull out the error message.
-                this.$sciris.fail(this, 'Could not run scenarios', error) // Indicate failure.
-              })
-          })
-          .catch(error => {
-            this.response = 'There was an error', error
-            this.$sciris.fail(this, 'Could not set scenarios', error)
-          })
+        try {
+          let response = await this.$sciris.rpc('run_scens', [this.projectID, this.scenSummaries.filter(x => x.active).map(x => x.name), this.calculateCostEff, n_uncert_runs]) // Go to the server to get the results
+          this.hasTable = this.calculateCostEff
+          this.table = response.data.table
+          this.makeGraphs(response.data.graphs)
+          this.withUncert = n_uncert_runs > 0
+          this.$sciris.succeed(this, '') // Success message in graphs function
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not run scenarios', error)
+        }
       },
+
+      UncertScensModal(nruns) {
+        console.log('UncertScensModal() called');
+        this.modalUncertRuns = nruns
+        this.$modal.show('uncert-nruns');
+      },
+
     }
   }
 </script>

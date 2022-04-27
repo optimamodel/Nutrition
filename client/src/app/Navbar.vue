@@ -14,7 +14,7 @@ Last update: 2018sep23
           </a>
         </div>
         <button type="button" class="navbar-toggle" :class="{toggled: $sidebar.showSidebar}" @click="toggleSidebar">
-          <span class="sr-only">Toggle navigation</span>
+          <span class="sr-only">{{ $t("navbar.Toggle navigation") }}</span>
           <span class="icon-bar bar1"></span>
           <span class="icon-bar bar2"></span>
           <span class="icon-bar bar3"></span>
@@ -25,35 +25,40 @@ Last update: 2018sep23
         <ul class="nav navbar-nav navbar-main">
           <li class="nav-item">
             <router-link to="/projects">
-              <span>Projects</span>
+              <span>{{ $t("navbar.Projects") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/inputs"> <!--  ATOMICA-NUTRITION DIFFERENCE -->
-              <span>Inputs</span>
+              <span>{{ $t("navbar.Inputs") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/scenarios">
-              <span>Scenarios</span>
+              <span>{{ $t("navbar.Scenarios") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/optimizations">
-              <span>Optimizations</span>
+              <span>{{ $t("navbar.Optimizations") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/geospatial">
-              <span>Geospatial</span>
+              <span>{{ $t("navbar.Geospatial") }}</span>
             </router-link>
+          </li>
+          <li class="nav-item">
+            <a href="http://optimamodel.com/docs/Optima%20Nutrition%20Input%20Data_Jan2022.pdf" target="_blank">
+              <span>{{ $t("Parameters") }}</span>
+            </a>
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li class="nav-item">
             <div class="nav-link">
               <i class="ti-view-grid"></i>
-              <span>Project: {{ activeProjectName }}</span>
+              <span>{{ $t("navbar.Project") }}: {{ activeProjectName }}</span>
             </div>
           </li>
           <dropdown>
@@ -61,112 +66,110 @@ Last update: 2018sep23
             <template v-slot:title>
               <div class="dropdown-title">
                 <i class="ti-user dropdown-icon"></i>
-                User: {{ activeUserName }}
+                {{ $t("navbar.User") }}: {{ activeUserName }}
                 <b class="caret"></b>
               </div>
             </template>
-            <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;Edit account</a></li>
-            <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;Change password</a></li>
-            <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;Help</a></li>
-            <li><a href="#/about"><i class="ti-shine"></i>&nbsp;&nbsp;About</a></li>
-            <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;Log out</a></li>
+            <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;{{ $t("navbar.Edit account") }}</a></li>
+            <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;{{ $t("navbar.Change password") }}</a></li>
+            <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;{{ $t("navbar.Help") }}</a></li>
+            <li><a href="#/about"><i class="ti-shine"></i>&nbsp;&nbsp;{{ $t("navbar.About") }}</a></li>
+            <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;{{ $t("navbar.Log out") }}</a></li>
           </dropdown>
+
+
+          <li v-if="(projectLocale !== undefined) && (projectLocale !== uiLocale)" class="nav-item">
+            <div class="nav-link">
+              <i class="ti-alert" v-b-tooltip.hover :title="$t('navbar.language_warning')" />
+            </div>
+          </li>
+
+
+          <li class="nav-item">
+            <div class="nav-link">
+              <LocaleSwitcher/>
+            </div>
+          </li>
+
         </ul>
+
       </div>
+
+
     </div>
+
   </nav>
 </template>
 
 
 <script>
 
-  export default {
-    name: 'Navbar',
+import LocaleSwitcher from "./LocaleSwitcher.vue"
+import i18n from '../i18n'
 
-    // Health prior function
-    data() {
-      return {
-        activePage: 'manage projects'
-      }
+export default {
+  name: 'Navbar',
+  components: {LocaleSwitcher},
+
+  data() {
+    return {
+      activePage: 'manage projects'
+    }
+  },
+
+  computed: {
+
+    activeProjectName() {
+      return this.$store.getters.activeProjectName
     },
-
-    computed: {
-
-
-      activeProjectName() {
-        if (this.$store.state.activeProject.project === undefined) {
-          return 'none'
-        } else {
-          return this.$store.state.activeProject.project.name
-        }
-      },
-
-      activeUserName() {
-        // Get the active user name -- the display name if defined; else the user name
-        var username = this.$store.state.currentUser.username;
-        var dispname = this.$store.state.currentUser.displayname;
-        var userlabel = '';
-        if (dispname === undefined || dispname === '') {
-          userlabel = username;
-        } else {
-          userlabel = dispname;
-        }
-
-        return userlabel;
-      },
-
-      // Theme function
-      routeName() {
-        const route_name = this.$route.name;
-        return this.capitalizeFirstLetter(route_name)
-      },
+    activeUserName() {
+      return this.$store.getters.activeUserName
     },
-
-    // Health prior function
-    created() {
-      this.$sciris.getUserInfo(this.$store)
+    projectLocale() {
+      return this.$store.getters.projectLocale
+    },
+    uiLocale() {
+      return i18n.locale
     },
 
     // Theme function
-    data() {
-      return {
-        activeNotifications: false
-      }
+    routeName() {
+      const route_name = this.$route.name;
+      return this.capitalizeFirstLetter(route_name)
     },
-    methods: {
-      // Health prior functions
-      checkLoggedIn() {
-        this.$sciris.checkLoggedIn
-      },
+  },
 
-      checkAdminLoggedIn() {
-        this.$sciris.checkAdminLoggedIn
-      },
+  created() {
+    this.$sciris.getUserInfo(this.$store)
+  },
 
-      logOut() {
-        this.$sciris.logoutCall();
-        this.$store.commit('logOut');
-        this.$router.push('/login');
-      },
 
-      // Theme functions
-      capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1)
-      },
-      toggleNotificationDropDown() {
-        this.activeNotifications = !this.activeNotifications
-      },
-      closeDropDown() {
-        this.activeNotifications = false
-      },
-      toggleSidebar() {
-        this.$sidebar.displaySidebar(!this.$sidebar.showSidebar)
-      },
-      hideSidebar() {
-        this.$sidebar.displaySidebar(false)
-      }
-    }
+  methods: {
+
+    checkLoggedIn() {
+      this.$sciris.checkLoggedIn
+    },
+
+    checkAdminLoggedIn() {
+      this.$sciris.checkAdminLoggedIn
+    },
+
+    logOut() {
+      this.$sciris.logoutCall();
+      this.$store.commit('logOut');
+      this.$router.push('/login');
+    },
+
+    // Theme functions
+    capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1)
+    },
+
+    toggleSidebar() {
+      this.$sidebar.displaySidebar(!this.$sidebar.showSidebar)
+    },
   }
+}
 
 </script>
 

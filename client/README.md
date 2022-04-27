@@ -16,6 +16,8 @@ This folder contains the executable files for various tasks. On Mac/Linux, files
 
 * `worker.py` starts the Celery task worker (used for optimizations).
 
+* To run the client manually, use `npm run start`
+
 ## Other
 
 * `reset_database.py` deletes all data from the database: all users, projects, blobs, etc.
