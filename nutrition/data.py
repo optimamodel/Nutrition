@@ -772,11 +772,11 @@ class ProgramData(object):
         else:
             treat_SAM_val = frac_children_health_facility
         treat_SAM_row = treat_SAM_val * np.ones(4)
-        targetPopSheet.loc["Children", "Treatment of SAM"].iloc[1:5] = treat_SAM_row
-        self.calcscache.write_row("Programs target population", 8, 3, treat_SAM_row)
+        targetPopSheet.loc[_("Children"), _("Treatment of SAM")].iloc[1:5] = treat_SAM_row
+        self.calcscache.write_row(_("Programs target population"), 9, 3, treat_SAM_row)
         zinc_treatment_row = diarr_incid * frac_diarr_severe
-        targetPopSheet.loc["Children", "Zinc for treatment + ORS"].iloc[0:5] = zinc_treatment_row
-        self.calcscache.write_row("Programs target population", 10, 2, zinc_treatment_row)
+        targetPopSheet.loc[_("Children"), _("Zinc for treatment + ORS")].iloc[0:5] = zinc_treatment_row
+        self.calcscache.write_row(_("Programs target population"), 11, 2, zinc_treatment_row)
         balanced_energy_row = food_insecure * np.ones(4)
         targetPopSheet.loc[_("Pregnant women"), _("Balanced energy-protein supplementation")].iloc[5:9] = balanced_energy_row
         self.calcscache.write_row(_("Programs target population"), 14, 7, balanced_energy_row)
