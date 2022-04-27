@@ -56,13 +56,21 @@ Last update: 2018sep23
               <span>Project: {{ activeProjectName }}</span>
             </div>
           </li>
-          <drop-down v-bind:title="activeUserName" icon="ti-user">
+          <dropdown>
+            <!--            The template behaves oddly if content is bound to the dropdown properties, so just manually fill out the title slot instead-->
+            <template v-slot:title>
+              <div class="dropdown-title">
+                <i class="ti-user dropdown-icon"></i>
+                User: {{ activeUserName }}
+                <b class="caret"></b>
+              </div>
+            </template>
             <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;Edit account</a></li>
             <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;Change password</a></li>
             <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;Help</a></li>
             <li><a href="#/about"><i class="ti-shine"></i>&nbsp;&nbsp;About</a></li>
             <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;Log out</a></li>
-          </drop-down>
+          </dropdown>
         </ul>
       </div>
     </div>
@@ -71,11 +79,9 @@ Last update: 2018sep23
 
 
 <script>
-  import userservice from '@/js/user-service'
-  import router from '@/router'
 
   export default {
-    name: 'TopNavbar',
+    name: 'Navbar',
 
     // Health prior function
     data() {
@@ -85,10 +91,7 @@ Last update: 2018sep23
     },
 
     computed: {
-      // Health prior function
-      currentUser(){
-        return userservice.currentUser()
-      },
+
 
       activeProjectName() {
         if (this.$store.state.activeProject.project === undefined) {
@@ -100,31 +103,32 @@ Last update: 2018sep23
 
       activeUserName() {
         // Get the active user name -- the display name if defined; else the user name
-        var username = userservice.currentUser().username;
-        var dispname = userservice.currentUser().displayname;
+        var username = this.$store.state.currentUser.username;
+        var dispname = this.$store.state.currentUser.displayname;
         var userlabel = '';
         if (dispname === undefined || dispname === '') {
           userlabel = username;
         } else {
           userlabel = dispname;
         }
-        return 'User: '+userlabel
+
+        return userlabel;
       },
 
       // Theme function
-      routeName () {
-        const route_name = this.$route.name
+      routeName() {
+        const route_name = this.$route.name;
         return this.capitalizeFirstLetter(route_name)
       },
     },
 
     // Health prior function
     created() {
-      userservice.getUserInfo()
+      this.$sciris.getUserInfo(this.$store)
     },
 
     // Theme function
-    data () {
+    data() {
       return {
         activeNotifications: false
       }
@@ -132,37 +136,37 @@ Last update: 2018sep23
     methods: {
       // Health prior functions
       checkLoggedIn() {
-        userservice.checkLoggedIn
+        this.$sciris.checkLoggedIn
       },
 
       checkAdminLoggedIn() {
-        userservice.checkAdminLoggedIn
+        this.$sciris.checkAdminLoggedIn
       },
 
       logOut() {
-        userservice.logOut()
+        this.$sciris.logoutCall();
+        this.$store.commit('logOut');
+        this.$router.push('/login');
       },
 
       // Theme functions
-      capitalizeFirstLetter (string) {
+      capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1)
       },
-      toggleNotificationDropDown () {
+      toggleNotificationDropDown() {
         this.activeNotifications = !this.activeNotifications
       },
-      closeDropDown () {
+      closeDropDown() {
         this.activeNotifications = false
       },
-      toggleSidebar () {
+      toggleSidebar() {
         this.$sidebar.displaySidebar(!this.$sidebar.showSidebar)
       },
-      hideSidebar () {
+      hideSidebar() {
         this.$sidebar.displaySidebar(false)
       }
     }
   }
 
 </script>
-<style>
 
-</style>

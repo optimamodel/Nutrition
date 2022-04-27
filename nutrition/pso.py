@@ -1,9 +1,7 @@
 import numpy as np
 
 
-def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
-        swarmsize=100, omega=0.5, phip=0.5, phig=0.5, maxiter=100,
-        minstep=1e-8, minfunc=1e-8, debug=False):
+def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={}, swarmsize=100, omega=0.5, phip=0.5, phig=0.5, maxiter=100, minstep=1e-8, minfunc=1e-8, debug=False):
     """
     Perform a particle swarm optimization (PSO)
 
@@ -62,11 +60,11 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 
     """
 
-    assert len(lb) == len(ub), 'Lower- and upper-bounds must be the same length'
-    assert hasattr(func, '__call__'), 'Invalid function handle'
+    assert len(lb) == len(ub), "Lower- and upper-bounds must be the same length"
+    assert hasattr(func, "__call__"), "Invalid function handle"
     lb = np.array(lb)
     ub = np.array(ub)
-    assert np.all(ub > lb), 'All upper-bound values must be greater than lower-bound values'
+    assert np.all(ub > lb), "All upper-bound values must be greater than lower-bound values"
 
     vhigh = np.abs(ub - lb)
     vlow = -vhigh
@@ -76,15 +74,15 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     if f_ieqcons is None:
         if not len(ieqcons):
             if debug:
-                print('No constraints given.')
+                print("No constraints given.")
             cons = lambda x: np.array([0])
         else:
             if debug:
-                print('Converting ieqcons to a single constraint function')
+                print("Converting ieqcons to a single constraint function")
             cons = lambda x: np.array([y(x, *args, **kwargs) for y in ieqcons])
     else:
         if debug:
-            print('Single constraint function given in f_ieqcons')
+            print("Single constraint function given in f_ieqcons")
         cons = lambda x: np.array(f_ieqcons(x, *args, **kwargs))
 
     def is_feasible(x):
@@ -133,8 +131,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         for i in range(S):
 
             # Update the particle's velocity
-            v[i, :] = omega * v[i, :] + phip * rp[i, :] * (p[i, :] - x[i, :]) + \
-                      phig * rg[i, :] * (g - x[i, :])
+            v[i, :] = omega * v[i, :] + phip * rp[i, :] * (p[i, :] - x[i, :]) + phig * rg[i, :] * (g - x[i, :])
 
             # Update the particle's position, correcting lower and upper bound
             # violations, then update the objective function value
@@ -154,27 +151,26 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                 # (Can only get here if constraints are satisfied)
                 if fx < fg:
                     if debug:
-                        print('New best for swarm at iteration {:}: {:} {:}'.format(it, x[i, :], fx))
+                        print("New best for swarm at iteration {:}: {:} {:}".format(it, x[i, :], fx))
 
                     tmp = x[i, :].copy()
                     stepsize = np.sqrt(np.sum((g - tmp) ** 2))
                     if np.abs(fg - fx) <= minfunc:
-                        print('Stopping search: Swarm best objective change less than {:}'.format(minfunc))
+                        print("Stopping search: Swarm best objective change less than {:}".format(minfunc))
                         return tmp, fx
                     elif stepsize <= minstep:
-                        print('Stopping search: Swarm best position change less than {:}'.format(minstep))
+                        print("Stopping search: Swarm best position change less than {:}".format(minstep))
                         return tmp, fx
                     else:
                         g = tmp.copy()
                         fg = fx
 
         if debug:
-            print('Best after iteration {:}: {:} {:}'.format(it, g, fg))
+            print("Best after iteration {:}: {:} {:}".format(it, g, fg))
         it += 1
 
-    print('Stopping search: maximum iterations reached --> {:}'.format(maxiter))
+    print("Stopping search: maximum iterations reached --> {:}".format(maxiter))
 
     if not is_feasible(g):
         print("However, the optimization couldn't find a feasible design. Sorry")
     return g, fg
-

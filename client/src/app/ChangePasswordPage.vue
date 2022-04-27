@@ -38,9 +38,7 @@ Last update: 2018-08-26
 </template>
 
 <script>
-  import userservice from '@/js/user-service'
-  import status from '@/js/status-service'
-  import router from '@/router'
+  import router from '../router.js'
 
   export default {
     name: 'ChangePasswordPage',
@@ -55,12 +53,12 @@ Last update: 2018-08-26
 
     methods: {
       tryChangePassword () {
-        userservice.changeUserPassword(this.oldPassword, this.newPassword)
+        this.$sciris.changeUserPassword(this.oldPassword, this.newPassword)
           .then(response => {
             if (response.data === 'success') {
-              status.succeed(this, 'Password updated')
+              this.$sciris.succeed(this, 'Password updated')
               // Read in the full current user information.
-              userservice.getCurrentUserInfo()
+              this.$sciris.getCurrentUserInfo()
                 .then(response2 => {
                   // Set the username to what the server indicates.
                   this.$store.commit('newUser', response2.data.user)
@@ -78,7 +76,7 @@ Last update: 2018-08-26
             }
           })
           .catch(error => {
-            status.fail(this, 'Password updated failed', error)
+            this.$sciris.fail(this, 'Password updated failed', error)
           })
       }
     }

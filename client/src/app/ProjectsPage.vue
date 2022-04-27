@@ -7,7 +7,7 @@ Last update: 2019feb18
 <template>
   <div class="SitePage">
     <div class="card">
-      <help reflink="create-projects" label="Create projects"></help>
+      <help reflink="create-projects" label="Create project"></help>
 
       <div class="ControlsRow">
         <button class="btn __blue" @click="addDemoProject">Add demo project</button>
@@ -100,7 +100,7 @@ Last update: 2019feb18
               <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Delete databook"><i class="ti-trash"></i></button>            
               <button class="btn __blue" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>           
-              <select v-model="projectSummary.selectedDataSet">
+              <select v-if="projectSummary.project.dataSets.length>0" v-model="projectSummary.selectedDataSet">
                 <option v-for='dataset in projectSummary.project.dataSets'>
                   {{ dataset }}
                 </option>
@@ -121,11 +121,11 @@ Last update: 2019feb18
     <modal name="create-project"
            height="auto"
            :classes="['v--modal', 'vue-dialog']"
-           :width="width"
+           :width="400"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
+           :clickToClose="false"
+    >
 
       <div class="dialog-content">
         <div class="dialog-c-title">
@@ -153,11 +153,11 @@ Last update: 2019feb18
     <modal name="rename-dataset"
            height="auto"
            :classes="['v--modal', 'vue-dialog']"
-           :width="width"
+           :width="400"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
+           :clickToClose="false"
+    >
 
       <div class="dialog-content">
         <div class="dialog-c-title">
@@ -187,12 +187,8 @@ Last update: 2019feb18
 </template>
 
 <script>
-  import axios from 'axios'
-  var filesaver = require('file-saver')
-  import utils from '@/js/utils'
-  import rpcs from '@/js/rpc-service'
-  import status from '@/js/status-service'
-  import router from '@/router'
+  import utils from '../js/utils'
+  import router from '../router'
 
   export default {
     name: 'ProjectsPage',
@@ -263,8 +259,8 @@ Last update: 2019feb18
 
       updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
-        status.start(this)
-        rpcs.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
+        this.$sciris.start(this)
+        this.$sciris.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
           .then(response => {
             let lastCreationTime = null
             let lastCreatedID = null
@@ -290,23 +286,23 @@ Last update: 2019feb18
                 this.openProject(setActiveID)
               }
             }
-            status.succeed(this, '')  // No green popup.
+            this.$sciris.succeed(this, '')  // No green popup.
           })
           .catch(error => {
-            status.fail(this, 'Could not load projects', error)
+            this.$sciris.fail(this, 'Could not load projects', error)
           })
       },
 
       addDemoProject() {
         console.log('addDemoProject() called');
-        status.start(this);
-        rpcs.rpc('add_demo_project', [this.$store.state.currentUser.username]) // Have the server create a new project.
+        this.$sciris.start(this);
+        this.$sciris.rpc('add_demo_project', [this.$store.state.currentUser.username]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
-            status.succeed(this, '')
+            this.$sciris.succeed(this, '')
           })
           .catch(error => {
-            status.fail(this, 'Could not add demo project', error)
+            this.$sciris.fail(this, 'Could not add demo project', error)
           })
       },
 
@@ -320,28 +316,28 @@ Last update: 2019feb18
       createNewProject() {
         console.log('createNewProject() called');
         this.$modal.hide('create-project');
-        status.start(this) // Start indicating progress.
+        this.$sciris.start(this) // Start indicating progress.
         var username = this.$store.state.currentUser.username
-        rpcs.download('create_new_project', [username, this.proj_name]) // Have the server create a new project.
+        this.$sciris.download('create_new_project', [username, this.proj_name]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(null); // Update the project summaries so the new project shows up on the list.
-            status.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
+            this.$sciris.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not add new project', error)    // Indicate failure.
+            this.$sciris.fail(this, 'Could not add new project', error)    // Indicate failure.
           })
       },
 
       uploadProjectFromFile() {
         console.log('uploadProjectFromFile() called')
-        rpcs.upload('upload_project', [this.$store.state.currentUser.username], {}, '.prj') // Have the server upload the project.
+        this.$sciris.upload('upload_project', [this.$store.state.currentUser.username], {}, '.prj') // Have the server upload the project.
           .then(response => {
-            status.start(this)  // This line needs to be here to avoid the spinner being up during the user modal.
+            this.$sciris.start(this)  // This line needs to be here to avoid the spinner being up during the user modal.
             this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the new project shows up on the list.
-            status.succeed(this, 'New project uploaded')
+            this.$sciris.succeed(this, 'New project uploaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not upload file', error)
+            this.$sciris.fail(this, 'Could not upload file', error)
           })
       },
 
@@ -404,20 +400,20 @@ Last update: 2019feb18
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
         console.log('openProject() called for ' + matchProject.project.name)
         this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
-        status.succeed(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
+        this.$sciris.succeed(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
       },
 
       copyProject(uid) {
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid) // Find the project that matches the UID passed in.
         console.log('copyProject() called for ' + matchProject.project.name)
-        status.start(this) // Start indicating progress.
-        rpcs.rpc('copy_project', [uid]) // Have the server copy the project, giving it a new name.
+        this.$sciris.start(this) // Start indicating progress.
+        this.$sciris.rpc('copy_project', [uid]) // Have the server copy the project, giving it a new name.
           .then(response => {
             this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the copied program shows up on the list.
-            status.succeed(this, 'Project "'+matchProject.project.name+'" copied')    // Indicate success.
+            this.$sciris.succeed(this, 'Project "'+matchProject.project.name+'" copied')    // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not copy project', error) // Indicate failure.
+            this.$sciris.fail(this, 'Could not copy project', error) // Indicate failure.
           })
       },
 
@@ -446,15 +442,15 @@ Last update: 2019feb18
           this.projectToRename = null          
           let newProjectSummary = _.cloneDeep(projectSummary) // Make a deep copy of the projectSummary object.
           newProjectSummary.project.name = projectSummary.renaming // Rename the project name in the client list from what's in the textbox.
-          status.start(this)
-          rpcs.rpc('rename_project', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
+          this.$sciris.start(this)
+          this.$sciris.rpc('rename_project', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
             .then(response => {
               this.updateProjectSummaries(newProjectSummary.project.id) // Update the project summaries so the rename shows up on the list.
               projectSummary.renaming = '' // Turn off the renaming mode.
-              status.succeed(this, '')  // No green popup message.
+              this.$sciris.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not rename project', error) // Indicate failure.
+              this.$sciris.fail(this, 'Could not rename project', error) // Indicate failure.
             })
         }
 
@@ -470,13 +466,13 @@ Last update: 2019feb18
       downloadProjectFile(uid) {
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid) // Find the project that matches the UID passed in.
         console.log('downloadProjectFile() called for ' + matchProject.project.name)
-        status.start(this) // Start indicating progress.
-        rpcs.download('download_project', [uid]) // Make the server call to download the project to a .prj file.
+        this.$sciris.start(this) // Start indicating progress.
+        this.$sciris.download('download_project', [uid]) // Make the server call to download the project to a .prj file.
           .then(response => { // Indicate success.
-            status.succeed(this, '')  // No green popup message.
+            this.$sciris.succeed(this, '')  // No green popup message.
           })
           .catch(error => { // Indicate failure.
-            status.fail(this, 'Could not download project', error)
+            this.$sciris.fail(this, 'Could not download project', error)
           })
       },
       
@@ -491,65 +487,65 @@ Last update: 2019feb18
       renameDataset() {
         console.log('renameDataset() called for ' + this.modalRenameDataset)
         this.$modal.hide('rename-dataset');
-        status.start(this)
-        rpcs.rpc('rename_dataset', [this.modalRenameProjUID, this.origDatasetName, this.modalRenameDataset]) // Have the server rename the dataset, giving it a new name.
+        this.$sciris.start(this)
+        this.$sciris.rpc('rename_dataset', [this.modalRenameProjUID, this.origDatasetName, this.modalRenameDataset]) // Have the server rename the dataset, giving it a new name.
           .then(response => {
             this.updateProjectSummaries(this.modalRenameProjUID) // Update the project summaries
-            status.succeed(this, 'Databook "'+this.origDatasetName+'" renamed') // Indicate success.
+            this.$sciris.succeed(this, 'Databook "'+this.origDatasetName+'" renamed') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not rename databook', error)
+            this.$sciris.fail(this, 'Could not rename databook', error)
           })
       },
 
       copyDataset(uid, selectedDataset) {
         console.log('copyDataset() called for ' + selectedDataset)
-        status.start(this)
-        rpcs.rpc('copy_dataset', [uid, selectedDataset]) // Have the server copy the dataset, giving it a new name.
+        this.$sciris.start(this)
+        this.$sciris.rpc('copy_dataset', [uid, selectedDataset]) // Have the server copy the dataset, giving it a new name.
           .then(response => {
             this.updateProjectSummaries(uid) // Update the project summaries
-            status.succeed(this, 'Databook "'+selectedDataset+'" copied') // Indicate success.
+            this.$sciris.succeed(this, 'Databook "'+selectedDataset+'" copied') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not copy databook', error)
+            this.$sciris.fail(this, 'Could not copy databook', error)
           })
       },
 
       deleteDataset(uid, selectedDataset) {
         console.log('deleteDataset() called for ' + selectedDataset)
-        status.start(this)
-        rpcs.rpc('delete_dataset', [uid, selectedDataset]) // Have the server delete the dataset.
+        this.$sciris.start(this)
+        this.$sciris.rpc('delete_dataset', [uid, selectedDataset]) // Have the server delete the dataset.
           .then(response => {
             this.updateProjectSummaries(uid) // Update the project summaries
-            status.succeed(this, 'Databook "'+selectedDataset+'" deleted') // Indicate success.     
+            this.$sciris.succeed(this, 'Databook "'+selectedDataset+'" deleted') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Cannot delete last databook: ensure there are at least 2 databooks before deleting one', error)
+            this.$sciris.fail(this, 'Cannot delete last databook: ensure there are at least 2 databooks before deleting one', error)
           })
       },
       
       downloadDatabook(uid, selectedDataSet) {
         console.log('downloadDatabook() called')
-        status.start(this, 'Downloading databook...')
-        rpcs.download('download_databook', [uid], {'key': selectedDataSet})
+        this.$sciris.start(this, 'Downloading databook...')
+        this.$sciris.download('download_databook', [uid], {'key': selectedDataSet})
           .then(response => {
-            status.succeed(this, '')  // No green popup message.
+            this.$sciris.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
-            status.fail(this, 'Could not download databook', error)
+            this.$sciris.fail(this, 'Could not download databook', error)
           })
       },
 
       uploadDatabook(uid) {
         console.log('uploadDatabook() called')
-        rpcs.upload('upload_databook', [uid], {}, '.xlsx')
+        this.$sciris.upload('upload_databook', [uid], {}, '.xlsx')
           .then(response => {
-            status.start(this, 'Uploading databook...')
+            this.$sciris.start(this, 'Uploading databook...')
             this.updateProjectSummaries(uid) // Update the project summaries
-            status.succeed(this, 'Data uploaded to project') // Indicate success.
+            this.$sciris.succeed(this, 'Data uploaded to project') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not upload data', error) // Indicate failure.
+            this.$sciris.fail(this, 'Could not upload data', error) // Indicate failure.
           })
       },
 
@@ -574,8 +570,8 @@ Last update: 2019feb18
           theProj.selected).map(theProj => theProj.project.id)
         console.log('deleteSelectedProjects() called for ', selectProjectsUIDs)
         if (selectProjectsUIDs.length > 0) { // Have the server delete the selected projects.
-          status.start(this)
-          rpcs.rpc('delete_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
+          this.$sciris.start(this)
+          this.$sciris.rpc('delete_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
             .then(response => {
               let activeProjectId = this.$store.state.activeProject.project.id // Get the active project ID.
               if (activeProjectId === undefined) {
@@ -586,10 +582,10 @@ Last update: 2019feb18
                 activeProjectId = null // Null out the project.
               }
               this.updateProjectSummaries(activeProjectId) // Update the project summaries so the deletions show up on the list. Make sure it tries to set the project that was active (if any).
-              status.succeed(this, '')  // No green popup message.
+              this.$sciris.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not delete project(s)', error)
+              this.$sciris.fail(this, 'Could not delete project(s)', error)
             })
         }
       },
@@ -599,14 +595,14 @@ Last update: 2019feb18
           theProj.selected).map(theProj => theProj.project.id)
         console.log('downloadSelectedProjects() called for ', selectProjectsUIDs)
         if (selectProjectsUIDs.length > 0) { // Have the server download the selected projects.
-          status.start(this)
-          rpcs.download('download_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
+          this.$sciris.start(this)
+          this.$sciris.download('download_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
             .then(response => {
               // Indicate success.
-              status.succeed(this, '')  // No green popup message.
+              this.$sciris.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not download project(s)', error) // Indicate failure.
+              this.$sciris.fail(this, 'Could not download project(s)', error) // Indicate failure.
             })
         }
       }

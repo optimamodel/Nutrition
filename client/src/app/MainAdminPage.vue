@@ -38,8 +38,7 @@ Last update: 2018sep23
 </template>
 
 <script>
-import userservice from '@/js/user-service'
-import router from '@/router'
+import router from '../router.js'
 
 export default {
   name: 'MainAdminPage',
@@ -57,7 +56,7 @@ export default {
 
   methods: {
     getUsersInfo () {
-      userservice.getAllUsersInfo()
+      this.$sciris.getAllUsersInfo()
       .then(response => {
         this.usersList = response.data
       })
@@ -68,7 +67,7 @@ export default {
     },
 
     activateAccount (username) {
-      userservice.activateUserAccount(username)
+      this.$sciris.activateUserAccount(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -89,7 +88,7 @@ export default {
     },
 
     deactivateAccount (username) {
-      userservice.deactivateUserAccount(username)
+      this.$sciris.deactivateUserAccount(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -110,7 +109,7 @@ export default {
     },
 
     grantAdmin (username) {
-      userservice.grantUserAdminRights(username)
+      this.$sciris.grantUserAdminRights(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -131,7 +130,7 @@ export default {
     },
 
     revokeAdmin (username) {
-      userservice.revokeUserAdminRights(username)
+      this.$sciris.revokeUserAdminRights(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -152,7 +151,7 @@ export default {
     },
 
     resetPassword (username) {
-      userservice.resetUserPassword(username)
+      this.$sciris.resetUserPassword(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -173,7 +172,7 @@ export default {
     },
 
     deleteUser (username) {
-      userservice.deleteUser(username)
+      this.$sciris.deleteUser(username)
       .then(response => {
         // Give result message.
         this.adminResult = 'User deleted.'

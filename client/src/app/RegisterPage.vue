@@ -81,9 +81,7 @@ Last update: 2018-08-26
 
 
 <script>
-import rpcs from '@/js/rpc-service'
-import userservice from '@/js/user-service'
-import router from '@/router'
+import router from '../router.js'
 
 export default {
   name: 'RegisterPage',
@@ -102,7 +100,7 @@ export default {
 
   computed: {
     getVersionInfo() {
-      rpcs.rpc('get_version_info')
+      this.$sciris.rpc('get_version_info')
         .then(response => {
           this.version = response.data['version'];
           this.date = response.data['date'];
@@ -112,7 +110,7 @@ export default {
 
   methods: {
     tryRegister () {
-      userservice.registerUser(this.registerUserName, this.registerPassword,
+      this.$sciris.registerUser(this.registerUserName, this.registerPassword,
         this.registerDisplayName, this.registerEmail)
       .then(response => {
         if (response.data === 'success') { // Set a success result to show.

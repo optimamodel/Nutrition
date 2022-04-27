@@ -21,10 +21,10 @@ Last update: 2018sep23
 import os
 
 # A secret key value used by Python Flask.
-SECRET_KEY = 'afabacefacedabaddad'
+SECRET_KEY = "afabacefacedabaddad"
 
 # Directory containing the client code.
-CLIENT_DIR = '../client/dist'
+CLIENT_DIR = "../client/dist"
 
 # Flag for setting whether we use the datastore functionality provided by
 # Sciris in the webapp.
@@ -33,7 +33,13 @@ USE_DATASTORE = True
 # URL for the Redis database that the web app will use to manage
 # persistence.  Note that the /N/ number at the end should match the
 # database number you want to use.  (N=0 is the default Redis database.)
-REDIS_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/6')
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/6")
+
+datastore = os.getenv("DATASTORE_URL", None)
+if datastore is not None:
+    DATASTORE_URL = datastore
+else:
+    DATASTORE_URL = REDIS_URL
 
 # Flag for setting whether we use the users functionality provided by
 # Sciris in the webapp.
@@ -45,10 +51,10 @@ USE_USERS = True
 REGISTER_AUTOACTIVATE = True
 
 # Default server port
-SERVER_PORT = int(os.getenv('PORT', 8092))
+SERVER_PORT = int(os.getenv("PORT", 8092))
 
 # Matplotlib backend
-MATPLOTLIB_BACKEND = 'Agg'
+MATPLOTLIB_BACKEND = "Agg"
 
 # Flag for setting whether we use the tasks functionality provided by
 # Sciris in the webapp.
@@ -65,4 +71,4 @@ BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
 # Slack logging configuration
-SLACK = {'webhook':'https://hooks.slack.com/services/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'}
+SLACK = {"webhook": "https://hooks.slack.com/services/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"}
