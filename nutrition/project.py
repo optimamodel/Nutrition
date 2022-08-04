@@ -580,10 +580,13 @@ class Project(object):
 
         # run optimization
         model = sc.dcp(self.model(optim.model_name))
+        if _("Excess budget not allocated") in optim.prog_set:  # add a dummy program to the model
+            excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
+            model.prog_info.add_prog(excess_spend, model.pops)
+            model.prog_info.prog_data = excess_spend["prog_data"]
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
         opt_results, opt_scens = optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
-
         results += opt_results
         scens += opt_scens
 
