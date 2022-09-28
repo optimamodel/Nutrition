@@ -1,6 +1,18 @@
 
 ### Changelog
 
+#### [2.0.4]
+
+Add additional outputs for 
+- alive and non-anaemic children turning age 5
+- alive and non-wasted children turning age 5
+- alive and non-stunted, non-wasted and non-anaemic children turnign age 5
+
+Fix handling of multiple constraints for interventions. Exclusion dependencies can now be entered as a list.
+
+Fix budget multipliest so that "1.5" multiplier is 1.5 times total budget, not 1.5 times free budget.
+
+
 #### [2.0.0]
 
 **Breaking change** - projects from Optima Nutrition 1.* must be recreated by reloading the databooks into Optima Nutrition 2.*
