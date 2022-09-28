@@ -87,6 +87,7 @@ class Model(sc.prettyobj):
         # children
         oldest = self.children.age_groups[-1]
         rate = oldest.ageingRate
+        turning5 = oldest.num_notstunted() * rate + oldest.num_stunted() * rate
         NewlyBorns = self.children.age_groups[0]
         Child_1_5_months = self.children.age_groups[1]
         Child_6_11_months = self.children.age_groups[2]
@@ -95,6 +96,14 @@ class Model(sc.prettyobj):
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
+        self.child_notanaemic[self.year] += oldest.num_notanaemic() * rate
+        self.child_notwasted[self.year] += turning5 - sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
+        self.child_healthy[self.year] += turning5 * (1 - (oldest.num_anaemic() * rate)/turning5) * \
+                                         (1 - (oldest.num_stunted() * rate)/turning5) * \
+                                         (1 - (sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate) / turning5)
+        # self.child_healthy[self.year] += turning5 * (1 - (oldest.num_anaemic() * rate) / turning5) + \
+        #                                  turning5 * (1 - (oldest.num_stunted() * rate) / turning5) + \
+        #                                  turning5 * (1 - (sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate) / turning5)
         self.child_sga[self.year] = (NewlyBorns.birth_dist[_("Term SGA")] + NewlyBorns.birth_dist[_("Pre-term SGA")]) * NewlyBorns.totalchild_pop()
         self.child_1_6months[self.year] = Child_1_5_months.totalchild_pop()
         self.child_6_23months[self.year] = Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop()

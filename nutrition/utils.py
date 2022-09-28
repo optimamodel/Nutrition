@@ -105,6 +105,9 @@ def default_trackers(prev=None, rate=None):
         "stunted",
         "wasted",
         "child_anaemic",
+        "child_notanaemic",
+        "child_notwasted",
+        "child_healthy",
         "stunted_prev",
         "wasted_prev",
         "child_anaemprev",
@@ -166,6 +169,9 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Minimize the number of stunted children"),
             pgettext("plotting", "Minimize the number of wasted children"),
             pgettext("plotting", "Minimize the number of ID anaemic children"),
+            pgettext("plotting", "Maximize the number of non ID anaemic children"),
+            pgettext("plotting", "Maximize the number of non wasted children"),
+            pgettext("plotting", "Maximize the number of healthy children"),
             pgettext("plotting", "Minimize the prevalence of stunting in children"),
             pgettext("plotting", "Minimize the prevalence of wasting in children"),
             pgettext("plotting", "Minimize the prevalence of ID anaemia in children"),
@@ -184,6 +190,9 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Number of stunted children turning age 5"),
             pgettext("plotting", "Number of wasted children turning age 5"),
             pgettext("plotting", "Number of ID anaemic children turning age 5"),
+            pgettext("plotting", "Number of non-ID anaemic children turning age 5"),
+            pgettext("plotting", "Number of non-wasted children turning age 5"),
+            pgettext("plotting", "Number of healthy children turning age 5"),
             pgettext("plotting", "Prevalence of stunting in children"),
             pgettext("plotting", "Prevalence of wasting in children"),
             pgettext("plotting", "Prevalence of ID anaemia in children"),
@@ -246,7 +255,7 @@ def relabel(old, direction=False, lower=False, locale=None):
 
 
 def get_sign(obj):
-    max_obj = ["thrive"]
+    max_obj = ["thrive", "child_notanaemic", "child_healthy", "child_notwasted"]
     if obj in max_obj:
         return -1
     else:
