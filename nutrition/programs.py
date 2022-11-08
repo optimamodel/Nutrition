@@ -837,7 +837,7 @@ class ProgramInfo(sc.prettyobj):
                 for year in self.all_years:
                     par = next((prog for prog in self.programs.values() if prog.name == parname))
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                    maxcov_child.append(max(child.sat_unrestr - par.annual_unrestr_cov[year], 0))  # if coverage of parent exceeds child sat
+                    maxcov_child = max(child.sat_unrestr - par.annual_unrestr_cov[year], 0)  # if coverage of parent exceeds child sat
                     if child.annual_unrestr_cov[year] > maxcov_child:
                         child.annual_unrestr_cov[year] = maxcov_child
 
