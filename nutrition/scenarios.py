@@ -107,7 +107,7 @@ def make_default_scen(name, modelname, model, scen_type=None):
     progset = model.prog_info.base_progset()
     progvals = sc.odict([(prog, []) for prog in progset])
 
-    kwargs1 = {"name": name, "model_name": modelname, "scen_type": scen_type, "progvals": progvals}
+    kwargs1 = {"name": name, "model_name": modelname, "scen_type": scen_type, "progvals": progvals, "enforce_constraints_year": 0}
 
     default = Scen(**kwargs1)
     return default
