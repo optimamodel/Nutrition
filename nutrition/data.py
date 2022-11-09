@@ -538,7 +538,7 @@ class DemographicData(object):
         manman = wastingSheet.loc[_("Odds ratio of MAM when covered by program")].to_dict(orient="index")
         self.or_wasting_prog[_("SAM")] = treatsam
         if self.man_mam:
-            self.or_wasting_prog[_("MAM")] = {_("Treatment of SAM"): manman["Management of MAM"]}
+            self.or_wasting_prog[_("MAM")] = {_("Treatment of SAM"): manman[_("Management of MAM")]}
 
     @translate
     def get_child_progs(self):
