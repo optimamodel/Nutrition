@@ -1,6 +1,14 @@
 
 ### Changelog
 
+#### [2.0.6]
+Lock databooks in all languages
+
+
+#### [2.0.5]
+Add dependencies to scenarios
+Fix translation for management of MAM
+
 #### [2.0.4]
 
 Add additional outputs for 
