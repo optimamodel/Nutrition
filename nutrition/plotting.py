@@ -580,7 +580,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool, locale=None):
                 bars.append(bar)
                 bottom += spend
         ymax = max(bottom)
-        if optim or geo:
+        if (optim or geo):
             title = pgettext("plotting", "Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack TODO almost certainly this is broken now??
             # format x axis

@@ -1577,7 +1577,7 @@ def get_default_geo(project_id):
 def plot_geospatial(project_id, cache_id):
     proj = load_project(project_id)
     proj = retrieve_results(proj)
-    figs = proj.plot(key=cache_id, geo=True)  # Only plot allocation
+    figs = proj.plot(key=cache_id)  # Only plot allocation
     graphs = []
     for f, fig in enumerate(figs.values()):
         for ax in fig.get_axes():
