@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
     # Use this block to translate top level files only
     excel_files = list((rootdir/'en').glob("*.xlsx")) # List of all databooks
-    locales = ["es"]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
+    locales = ["fr"]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
 
     # Assemble arguments
