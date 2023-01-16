@@ -8,15 +8,16 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2022-02-11 11:10+1100\n"
-"PO-Revision-Date: 2022-02-02 14:44+1100\n"
+"PO-Revision-Date: 2023-01-16 13:13+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.9.0\n"
+"X-Generator: Poedit 3.0\n"
 
 #: nutrition/data.py:196 nutrition/data.py:204 nutrition/data.py:207
 #: nutrition/data.py:210 nutrition/data.py:227 nutrition/data.py:241
@@ -412,7 +413,7 @@ msgstr "Néonatal"
 #: nutrition/populations.py:489 nutrition/settings.py:36
 #: nutrition/settings.py:41
 msgid "<1 month"
-msgstr "<1 mois"
+msgstr "Enfants <1 mois"
 
 #: nutrition/data.py:387 nutrition/data.py:395 nutrition/data.py:426
 #: nutrition/data.py:755 nutrition/data.py:759 nutrition/data.py:761
@@ -699,8 +700,8 @@ msgid ""
 "be used."
 msgstr ""
 "Attention, le recueil de données en cours de lecture n'est pas à jour et ne "
-"comprend pas les prévalences de base de l'éclampsie et de la pré-éclampsie ;"
-" des moyennes mondiales seront donc utilisées."
+"comprend pas les prévalences de base de l'éclampsie et de la pré-"
+"éclampsie ; des moyennes mondiales seront donc utilisées."
 
 #: nutrition/data.py:748
 msgid "Prevalence of pre-eclampsia"
@@ -834,7 +835,7 @@ msgstr "Établissement de santé"
 
 #: nutrition/data.py:1116
 msgid "Management of MAM"
-msgstr "Gestion de la MM"
+msgstr "Gestion de la MAM"
 
 #: nutrition/data.py:1373
 msgid "Relative risks of anaemia when receiving intervention - lower"
@@ -1366,15 +1367,15 @@ msgstr "Partiel"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "1-5 months"
-msgstr "1-5 mois"
+msgstr "Enfants 1-5 mois"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "6-11 months"
-msgstr "6-11 mois"
+msgstr "Enfants 6-11 mois"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "12-23 months"
-msgstr "12-23 mois"
+msgstr "Enfants 12-23 mois"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "24-59 months"
@@ -1441,7 +1442,7 @@ msgstr "Minimiser le nombre d'enfants souffrant de l'émaciation"
 #: nutrition/utils.py:168
 msgctxt "plotting"
 msgid "Minimize the number of ID anaemic children"
-msgstr "Minimiser le nombre d'enfants anémiques FP"
+msgstr "Minimiser le nombre d'enfants anémiques ferriprives"
 
 #: nutrition/utils.py:169
 msgctxt "plotting"
@@ -1456,7 +1457,7 @@ msgstr "Minimiser la prévalence de l'émaciation chez les enfants"
 #: nutrition/utils.py:171
 msgctxt "plotting"
 msgid "Minimize the prevalence of ID anaemia in children"
-msgstr "Minimiser la prévalence de l'anémie FP chez les enfants"
+msgstr "Minimiser la prévalence de l'anémie ferriprive chez les enfants"
 
 #: nutrition/utils.py:172
 msgctxt "plotting"
@@ -1466,22 +1467,24 @@ msgstr "Minimiser le nombre de décès maternels"
 #: nutrition/utils.py:173
 msgctxt "plotting"
 msgid "Minimize the number of ID anaemic pregnant women"
-msgstr "Minimiser le nombre de femmes enceintes anémiques FP"
+msgstr "Minimiser le nombre de femmes enceintes anémiques ferriprives"
 
 #: nutrition/utils.py:174
 msgctxt "plotting"
 msgid "Minimize the prevalence of ID anaemia in pregnant women"
-msgstr "Minimiser la prévalence de l'anémie FP chez les femmes enceintes"
+msgstr ""
+"Minimiser la prévalence de l'anémie ferriprive chez les femmes enceintes"
 
 #: nutrition/utils.py:175
 msgctxt "plotting"
 msgid "Minimize the number of ID anaemic non-pregnant women"
-msgstr "Minimiser le nombre de femmes non-enceintes anémiques FP"
+msgstr "Minimiser le nombre de femmes non-enceintes anémiques ferriprives"
 
 #: nutrition/utils.py:176
 msgctxt "plotting"
 msgid "Minimize the prevalence of ID anaemia in non-pregnant women"
-msgstr "Minimiser la prévalence de l'anémie FP chez les femmes non-enceintes"
+msgstr ""
+"Minimiser la prévalence de l'anémie ferriprive chez les femmes non-enceintes"
 
 #: nutrition/utils.py:177
 msgctxt "plotting"
@@ -1518,7 +1521,7 @@ msgstr "Nombre d'enfants souffrant de l'émaciation qui auront 5 ans"
 #: nutrition/utils.py:186
 msgctxt "plotting"
 msgid "Number of ID anaemic children turning age 5"
-msgstr "Nombre d'enfants anémiques FP qui auront 5 ans"
+msgstr "Nombre d'enfants anémiques ferriprives qui auront 5 ans"
 
 #: nutrition/utils.py:187
 msgctxt "plotting"
@@ -1533,7 +1536,7 @@ msgstr "Prévalence de l'émaciation chez les enfants"
 #: nutrition/utils.py:189
 msgctxt "plotting"
 msgid "Prevalence of ID anaemia in children"
-msgstr "Prévalence de l'anémie FP chez les enfants"
+msgstr "Prévalence de l'anémie ferriprive chez les enfants"
 
 #: nutrition/utils.py:190
 msgctxt "plotting"
@@ -1543,22 +1546,22 @@ msgstr "Nombre de décès maternels"
 #: nutrition/utils.py:191
 msgctxt "plotting"
 msgid "Number of ID anaemic pregnant women"
-msgstr "Nombre de femmes enceintes anémiques FP"
+msgstr "Nombre de femmes enceintes anémiques ferriprives"
 
 #: nutrition/utils.py:192
 msgctxt "plotting"
 msgid "Prevalence of ID anaemia in pregnant women"
-msgstr "Prévalence de l'anémie FP chez les femmes enceintes"
+msgstr "Prévalence de l'anémie ferriprive chez les femmes enceintes"
 
 #: nutrition/utils.py:193
 msgctxt "plotting"
 msgid "Number of ID anaemic non-pregnant women"
-msgstr "Nombre de femmes non-enceintes anémiques FP"
+msgstr "Nombre de femmes non-enceintes anémiques ferriprives"
 
 #: nutrition/utils.py:194
 msgctxt "plotting"
 msgid "Prevalence of ID anaemia in non-pregnant women"
-msgstr "Prévalence de l'anémie FP chez les femmes non-enceintes"
+msgstr "Prévalence de l'anémie ferriprive chez les femmes non-enceintes"
 
 #: nutrition/utils.py:195
 msgctxt "plotting"
@@ -1638,12 +1641,12 @@ msgstr "Coût économique d'un décès d'une femme enceinte"
 #: nutrition/utils.py:210
 msgctxt "plotting"
 msgid "Economic cost of ID anaemic child"
-msgstr "Coût économique d'un enfant anémique FP"
+msgstr "Coût économique d'un enfant anémique ferriprive"
 
 #: nutrition/utils.py:211
 msgctxt "plotting"
 msgid "Economic cost of ID anaemic pregnant woman"
-msgstr "Coût économique d'une femme enceinte anémique FP"
+msgstr "Coût économique d'une femme enceinte anémique ferriprive"
 
 #: nutrition/utils.py:212
 msgctxt "plotting"

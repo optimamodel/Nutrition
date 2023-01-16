@@ -79,7 +79,7 @@ msgid "Type"
 msgstr "Type"
 
 msgid "Upload"
-msgstr "Télécharger"
+msgstr "Charger"
 
 msgid "Zoom out"
 msgstr "Faire un zoom arrière"
@@ -98,15 +98,15 @@ msgstr "Effacer les résultats"
 
 msgctxt "common"
 msgid "Export data"
-msgstr "Exporter les données"
+msgstr "Télécharger les données"
 
 msgctxt "common"
 msgid "Export plots"
-msgstr "Exporter les graphiques"
+msgstr "Télécharger les graphiques"
 
 msgctxt "common"
 msgid "Export results"
-msgstr "Exporter les résultats"
+msgstr "Télécharger les résultats"
 
 msgctxt "common"
 msgid "Plot results"
@@ -114,7 +114,7 @@ msgstr "Tracer les résultats"
 
 msgctxt "common"
 msgid "Program name"
-msgstr "Nom du programme"
+msgstr "Nom de l'intervention"
 
 msgctxt "common"
 msgid "Reset zoom"
@@ -236,7 +236,7 @@ msgstr "Revenir aux dernières données enregistrées"
 
 msgctxt "inputs"
 msgid "save_changes"
-msgstr "Enregistrer les changements"
+msgstr "Sauvegarder les changements"
 
 msgctxt "inputs"
 msgid "save_tooltip"
@@ -436,7 +436,7 @@ msgstr "Nouveau projet"
 
 msgctxt "projects"
 msgid "New project uploaded"
-msgstr "Nouveau projet téléchargé"
+msgstr "Nouveau projet chargé"
 
 msgctxt "projects"
 msgid "Project actions"
@@ -456,11 +456,11 @@ msgstr "Taper ici pour filtrer les projets"
 
 msgctxt "projects"
 msgid "Upload databook"
-msgstr "Télécharger le recueil de données"
+msgstr "Charger le recueil de données"
 
 msgctxt "projects"
 msgid "Upload project from file"
-msgstr "Télécharger le projet à partir d'un fichier"
+msgstr "Charger un projet à partir d'un fichier"
 
 msgctxt "projects"
 msgid "loaded_popup"
@@ -520,7 +520,7 @@ msgstr "Rentabilité du programme"
 
 msgctxt "scenarios"
 msgid "Program coverages"
-msgstr "Couvertures du programme"
+msgstr "Couvertures de l'intervention"
 
 msgctxt "scenarios"
 msgid "Program spending"
@@ -559,7 +559,7 @@ msgstr "Programme"
 
 msgctxt "inputs"
 msgid "Exclusion dependency"
-msgstr "Dépendance incompatible"
+msgstr "Dépendance d'exclusion"
 
 msgctxt "inputs"
 msgid "Threshold dependency"
@@ -567,11 +567,11 @@ msgstr "Dépendance de seuil"
 
 msgctxt "optimization"
 msgid "Plot optimizations"
-msgstr "Tracer les optimisations"
+msgstr "Afficher les résultats "
 
 msgctxt "optimization"
 msgid "Plot optimizations with uncertainty"
-msgstr "Tracer les optimisations avec incertitude"
+msgstr "Afficher les résultats avec incertitude"
 
 msgctxt "scenarios"
 msgid "Run scenarios with uncertainty"
