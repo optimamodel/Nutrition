@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2022-02-11 11:10+1100\n"
-"PO-Revision-Date: 2023-01-16 13:13+1100\n"
+"PO-Revision-Date: 2023-01-16 15:24+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -1571,7 +1571,7 @@ msgstr "Taux de mortalité infantile"
 #: nutrition/utils.py:196
 msgctxt "plotting"
 msgid "Prevalence of SAM"
-msgstr "Prevalence de la MAS"
+msgstr "Prévalence de la MAS"
 
 #: nutrition/utils.py:197
 msgctxt "plotting"
@@ -1596,7 +1596,7 @@ msgstr "Nombre de naissances SGA"
 #: nutrition/utils.py:201
 msgctxt "plotting"
 msgid "Exclusive breastfeeding prevalence <6 months"
-msgstr "Prevalence de l'allaitement maternel exclusive <6 mois"
+msgstr "Prévalence de l'allaitement maternel exclusive <6 mois"
 
 #: nutrition/utils.py:202
 msgctxt "plotting"
