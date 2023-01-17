@@ -13,7 +13,7 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 
 msgid "Baseline year population inputs"
-msgstr "Donnees pop de l'annee de ref"
+msgstr "Données pop de l'année de ref"
 
 msgid "Baseline year data"
 msgstr "Données de l'année de référence"
