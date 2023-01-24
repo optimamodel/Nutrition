@@ -8,7 +8,8 @@ doplot = False
 
 # load in data to create model
 p = nu.Project("eg")
-p.load_data("demo", "testing", name="eg")
+#p.load_data("demo", name="eg")
+p.load_data(inputspath='C:\\Users\\nick.scott\\Desktop\\testing\\Demo_dependencies.xlsx', name='eg')
 
 ### TEST MMS / IFAS dependency
 kwargs1 = {"name": "MMS",
@@ -40,6 +41,14 @@ kwargs4 = {"name": "MMS+IFAS budget",
            "growth": "fixed coverage",
            "enforce_constraints_year": 2}
 
+kwargs3a = {"name": "MMS+IFAS",
+           "model_name": "eg",
+           "scen_type": "coverage",
+           "progvals": sc.odict({"Multiple micronutrient supplementation": [0.95],
+                                 "IFAS for pregnant women (community)": [0.95],
+                                 "IFAS for pregnant women (health facility)": [0.95]}),
+           "growth": "fixed coverage"}
+
 ### TEST PPCF/LNS dependency
 
 kwargs5 = {"name": "PPCF",
@@ -62,7 +71,26 @@ kwargs7 = {"name": "PPCF+LNS",
            "progvals": sc.odict({"Public provision of complementary foods": [0.95],
                                  "Lipid-based nutrition supplements": [0.95]}),
            "growth": "fixed coverage",
-           "enforce_constraints_year": 1}
+           "enforce_constraints_year": 0}
+
+kwargs7 = {"name": "PPCF+LNS+micro",
+           "model_name": "eg",
+           "scen_type": "coverage",
+           "progvals": sc.odict({"Public provision of complementary foods": [0.95],
+                                 "Lipid-based nutrition supplements": [0.95],
+                                 "Micronutrient powders": [0.95]}),
+           "growth": "fixed coverage",
+           "enforce_constraints_year": 0}
+
+kwargs9 = {"name": "PPCF+LNS+micro+SQLNS",
+           "model_name": "eg",
+           "scen_type": "coverage",
+           "progvals": sc.odict({"Public provision of complementary foods": [0.95],
+                                 "Lipid-based nutrition supplements": [0.95],
+                                 "Micronutrient powders": [0.95],
+                                 "Small quantity lipid-based nutrition supplements": [0.95]}),
+           "growth": "fixed coverage",
+           "enforce_constraints_year": 0}
 
 ### TEST dependency in optimisation
 kwargs8 = {"name": "MMS IFAS dep",
@@ -75,8 +103,8 @@ kwargs8 = {"name": "MMS IFAS dep",
 
 if __name__ == "__main__":
 
-    scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3, kwargs4])
-    #scen_list = nu.make_scens([kwargs5, kwargs6, kwargs7])
+    scen_list = nu.make_scens([kwargs5, kwargs6, kwargs7,kwargs9])
+    #scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3, kwargs3a])
     p.add_scens(scen_list)
     results = p.run_scens(n_samples=0)
 
@@ -86,5 +114,5 @@ if __name__ == "__main__":
     # p.write_results("optim_results.xlsx")
 
 all_reduce = reduce_results(results)
-write_results(results=results, reduced_results=all_reduce, filename="scen_results_test.xlsx")
+write_results(results=results, reduced_results=all_reduce, filename="scen_results_test4.xlsx")
 
