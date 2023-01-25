@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2022-02-11 11:10+1100\n"
-"PO-Revision-Date: 2023-01-16 15:24+1100\n"
+"PO-Revision-Date: 2023-01-25 15:24+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.9.0\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: nutrition/data.py:196 nutrition/data.py:204 nutrition/data.py:207
 #: nutrition/data.py:210 nutrition/data.py:227 nutrition/data.py:241
 #: nutrition/data.py:310 nutrition/data.py:364 nutrition/data.py:732
 #: nutrition/data.py:934
 msgid "Baseline year population inputs"
-msgstr "Donnees pop de l'annee de ref"
+msgstr "Données pop de l'année de ref"
 
 #: nutrition/data.py:199 nutrition/data.py:200 nutrition/data.py:201
 #: nutrition/data.py:203 nutrition/data.py:214 nutrition/data.py:739
@@ -413,7 +413,7 @@ msgstr "Néonatal"
 #: nutrition/populations.py:489 nutrition/settings.py:36
 #: nutrition/settings.py:41
 msgid "<1 month"
-msgstr "Enfants <1 mois"
+msgstr "Enfant <1 mois"
 
 #: nutrition/data.py:387 nutrition/data.py:395 nutrition/data.py:426
 #: nutrition/data.py:755 nutrition/data.py:759 nutrition/data.py:761
@@ -1185,7 +1185,7 @@ msgstr "Mortalité maternelle (pour 1 000 naissances vivantes)"
 
 #: nutrition/programs.py:35 nutrition/utils.py:549
 msgid "Exclusion dependency"
-msgstr "Dépendance incompatible"
+msgstr "Dépendance d'exclusion"
 
 #: nutrition/programs.py:36 nutrition/utils.py:549
 msgid "Threshold dependency"
@@ -1367,19 +1367,19 @@ msgstr "Partiel"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "1-5 months"
-msgstr "Enfants 1-5 mois"
+msgstr "Enfant 1-5 mois"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "6-11 months"
-msgstr "Enfants 6-11 mois"
+msgstr "Enfant 6-11 mois"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "12-23 months"
-msgstr "Enfants 12-23 mois"
+msgstr "Enfant 12-23 mois"
 
 #: nutrition/settings.py:36 nutrition/settings.py:41
 msgid "24-59 months"
-msgstr "24-59 mois"
+msgstr "Enfant 24-59 mois"
 
 #: nutrition/settings.py:37
 msgid "24 months or greater"

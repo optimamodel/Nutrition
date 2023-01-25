@@ -1487,7 +1487,8 @@ msgstr "Minimizar el número de mujeres anémicas DH no embarazadas"
 #: nutrition/utils.py:176
 msgctxt "plotting"
 msgid "Minimize the prevalence of ID anaemia in non-pregnant women"
-msgstr "Minimizar la prevalencia de la anemia DH en las mujeres no embarazadas"
+msgstr ""
+"Minimizar la prevalencia de la anemia DH en las mujeres no embarazadas"
 
 #: nutrition/utils.py:177
 msgctxt "plotting"
