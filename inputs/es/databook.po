@@ -37,8 +37,8 @@ msgid "=\"Baseline (\"&start_year&\") coverage\""
 msgstr "=\"Cobertura de referencia (\"&start_year&\")\""
 
 msgid ""
-"=\"Percentage of children in each category in baseline year (\"&start_year&"
-"\")\""
+"=\"Percentage of children in each category in baseline year "
+"(\"&start_year&\")\""
 msgstr ""
 "=\"Porcentaje de niños en cada categoría en el año de referencia "
 "(\"&start_year&\")\""
@@ -142,12 +142,14 @@ msgstr "Comportamiento"
 msgid "Birth number"
 msgstr "Número de nacimiento"
 
-# birth outcome means for example °term°, °preterm°, appropriate for gestational age° etc. Not sure if resultado is interpreted in the same way
+# birth outcome means for example °term°, °preterm°, appropriate for
+# gestational age° etc. Not sure if resultado is interpreted in the same way
 msgid "Birth outcome distribution"
 msgstr "Distribución del desenlace del nacimiento"
 
 # Translation must be 31 characters or less in length
-# Risks here refers to for example neonatal prematurity, naonatal sepsis, neonatal pneumonia
+# Risks here refers to for example neonatal prematurity, naonatal sepsis,
+# neonatal pneumonia
 msgid "Birth outcome risks"
 msgstr "Riesgos desenlace de nacimiento"
 
@@ -328,7 +330,8 @@ msgstr "Planificación familiar - superior"
 msgid "Female sterilization"
 msgstr "Esterilización femenina"
 
-# tracking ovulation to prevent pregnancy (sometimes called natural family planning) - Planificación Familiar Natural?
+# tracking ovulation to prevent pregnancy (sometimes called natural family
+# planning) - Planificación Familiar Natural?
 msgid "Fertility awareness"
 msgstr "Planificación Familiar Natural"
 
@@ -441,8 +444,8 @@ msgstr ""
 
 msgid "IFAS for pregnant women (health facility)"
 msgstr ""
-"Suplementación con hierro y ácido fólico para mujeres embarazadas (centro "
-"de salud)"
+"Suplementación con hierro y ácido fólico para mujeres embarazadas (centro de"
+" salud)"
 
 msgid "IPTp"
 msgstr "IPTp-Tratamiento preventivo intermitente de la malaria en el embarazo"
@@ -749,13 +752,13 @@ msgstr ""
 
 msgid "Odds ratios for optimal birth spacing by program - lower"
 msgstr ""
-"Razón de momios para el espaciamiento óptimo de los nacimientos por "
-"programa - inferior"
+"Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
+" - inferior"
 
 msgid "Odds ratios for optimal birth spacing by program - upper"
 msgstr ""
-"Razón de momios para el espaciamiento óptimo de los nacimientos por "
-"programa - superior"
+"Razón de momios para el espaciamiento óptimo de los nacimientos por programa"
+" - superior"
 
 msgid "Odds ratios for stunting"
 msgstr "Razón de momios de baja talla o retraso en el crecimiento"
@@ -832,7 +835,8 @@ msgstr "Porcentaje de diarrea grave"
 msgid "Percentage of population at risk of malaria"
 msgstr "Porcentaje de población con riesgo de malaria"
 
-# by default this can be equivalent to the percentage of the population living below the poverty line.
+# by default this can be equivalent to the percentage of the population living
+# below the poverty line.
 msgid "Percentage of population food insecure (default poor)"
 msgstr ""
 "Porcentaje de población con inseguridad alimentaria (pobre por defecto)"
@@ -871,7 +875,11 @@ msgstr "Población"
 msgid "Population data"
 msgstr "Datos poblacionales"
 
-# used to label a sheet in the input databook, where we outline that for example that the model considers stunting, wasting anaemia and mortality for children, whereas for pregnant women it only considered anaemia and mortality. So it is more what outcome/health risks are modelled for each population
+# used to label a sheet in the input databook, where we outline that for
+# example that the model considers stunting, wasting anaemia and mortality for
+# children, whereas for pregnant women it only considered anaemia and
+# mortality. So it is more what outcome/health risks are modelled for each
+# population
 msgid "Population risk areas"
 msgstr "Riegos para la población"
 
