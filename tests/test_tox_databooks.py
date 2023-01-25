@@ -8,7 +8,7 @@ tempdir = testdir / "temp"
 excel_files = list((inputdir).glob("**/*.xlsx"))  # List of all databooks
 excel_files = [x for x in excel_files if 'template' not in x.stem and not x.stem.startswith('~')]
 
-@pytest.mark.parametrize('path', excel_files)
+@pytest.mark.parametrize('path', excel_files, ids=lambda x: str(x.relative_to(inputdir)))
 def test_databook(path):
     P = nu.Project("test")
     P.load_data(inputspath=path)
