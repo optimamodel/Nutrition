@@ -719,7 +719,7 @@ def get_costeff(project, results):
                         costimpact = totalspend / impact
                         costimpact = round(costimpact, 2)
                         # format
-                        if out == "thrive":  # thrive should increase
+                        if out == "thrive" or out == "child_notanaemic" or out == "child_notwasted" or out == "child_healthy":  # thrive should increase
                             if costimpact < 0:
                                 costimpact = _("Negative impact")
                             else:

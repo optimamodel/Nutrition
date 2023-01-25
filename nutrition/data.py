@@ -839,11 +839,15 @@ class ProgramData(object):
     @translate
     def get_prog_deps(self):
         deps = utils.read_sheet(self._spreadsheet, _("Program dependencies"), [0])
+        deps = deps[[_("Exclusion dependency"),_("Threshold dependency")]].replace(np.nan,'')
+        deps = deps.groupby([_("Program")])[[_("Exclusion dependency"),_("Threshold dependency")]].transform(lambda x: ','.join(x))
+        deps = deps.drop_duplicates()
+
         programDep = sc.odict()
         for program, dependency in deps.iterrows():
             programDep[program] = sc.odict()
             for dependType, value in dependency.items():
-                if sc.isstring(value):  # cell not empty
+                if value !='':  # cell not empty
                     programDep[program][dependType] = value.replace(", ", ",").split(",")  # assumes programs separated by ", "
                 else:
                     programDep[program][dependType] = []
