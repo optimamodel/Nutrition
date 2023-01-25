@@ -622,20 +622,30 @@ class ProgramInfo(sc.prettyobj):
 
     def _excl_sort(self):
         openSet, closedSet, idx = self._get_excl_roots()
-        for program in openSet:
-            dependentNames = set(program.excl_deps)
-            closedSetNames = set([prog.name for prog in closedSet])
-            if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
-                closedSet += [program]
+        i=0
+        while len(openSet)>0 and i<20: # limit how many times this will run to avoid infinite loop
+            i=i+1
+            for program in openSet:
+                dependentNames = set(program.excl_deps)
+                closedSetNames = set([prog.name for prog in closedSet])
+                if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
+                    closedSet += [program]
+                    openSet.remove(program)
+            if i==19: print("Possible circular logic error with exclusion dependencies")
         self.exclusionOrder = closedSet[idx:]
 
     def _thresh_sort(self):
         open_set, closed_set, idx = self._get_thresh_roots()
-        for program in open_set:
-            dependentNames = set(program.thresh_deps)
-            closedSetNames = set([prog.name for prog in closed_set])
-            if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
-                closed_set += [program]
+        i=0
+        while len(open_set)>0 and i<20: # limit how many times this will run to avoid infinite loop
+            i=i+1
+            for program in open_set:
+                dependentNames = set(program.thresh_deps)
+                closedSetNames = set([prog.name for prog in closed_set])
+                if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
+                    closed_set += [program]
+                    open_set.remove(program)
+            if i == 19: print("Possible circular logic error with threshold dependencies")
         self.thresholdOrder = closed_set[idx:]
 
     def set_init_covs(self, pops):
@@ -828,20 +838,30 @@ class ProgramInfo(sc.prettyobj):
                 for year in self.all_years:
                     par = next(prog for prog in self.programs.values() if prog.name == parname)
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                    maxcov_child = max(child.sat_unrestr - (par.sat_unrestr - par.annual_restr_cov[year]), 0)
-                    if child.annual_restr_cov[year] > maxcov_child:
-                        child.annual_restr_cov[year] = maxcov_child
+                    maxcov_child = min(child.sat_unrestr, par.annual_unrestr_cov[year])
+                    if child.annual_unrestr_cov[year] > maxcov_child:
+                        child.annual_unrestr_cov[year] = maxcov_child
+                        child.annual_restr_cov[year] = child.annual_unrestr_cov[year] * child.unrestr_popsize / child.restr_popsize
+
         # exclusion
-        # maxcov_child = np.zeros(len(self.all_years))
-        for child in self.exclusionOrder:
+        for child in self.exclusionOrder: # child is the program (column A) that dependencies are being applied to
             for year in self.all_years:
                 maxcov_child = []
+                reduced_cov = []
                 for parname in child.excl_deps:
-                    par = next((prog for prog in self.programs.values() if prog.name == parname))
+                    par = next((prog for prog in self.programs.values() if prog.name == parname)) # par is a set of programs that the child is dependent on
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                    maxcov_child.append(max(child.sat_unrestr - par.annual_restr_cov[year], 0))  # if coverage of parent exceeds child sat
-                if child.annual_restr_cov[year] > min(maxcov_child):
-                    child.annual_restr_cov[year] = min(maxcov_child)
+                    #maxcov_child.append(max(child.sat_unrestr - par.annual_unrestr_cov[year], 0))  # if coverage of parent exceeds child sat
+                    if child.sat_unrestr >= par.sat_unrestr:
+                        # this is the case unless par has a larger target population (e.g. MMS for whole pop vs IFAS health facility; or micronutrient powders vs LNS)
+                        maxcov_child.append(max((child.unrestr_popsize * child.sat_unrestr - par.unrestr_popsize *par.annual_unrestr_cov[year]) / child.unrestr_popsize,0))  # base on numbers rather than coverage percentage due to different target populations
+                        reduced_cov.append(child.sat_unrestr - maxcov_child[-1])  # base on numbers rather than coverage percentage due to different target populations
+                    else:
+                        overlap_cov = max(par.unrestr_popsize*par.annual_unrestr_cov[year] - (par.unrestr_popsize*par.sat_unrestr-child.unrestr_popsize*child.sat_unrestr),0) / child.unrestr_popsize
+                        reduced_cov.append(overlap_cov)
+                if child.annual_unrestr_cov[year] > max(child.sat_unrestr - sum(reduced_cov), 0):
+                    child.annual_unrestr_cov[year] = max(child.sat_unrestr - sum(reduced_cov), 0)
+                    child.annual_restr_cov[year] = child.annual_unrestr_cov[year] * child.unrestr_popsize / child.restr_popsize
 
     def add_prog(self, prog, pops):
         """

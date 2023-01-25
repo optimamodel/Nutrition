@@ -52,8 +52,8 @@ class Optim(sc.prettyobj):
         free = model.prog_info.free
         fixed = model.prog_info.fixed
         kwargs = {"model": model, "free": (free+sum(fixed)) * mult - sum(fixed) if mult > 1 else free * mult, "fixed": fixed, "weights": weights, "keep_inds": keep_inds}
-        if free == 0:
-            raise Exception("There are no funds available to optimize.")
+        # if free == 0:
+        #     raise Exception("There are no funds available to optimize.")
         return kwargs
 
     ######### OPTIMIZATION ##########
