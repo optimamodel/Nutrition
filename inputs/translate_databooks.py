@@ -35,6 +35,8 @@ def validate_sheet_names(wb, pofile):
 def reprotect(x):
     source, dest, target_locale = x
     wb = excel.Workbooks.Add(str(source.resolve()))
+    wb.Unprotect("nick")
+
     print(source)
     for sheet in wb.Sheets:
         print("\t" + sheet.Name)
@@ -105,7 +107,7 @@ def translate(x):
                     raise Exception(msg) from E
 
             # Substitute cell content
-            rg.Replace(a, b, LookAt=1, MatchCase="True")  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
+            rg.Replace(a, b, 1, 1, True)  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
         sheet.Protect("nick")  # Restore protection
         sheet.Visible = visible
@@ -134,8 +136,8 @@ if __name__ == '__main__':
     locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
     # Use this block to translate top level files only
-    excel_files = list((rootdir/'en').glob("*.xlsx")) # List of all databooks
-    locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
+    # excel_files = list((rootdir/'en').glob("*.xlsx")) # List of all databooks
+    # locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
     # Assemble arguments
     to_translate = []
@@ -145,7 +147,7 @@ if __name__ == '__main__':
 
     # Dispatch to workers
     # WARNING - Must be run directly in a Windows command prompt, NOT in PyCharm
-    with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=6) as executor:
         executor.map(translate, to_translate)
 
     # # ...or run debug
