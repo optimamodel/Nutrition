@@ -12,7 +12,17 @@ Backend localization is needed for any strings that are hardcoded into the Pytho
 
 Strings that require translation are passed through a 'translation function' which is assigned to `_` by convention. `babel` scans through the package searching for strings occurring inside `_` and then uses them to update the catalog files.
 
-### Standard commands
+### Locale files
+
+There are three sets of locale files
+
+- The 'backend `.po`' files which are contained in `nutrition/locale` and are used by the Python code
+- The 'databook `.po`' files' which are contained in `inputs` and store the translations for strings that appear in the databook. These are used when producing translated versions of the databooks
+- The 'frontend `.po`' files which are contained in `client/src/locales` and store the translations used for the web interface
+
+In many cases, the same string appears in multiple places. For example, a string like 'Stunting' might appear in the databook. This string might then be needed by the backend code, when reading the databook and populating variables in the code. Finally, the same string might show up in the web interface and need translating there as well. Sometimes, the translated strings in the frontend are passed back into the backend - for example, if the frontend contains a table of input cells, and the user saves changes to the model inputs, these are sent back to the backend with the labels in the table, which may have been translated. *Therefore, it is essential that all three sets of translation files are synchronized*. Scripts are provided in the repository to automatically synchronize the translations. 
+
+### Backend translation commands
 
 To update strings after adding new strings in code, run the following commands. This creates `nutrition/locale/nutrition.pot`
 
@@ -31,7 +41,7 @@ To update translations (after modifying translated text)
 
 ### Adding translations to the backend code
 
-The normal workflow for adding translations to existing strings in the code is:
+For strings that only appear in the backend code (e.g., plot titles), the normal workflow for adding translations is:
 
 1. Add `_ = utils.get_translator(locale)` in the appropriate scope. `utils.locale` contains the fallback/default locale. For RPCs, it is necessary to get the translator inside the RPC call, so that way different languages can be simultaneously used by multiple users.
 2. For any string that needs to be translated, pass it through `_` for translation. For example `print("foo")` could become `print(_("foo"))`
@@ -44,28 +54,27 @@ The normal workflow for adding translations to existing strings in the code is:
 
 Some strings also appear in the databook, such as program names or population names. These need to be localized in the databook templates as well as in the code, because the databooks are not generated programatically. The workflow for generating translated databooks is to start with a complete English template. Then, an Excel file containing translations is created.
 
-English strings that will be translated are contained in `translations.txt`. Running `csv_to_po.py` reads `translations.txt` and adds `.po` files to subdirectories within the input folder. These `po` files can be edited to perform the translations. `translate.py` will then  produce translated databooks. 
-
-
+English strings that will be translated are contained in `inputs/translations.txt`. Running `inputs/update_databook_catalogs.py` reads `translations.txt` and adds/updates `.po` files to subdirectories within the input folder. These `po` files can be edited to perform the translations. `translate.py` will then  produce translated databooks. 
 
 The reference files are in `inputs/en`. Remaining files are automatically generated using `translate.py`. This script does the following for each file in `en`:
 
 - Copy file to locale folder e.g. `fr`
-- Finds and replaces all strings matched in `translations.csv`. Strings are matched against cell contents in their entirity. Note that this means that cell values contained inside formulas e.g., `=IF(...,"foo")` will not match `"foo"` in `translations.csv`. This is required so that named cells e.g. `=start_year` do not become `=start_Année` and therefore break formalas. However, it may be necessary to change parts of the databook to move hardcoded strings to separate cells that are then referenced. 
+- Finds and replaces all strings matched in `translations.txt`. Strings are matched against cell contents in their entirity. Note that this means that cell values contained inside formulas e.g., `=IF(...,"foo")` will not match `"foo"` in `translations.txt`. This is required so that named cells e.g. `=start_year` do not become `=start_Année` and therefore break formalas. However, it may be necessary to change parts of the databook to move hardcoded strings to separate cells that are then referenced. 
 
-Therefore, `translate.py` generated translated versions of the `en` files.
+In this way, `translate.py` produces translated versions of all of the `en` files. To preserve the files as precisely as possible, the translation is carried out by remote-controlling Microsoft Excel. Therefore, **this script can only be run on a Windows machine with Microsoft Excel installed**.
 
-To preserve the files as precisely as possible, the translation is carried out by remote-controlling Microsoft Excel. Therefore, **this script can only be run on a Windows machine with Microsoft Excel installed**.
+For strings that appear in both the databook and in the code, it is essential that the same translations are used for both the databook and the code. Since the Excel files are translated using the `.po` files in the `inputs` folder, these same translations should be set in the other locale files. This is handled by the `sync_backend_po.py` script, which reads `translations.txt` and, for each English string in that file, if it is contained in a backend or frontend `.po` file, the translations are overwritten with the translation from the databook `.po` files. 
 
-For strings that appear in both the databook and in the code, the translations in the `.po` files are automatically populated if the message ID matches the string in the source locale column. Consider the example of `12-24 months` which appears in both the databook and in the code. The workflow to translate this string is
+The procedure for translating a string that appears in the databook and code is as follows - consider the example of `12-24 months` which appears in both the databook and in the code. The workflow to translate this string is
 
 1. Wrap the string in a translation function in the code i.e. `_('12-24 months)`
-2. Extract messages and update the catalog so that the message id `12-24 months` appears in the `.po` files
-3. Add the translation for `12-24 months` to `translations.xlsx`
+2. Extract messages and update the catalog so that the message id `12-24 months` appears in the backend `.po` files
+3. Add the translation for `12-24 months` to `translations.txt`
+4. Run `update_databook_catalogs.py` which 
 4. Run `translate.py` which will do two things - it will generate translated databooks including the new string, and it will also overwrite the translation for `12-24 months` in the `.po` files
 5. Compile the catalog and commit all files
 
-## Localization (Vue)
+## Frontend localization (Vue)
 
 Strings that are specific to the frontend (e.g., the text that appears on a button) appear in `.vue` files. To add translations for these strings:
 
@@ -86,3 +95,8 @@ Some software, such as Poedit, can assist with managing translations. However, P
 3. Use Poedit or anything else to modify the `po` files
 4. Run `update_json_files.sh` to generate new `json` files from the `po` files
 5. Commit the `json` files to the repository
+
+
+### Translation synchronization
+
+As mentioned above, the `sync_backend_po.py` script copies translations from the databook into the backend and frontend. However, it also copies translations from the backend into the frontend. Therefore, it is able to keep all of the `.po` files synchronized. However, synchronizing the frontend also requires converting from and to `json` files. The `update_backend_po.sh` script automates all required steps, and should be run whenever any translations are changed. 
