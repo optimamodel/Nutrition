@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.9']
+        python-version: ['3.11']
     name: Run tests
     steps:
       - name: Checkout sources
@@ -23,9 +23,9 @@ jobs:
         working-directory: ./tests
         run: |
           pip install pytest pytest-xdist
-          pytest test_tox*.py -n 2 --durations=0 --junitxml=test-results.xml
-      - name: Publish test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        if: always()
+          pytest test_tox*.py -n auto --durations=0 --junitxml=test-results.xml
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
+        if: always() # always run even if the previous step fails
         with:
-          files: tests/test-results.xml
+          report_paths: './tests/test-results.xml'

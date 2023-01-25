@@ -734,7 +734,7 @@ def get_costeff(project, results):
 
 
 def round_elements(mylist, dec=1):
-    return [round(np.float64(x) * 100, dec) for x in mylist]  # Type conversion to handle None
+    return [round(float(x) * 100, dec) for x in mylist]  # Type conversion to handle None
 
 def baseline_sanitise(base_names):
     check_names = sc.dcp(base_names)
