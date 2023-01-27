@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 
 msgid "Actions"
 msgstr "Actions"
@@ -22,7 +22,7 @@ msgid "Copy"
 msgstr "Copier"
 
 msgid "Could not upload file"
-msgstr "Impossible de télécharger le fichier"
+msgstr "Impossible de charger le fichier"
 
 msgid "Create"
 msgstr "Créer"
@@ -110,7 +110,7 @@ msgstr "Télécharger les résultats"
 
 msgctxt "common"
 msgid "Plot results"
-msgstr "Tracer les résultats"
+msgstr "Afficher les résultats"
 
 msgctxt "common"
 msgid "Program name"
@@ -567,7 +567,7 @@ msgstr "Dépendance de seuil"
 
 msgctxt "optimization"
 msgid "Plot optimizations"
-msgstr "Afficher les résultats "
+msgstr "Afficher les résultats"
 
 msgctxt "optimization"
 msgid "Plot optimizations with uncertainty"
