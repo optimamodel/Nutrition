@@ -10,10 +10,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 
 msgid "Baseline year population inputs"
-msgstr "Donnees pop de l'annee de ref"
+msgstr "Données pop de l'année de ref"
 
 msgid "Baseline year data"
 msgstr "Données de l'année de référence"
@@ -596,7 +596,7 @@ msgid "Program dependencies"
 msgstr "Dépendances du programme"
 
 msgid "Exclusion dependency"
-msgstr "Dépendance incompatible"
+msgstr "Dépendance d'exclusion"
 
 msgid "Threshold dependency"
 msgstr "Dépendance de seuil"
@@ -639,7 +639,7 @@ msgid "Community based"
 msgstr "Communautaire"
 
 msgid "Management of MAM"
-msgstr "Gestion de la MM"
+msgstr "Gestion de la MAM"
 
 msgid "General population"
 msgstr "Population générale"

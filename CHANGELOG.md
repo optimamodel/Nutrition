@@ -1,6 +1,11 @@
 
 ### Changelog
 
+#### [2.0.7]
+- Update handling of complex dependencies.
+- Update French language translation 
+***Previous French databooks will no longer work
+
 #### [2.0.6]
 Lock databooks in all languages
 

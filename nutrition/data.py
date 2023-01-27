@@ -268,7 +268,7 @@ class DemographicData(object):
         dist = utils.read_sheet(self._spreadsheet, _(_("Nutritional status distribution")), [0, 1])
 
         # Recalculate cells that need it, and remember in the calculations cache.
-        stunting_mod_hi_sums = dist.loc[_("Stunting (height-for-age)")].iloc[2:4, 0:5].astype(np.float).sum().values
+        stunting_mod_hi_sums = dist.loc[_("Stunting (height-for-age)")].iloc[2:4, 0:5].astype(float).sum().values
         stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
         stunting_norm_pcts = np.ones(5) - norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0)
         cols = dist.columns[0:5]
@@ -277,7 +277,7 @@ class DemographicData(object):
         stunting_mild_pcts = norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0) - stunting_mod_hi_sums
         dist.loc[(_("Stunting (height-for-age)"), _("Mild (HAZ-score between -2 and -1)")), cols] = stunting_mild_pcts
         self.calcscache.write_row(_("Nutritional status distribution"), 2, 2, stunting_mild_pcts)
-        wasting_mod_hi_sums = dist.loc[_("Wasting (weight-for-height)")].iloc[2:4, 0:5].astype(np.float).sum().values
+        wasting_mod_hi_sums = dist.loc[_("Wasting (weight-for-height)")].iloc[2:4, 0:5].astype(float).sum().values
         wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
         wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
         dist.loc[(_("Wasting (weight-for-height)"), _("Normal (WHZ-score > -1)")), cols] = wasting_norm_pcts
@@ -366,8 +366,8 @@ class DemographicData(object):
         incidences.loc[_("Diarrhoea"), :] = diarr_incid
         self.calcscache.write_row(_("Incidence of conditions"), 1, 1, diarr_incid)
         dist = utils.read_sheet(self._spreadsheet, _("Nutritional status distribution"), [0, 1])
-        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("MAM (WHZ-score between -3 and -2)")][0:5].values.astype(np.float) * 2.6
-        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("SAM (WHZ-score < -3)")][0:5].values.astype(np.float) * 2.6
+        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("MAM (WHZ-score between -3 and -2)")][0:5].values.astype(float) * 2.6
+        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("SAM (WHZ-score < -3)")][0:5].values.astype(float) * 2.6
         incidences.loc[_("MAM"), :] = mam_incid
         self.calcscache.write_row(_("Incidence of conditions"), 2, 1, mam_incid)
         incidences.loc[_("SAM"), :] = sam_incid
@@ -382,11 +382,11 @@ class DemographicData(object):
         # Load the main spreadsheet into a DataFrame.
         deathdist = utils.read_sheet(self._spreadsheet, _("Causes of death"), [0, 1], skiprows=1)
         # Recalculate cells that need it, and remember in the calculations cache.
-        neonatal_death_pct_sum = deathdist.loc[_("Neonatal")][_("<1 month")].values[:-1].astype(np.float).sum()
+        neonatal_death_pct_sum = deathdist.loc[_("Neonatal")][_("<1 month")].values[:-1].astype(float).sum()
         self.calcscache.write_cell(_("Causes of death"), 10, 2, neonatal_death_pct_sum)
-        children_death_pct_sums = deathdist.loc[_("Children")].iloc[1:-1, 0:4].astype(np.float).sum().values
+        children_death_pct_sums = deathdist.loc[_("Children")].iloc[1:-1, 0:4].astype(float).sum().values
         self.calcscache.write_row(_("Causes of death"), 22, 2, children_death_pct_sums)
-        pregwomen_death_pct_sum = deathdist.loc[_("Pregnant women")].iloc[1:-1, 0].values.astype(np.float).sum()
+        pregwomen_death_pct_sum = deathdist.loc[_("Pregnant women")].iloc[1:-1, 0].values.astype(float).sum()
         self.calcscache.write_cell(_("Causes of death"), 34, 2, pregwomen_death_pct_sum)
 
         neonates = deathdist.loc[_("Neonatal")].iloc[:-1].dropna(axis=1)

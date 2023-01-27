@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 import polib
 import win32com.client
+import pywintypes
+import win32api
 
 # Load translations from Excel
 rootdir = Path(__file__).parent
@@ -30,6 +32,26 @@ def validate_sheet_names(wb, pofile):
         po.save(pofile)
         raise Exception('Invalid sheet names detected')
 
+def reprotect(x):
+    source, dest, target_locale = x
+    wb = excel.Workbooks.Add(str(source.resolve()))
+    wb.Unprotect("nick")
+
+    print(source)
+    for sheet in wb.Sheets:
+        print("\t" + sheet.Name)
+        visible = sheet.Visible
+        sheet.Activate()
+        try:
+            sheet.Unprotect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
+        except:
+            sheet.Unprotect("NICK")  # Need to unprotect, otherwise it will not replace cell values correctly
+        sheet.Protect("nick")  # Restore protection
+    wb.Worksheets(1).Activate()  # Leave the first sheet open
+    wb.SaveAs(str(source.resolve()))
+    wb.Close(True)
+
+
 def translate(x):
     """
     Translate all Excel files from source to target locale
@@ -48,9 +70,10 @@ def translate(x):
 
     wb = excel.Workbooks.Add(str(source.resolve()))
 
-    # pofile =  rootdir / target_locale / "databook.po"
-    # validate_sheet_names(wb, pofile)
+    pofile =  rootdir / target_locale / "databook.po"
+    validate_sheet_names(wb, pofile)
 
+    print(source)
     for sheet in wb.Sheets:
         print("\t" + sheet.Name)
 
@@ -73,11 +96,18 @@ def translate(x):
                 try:
                     sheet.Name = b
                 except Exception as E:
-                    print(E)
-                    raise Exception(f"Could not translate sheet name '{a}' -> '{b}'")
+                    msg = f"Could not translate sheet name '{a}' -> '{b}'"
+
+                    if isinstance(E, pywintypes.com_error):
+                        try:
+                            msg += f"(win32api error: '{win32api.FormatMessage(E.hresult).strip()}')"
+                        except:
+                            pass
+
+                    raise Exception(msg) from E
 
             # Substitute cell content
-            rg.Replace(a, b, LookAt=1, MatchCase="True")  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
+            rg.Replace(a, b, 1, 1, True)  # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
         sheet.Protect("nick")  # Restore protection
         sheet.Visible = visible
@@ -106,9 +136,8 @@ if __name__ == '__main__':
     locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
     # Use this block to translate top level files only
-    excel_files = list((rootdir/'en').glob("*.xlsx")) # List of all databooks
-    locales = ["es"]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
-
+    # excel_files = list((rootdir/'en').glob("*.xlsx")) # List of all databooks
+    # locales = [x.parent.stem for x in rootdir.glob("**/*.po")]  # List of all locales (folders containing a `.po` file) e.g. ['fr']
 
     # Assemble arguments
     to_translate = []
@@ -118,7 +147,7 @@ if __name__ == '__main__':
 
     # Dispatch to workers
     # WARNING - Must be run directly in a Windows command prompt, NOT in PyCharm
-    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=6) as executor:
         executor.map(translate, to_translate)
 
     # # ...or run debug
