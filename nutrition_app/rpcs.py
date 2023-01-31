@@ -21,6 +21,7 @@ import pandas as pd
 import openpyxl
 import openpyexcel
 import io
+from flask_login import current_user
 
 pl.rc("font", size=14)
 
@@ -168,6 +169,21 @@ def run_query(token, query):
         errormsg = 'Authentication "%s" failed; this incident has been reported and your account access will be removed.' % token
         raise Exception(errormsg)
         return None
+
+
+@RPC(validation='admin')
+def admin_get_users():
+    print(current_user)
+
+    users = [datastore.get(u) for u in datastore.keys('user::*')]
+
+    out = []
+    for user in users:
+        d = user.jsonify()
+        d['user']['admin'] = user.is_admin
+        out.append(d)
+    return out
+
 
 
 def admin_grab_projects(username1, username2):
