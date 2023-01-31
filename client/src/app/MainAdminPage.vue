@@ -12,7 +12,6 @@ Last update: 2018sep23
         <th>Username</th>
         <th>Display name</th>
         <th>Email</th>
-        <th>Account active?</th>
         <th>Admin?</th>
         <th>Actions</th>
       </tr>
@@ -20,11 +19,8 @@ Last update: 2018sep23
         <td>{{ userobj.user.username }}</td>
         <td>{{ userobj.user.displayname }}</td>
         <td>{{ userobj.user.email }}</td>
-        <td>{{ userobj.user.accountactive }}</td>
         <td>{{ userobj.user.admin }}</td>
         <td>
-          <button @click="activateAccount(userobj.user.username)">Activate Account</button>
-          <button @click="deactivateAccount(userobj.user.username)">Deactivate Account</button>
           <button @click="grantAdmin(userobj.user.username)">Grant Admin</button>
           <button @click="revokeAdmin(userobj.user.username)">Revoke Admin</button>
           <button @click="resetPassword(userobj.user.username)">Reset Password</button>
@@ -56,7 +52,7 @@ export default {
 
   methods: {
     getUsersInfo () {
-      this.$sciris.getAllUsersInfo()
+      this.$sciris.rpc('admin_get_users')
       .then(response => {
         this.usersList = response.data
       })
