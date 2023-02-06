@@ -841,7 +841,7 @@ class ProgramData(object):
         deps = utils.read_sheet(self._spreadsheet, _("Program dependencies"), [0])
         deps = deps[[_("Exclusion dependency"),_("Threshold dependency")]].replace(np.nan,'')
         deps = deps.groupby([_("Program")])[[_("Exclusion dependency"),_("Threshold dependency")]].transform(lambda x: ','.join(x))
-        deps = deps.drop_duplicates()
+        deps = deps[~deps.index.duplicated(keep='first')]
 
         programDep = sc.odict()
         for program, dependency in deps.iterrows():

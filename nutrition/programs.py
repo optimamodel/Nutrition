@@ -834,13 +834,14 @@ class ProgramInfo(sc.prettyobj):
         """
         # threshold
         for child in self.thresholdOrder:
-            for parname in child.thresh_deps:
-                for year in self.all_years:
+            for year in self.all_years:
+                maxcov_child = []
+                for parname in child.thresh_deps:
                     par = next(prog for prog in self.programs.values() if prog.name == parname)
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                    maxcov_child = min(child.sat_unrestr, par.annual_unrestr_cov[year])
-                    if child.annual_unrestr_cov[year] > maxcov_child:
-                        child.annual_unrestr_cov[year] = maxcov_child
+                    maxcov_child.append(min(child.unrestr_popsize * child.sat_unrestr, par.unrestr_popsize * par.annual_unrestr_cov[year]) / child.unrestr_popsize)
+                    if child.annual_unrestr_cov[year] > min(maxcov_child):
+                        child.annual_unrestr_cov[year] = min(maxcov_child)
                         child.annual_restr_cov[year] = child.annual_unrestr_cov[year] * child.unrestr_popsize / child.restr_popsize
 
         # exclusion
