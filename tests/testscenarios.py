@@ -15,7 +15,7 @@ doplot = True
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
 p = nu.Project("eg")
-p.load_data("demo", "testing", name="eg")
+p.load_data("demo", "national", name="eg")
 
 ### define custom scenarios
 kwargs1 = {"name": "Treat SAM 100%", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"Treatment of SAM": [0.9, 0.5, 0.8]}), "growth": "fixed coverage", "enforce_constraints_year": 1}
