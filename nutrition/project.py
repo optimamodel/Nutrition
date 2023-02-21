@@ -556,7 +556,7 @@ class Project(object):
         self.add_result(results, name=name)
         return results
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=False, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
+    def run_optim(self, optim=None, key=-1, maxiter=30, swarmsize=None, maxtime=450, parallel=False, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
         _ = utils.get_translator(self.locale)
         if optim is not None:
             self.add_optims(optim)
@@ -603,7 +603,7 @@ class Project(object):
             self.add_result(results, name=optim.name)
         return results, scens
 
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=200, dosave=True, parallel=False, runbalanced=False, n_samples=0, seed=None):
+    def run_geo(self, geo=None, key=-1, maxiter=40, swarmsize=None, maxtime=300, dosave=True, parallel=False, runbalanced=False, n_samples=0, seed=None):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""

@@ -9,7 +9,7 @@ doplot = False
 # load in data to create model
 p = nu.Project("eg")
 #p.load_data("demo", name="eg")
-p.load_data(inputspath='C:\\Users\\nick.scott\\Desktop\\testing\\Demo_dependencies.xlsx', name='eg')
+p.load_data(inputspath='C:\\Users\\nick.scott\\Desktop\\testing\\Demo_dependencies2.xlsx', name='eg')
 
 ### TEST MMS / IFAS dependency
 kwargs1 = {"name": "MMS",
@@ -92,6 +92,28 @@ kwargs9 = {"name": "PPCF+LNS+micro+SQLNS",
            "growth": "fixed coverage",
            "enforce_constraints_year": 0}
 
+kwargs11 = {"name": "SQLNS+IYCF",
+           "model_name": "eg",
+           "scen_type": "coverage",
+           "progvals": sc.odict({"Public provision of complementary foods": [0.0],
+                                 "Lipid-based nutrition supplements": [0.0],
+                                 "IYCF 2": [0.95],
+                                 "IYCF 1": [0.95],
+                                 "Small quantity lipid-based nutrition supplements": [0.95]}),
+           "growth": "fixed coverage",
+           "enforce_constraints_year": 0}
+
+kwargs12 = {"name": "IYCF",
+           "model_name": "eg",
+           "scen_type": "coverage",
+           "progvals": sc.odict({"Public provision of complementary foods": [0.0],
+                                 "Lipid-based nutrition supplements": [0.0],
+                                 "IYCF 2": [0.95],
+                                 "IYCF 1": [0.95],
+                                 "Small quantity lipid-based nutrition supplements": [0.0]}),
+           "growth": "fixed coverage",
+           "enforce_constraints_year": 0}
+
 ### TEST dependency in optimisation
 kwargs8 = {"name": "MMS IFAS dep",
            "model_name": "eg",
@@ -103,7 +125,7 @@ kwargs8 = {"name": "MMS IFAS dep",
 
 if __name__ == "__main__":
 
-    scen_list = nu.make_scens([kwargs5, kwargs6, kwargs7,kwargs9])
+    scen_list = nu.make_scens([kwargs11, kwargs12])
     #scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3, kwargs3a])
     p.add_scens(scen_list)
     results = p.run_scens(n_samples=0)
