@@ -148,7 +148,10 @@ class Optim(sc.prettyobj):
 
     def _filter_progs(self, model):
         if self.filter_progs:
-            threshold = 0.1
+            if np.count_nonzero(self.weights) > 1:
+                threshold = 0.0001 # set a lower threshold for complex objective functions
+            else:
+                threshold = 0.01
             newcov = 1.0
             restrictcovs = False
             keep_inds = []
