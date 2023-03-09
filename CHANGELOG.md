@@ -1,6 +1,11 @@
 
 ### Changelog
 
+#### [2.0.9]
+- If treatment of SAM is expended to treatment of MAM, the MAM component only covers former SAM children
+- Reduce threshold for filtering programs in complex objective function optimizations
+
+
 #### [2.0.8]
 - Added basic admin functionality to web interface
 
