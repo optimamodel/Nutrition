@@ -218,7 +218,7 @@ class Optim(sc.prettyobj):
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
             else:
                 x0 = kwargs["model"].prog_info.curr[inds]
-            opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime, randseed=5)
+            opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime, randseed=1)
             x = opt_result.x
             self.print_status(x, mult, opt_result.exitreason, now)
             scaled = utils.scale_end_alloc(free, x, model.prog_info, inds, fixed)  # scales spending to fit budget, limited by saturation and any program coverage dependencies
