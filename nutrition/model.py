@@ -174,6 +174,8 @@ class Model(sc.prettyobj):
 
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year - 1)
+        # Treatment of SAM must be relative to initial year to avoid MAM extension issues. Other coverages are updated iteratively
+        init_cov['Treatment of SAM'] = self.prog_info.get_ann_covs(0)['Treatment of SAM']
         prog_areas = self.prog_info.prog_areas
         for pop in self.pops:
             pop.previousCov = init_cov
