@@ -172,6 +172,7 @@ class Model(sc.prettyobj):
         self._track_total_pop()
         self._track_child_outcomes
 
+    @translate
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year - 1)
         # Treatment of SAM must be relative to initial year to avoid MAM extension issues. Other coverages are updated iteratively
