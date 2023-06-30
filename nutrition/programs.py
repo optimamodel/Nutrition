@@ -293,14 +293,15 @@ class Program(sc.prettyobj):
             oldProb = age_group.frac_wasted(wastingCat)
             probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]["covered"]
             probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]["not covered"]
-            # if self.name == _("Treatment of SAM") and wastingCat == _('MAM'):
-            #     # If SAM treatment is extended to MAM, then the coverage refers to SAM children, who are only a fraction of MAM children
-            #     newcov = min(1, self.annual_unrestr_cov[self.year] * (age_group.frac_wasted(_('SAM')) / age_group.frac_wasted(_('MAM'))))
-            #     newProb = get_new_prob(newcov, probWastedIfCovered, probWastedIfNotCovered)
-            #     print(self.year, age_group.age, newcov, probWastedIfCovered, newProb, oldProb)
-            # else:
-            newcov = self.annual_unrestr_cov[self.year]
-            newProb = get_new_prob(newcov, probWastedIfCovered, probWastedIfNotCovered)
+            if self.name == _("Treatment of SAM") and wastingCat == _('MAM'):
+                # If SAM treatment is extended to MAM, then the coverage refers to SAM children, who are only a fraction of MAM children
+                newcov = min(1, self.annual_unrestr_cov[self.year] * age_group.frac_wasted(_('SAM')) / age_group.frac_wasted(_('MAM')))
+                newProb = get_new_prob(newcov, probWastedIfCovered, probWastedIfNotCovered)
+                print(self.year, age_group.age, newcov, probWastedIfCovered, newProb, oldProb,
+                      sc.safedivide(oldProb - newProb, oldProb, default=0.0), probWastedIfCovered - probWastedIfNotCovered)
+            else:
+                newcov = self.annual_unrestr_cov[self.year]
+                newProb = get_new_prob(newcov, probWastedIfCovered, probWastedIfNotCovered)
             reduction = sc.safedivide(oldProb - newProb, oldProb, default=0.0)  # If the denominator is 0.0 or close, set reduction to zero (no change)
             update[wastingCat] = 1 - reduction
         return update

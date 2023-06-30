@@ -175,8 +175,6 @@ class Model(sc.prettyobj):
     @translate
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year - 1)
-        # Treatment of SAM must be relative to initial year to avoid MAM extension issues. Other coverages are updated iteratively
-        #init_cov[_("Treatment of SAM")] = self.prog_info.get_ann_covs(0)[_("Treatment of SAM")]
         prog_areas = self.prog_info.prog_areas
         for pop in self.pops:
             pop.previousCov = init_cov
@@ -376,12 +374,23 @@ class Model(sc.prettyobj):
 
     @translate
     def _wasting_trans(self, age_group):
-        """Calculates the transitions between MAM and SAM categories
-        Currently only accounting for the movement from sam to mam, because the other direction is complicated"""
-        numsam = age_group.num_risk(_("SAM"))
-        nummam = age_group.num_risk(_("MAM"))
-        # If the denominator is 0.0 or close, set update to 1 (no change).
-        age_group.fromSAMtoMAMupdate[_("MAM")] = 1 + sc.safedivide(((1.0 - age_group.wastingTreatmentUpdate[_("SAM")]) * numsam), nummam, default=0.0)
+        """Calculates the transitions INTO MAM category
+        For wasting treatment intervention, children leaving SAM are accounted for in programs.py.
+        If MAM extension is selected, then children leaving MAM are also accounted for in programs.py.
+        This function accounts for the inflow to MAM (whether or not MAM extension is selected)."""
+        if len(age_group.data.or_wasting_prog) == 1: # if treatment of MAM extension is not selected
+            numsam = age_group.num_risk(_("SAM"))
+            nummam = age_group.num_risk(_("MAM")) * age_group.wastingTreatmentUpdate[_("MAM")]
+            age_group.fromSAMtoMAMupdate[_("MAM")] = 1 + sc.safedivide(((1.0 - age_group.wastingTreatmentUpdate[_("SAM")]) * numsam), nummam, default=0.0)
+        else:
+            age_group.fromSAMtoMAMupdate[_("MAM")] = 1
+            # TESTING differences for increasing vs decreasing coverage
+            # if age_group.wastingTreatmentUpdate[_("SAM")] <= 1: # if treatment program coverage is increasing
+            #     age_group.fromSAMtoMAMupdate[_("MAM")] = 1 #+ sc.safedivide(((1.0 - age_group.wastingTreatmentUpdate[_("SAM")]) * numsam), nummam, default=0.0)
+            # else:
+            #     #numsam = age_group.num_risk(_("SAM")) / age_group.wastingTreatmentUpdate[_("SAM")]
+            #     #nummam = age_group.num_risk(_("MAM")) / age_group.wastingTreatmentUpdate[_("MAM")]
+            #     age_group.fromSAMtoMAMupdate[_("MAM")] = 1# + sc.safedivide(((1.0 - age_group.wastingTreatmentUpdate[_("SAM")]) * numsam), nummam, default=0.0)
 
     @translate
     def _dia_indirect_effects(self, age_group):

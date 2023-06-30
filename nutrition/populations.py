@@ -642,7 +642,12 @@ class Children(Population):
                         OR = self.data.or_wasting_prog[wastingCat][program][age]
                     except Exception:  # if, for eg, MAM doesn't have Treatment of SAM key (odict doesn't have keyerror)
                         OR = 1
-                    fracCovered = self.previousCov[program]
+                    if wastingCat ==_("MAM"):
+                        # If SAM treatment is extended to MAM, then the coverage refers to continuing treatment
+                        # for SAM children (from MAM to mild), who are only a fraction of MAM children
+                        fracCovered = min(1, self.previousCov[program] * age_group.frac_wasted(_('SAM')) / age_group.frac_wasted(_('MAM')))
+                    else:
+                        fracCovered = self.previousCov[program]
                     pn, pc = solve_quad(OR, fracCovered, fracThisCatAge)
                     age_group.probConditionalCoverage[wastingCat][program] = {}
                     age_group.probConditionalCoverage[wastingCat][program]["covered"] = pc
