@@ -318,7 +318,7 @@ class DemographicData(object):
         # self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem[:])
 
         # for age, prev in anaem.items():  # Should work with commented out code above
-        for age, prev in anaem.iteritems():
+        for age, prev in anaem.items():
             self.risk_dist[_("Anaemia")][age] = dict()
             self.risk_dist[_("Anaemia")][age][_("Anaemic")] = prev
             self.risk_dist[_("Anaemia")][age][_("Not anaemic")] = 1.0 - prev
@@ -625,6 +625,8 @@ class DemographicData(object):
             for condCat in mydict[age].keys():
                 cond = condCat[0]
                 cat = condCat[1]
+                if type(cat) == float:
+                    cat = "None"
                 if res_dict[age].get(cat) is None:
                     res_dict[age][cat] = dict()  # CK TEST
                     res_dict[age][cat][cond] = mydict[age][condCat]
@@ -639,6 +641,8 @@ class DemographicData(object):
             res_dict[age] = sc.odict()
             for condCat in mydict[age].keys():
                 cat = condCat[1]
+                if type(cat) == float:
+                    cat = "None"
                 if res_dict[age].get(cat) is None:
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict
@@ -1237,6 +1241,8 @@ class Dataset(object):
             for condCat in mydict[age].keys():
                 cond = condCat[0]
                 cat = condCat[1]
+                if type(cat) == float:
+                    cat = "None"
                 if res_dict[age].get(cat) is None:
                     res_dict[age][cat] = dict()  # CK TEST
                     res_dict[age][cat][cond] = mydict[age][condCat]
@@ -1251,6 +1257,8 @@ class Dataset(object):
             res_dict[age] = sc.odict()
             for condCat in mydict[age].keys():
                 cat = condCat[1]
+                if type(cat) == float:
+                    cat = "None"
                 if res_dict[age].get(cat) is None:
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict

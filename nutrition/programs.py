@@ -297,8 +297,8 @@ class Program(sc.prettyobj):
                 # If SAM treatment is extended to MAM, then the coverage refers to SAM children, who are only a fraction of MAM children
                 newcov = min(1, self.annual_unrestr_cov[self.year] * age_group.frac_wasted(_('SAM')) / age_group.frac_wasted(_('MAM')))
                 newProb = get_new_prob(newcov, probWastedIfCovered, probWastedIfNotCovered)
-                print(self.year, age_group.age, newcov, probWastedIfCovered, newProb, oldProb,
-                      sc.safedivide(oldProb - newProb, oldProb, default=0.0), probWastedIfCovered - probWastedIfNotCovered)
+                # print(self.year, age_group.age, newcov, probWastedIfCovered, newProb, oldProb,
+                #       sc.safedivide(oldProb - newProb, oldProb, default=0.0), probWastedIfCovered - probWastedIfNotCovered)
             else:
                 newcov = self.annual_unrestr_cov[self.year]
                 newProb = get_new_prob(newcov, probWastedIfCovered, probWastedIfNotCovered)

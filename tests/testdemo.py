@@ -5,9 +5,9 @@ Version:
 import nutrition.ui as nu
 
 do_plot = True
-run_scen = False
-run_optim = True
-run_geo = False
+run_scen = True
+run_optim = False
+run_geo = True
 
 P = nu.demo(scens=run_scen, optims=run_optim, geos=run_geo)
 
