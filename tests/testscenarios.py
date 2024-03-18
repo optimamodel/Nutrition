@@ -48,7 +48,7 @@ if __name__ == "__main__":
     scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3, kwargs2])
     p.add_scens(scen_list)
 
-    results = p.run_scens(n_samples=3)
+    results = p.run_scens(n_samples=1)
 
 if doplot:
     p.plot()
