@@ -1,6 +1,10 @@
 
 ### Changelog
 
+#### [2.0.11]
+- Update effect sizes for IYCF, MMS, treatment of SAM, SQ-LNS, PPCF, Zn supplementation, Kangaroo mother care, food fortification, delayed cord clamping, IFAS for pregnant women, micronutrient supplements. See comments in hidden sheet of template databook for references for each effect size.
+
+
 #### [2.0.10]
 - If treatment of SAM is expanded to treatment of MAM, the MAM component only covers former SAM children
 

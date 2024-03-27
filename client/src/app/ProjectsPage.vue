@@ -16,7 +16,7 @@ Last update: 2019feb18
         &nbsp; &nbsp;
         <button class="btn __blue" @click="uploadProjectFromFile">{{ $t("projects.Upload project from file") }}</button>
         &nbsp; &nbsp;
-        <button class="btn __blue" @click="addCountryProject" :data-tooltip="$t('Last extracted 27 Jan 2023')">{{ $t("Add country project from LiST database") }}</button>
+        <button class="btn __blue" @click="addCountryProject" :data-tooltip="$t('Last extracted 25 Mar 2024')">{{ $t("Add country project from LiST database") }}</button>
         &nbsp; &nbsp;
       </div>
     </div>
