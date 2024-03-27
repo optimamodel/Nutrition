@@ -16,7 +16,7 @@ class Settings(object):
 
         _ = get_translator(locale)
 
-        self.t = [2017, 2030]
+        self.t = [2017, 2035]
         self.years = sc.inclusiverange(self.t[0], self.t[1])
         self.n_years = len(self.years)
         self.timestep = 1.0 / 12.0  # in months. WARNING do not change this, montly timestep is hardcoded as e.g. for month in range(12) elsewhere.
