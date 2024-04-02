@@ -13,5 +13,3 @@ Run `python tests/testdemo.py` to test.
 ## Run frontend
 
 See `client/README.md`
-
-
