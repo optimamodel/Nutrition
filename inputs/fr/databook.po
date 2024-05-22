@@ -1215,3 +1215,6 @@ msgstr "Condition"
 
 msgid "Distribution"
 msgstr "Distribution"
+
+msgid "prev"
+msgstr "prév"
