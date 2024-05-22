@@ -641,9 +641,6 @@ msgstr "Supprimer les projets"
 msgid "Parameters"
 msgstr "Paramètres"
 
-msgid "Last extracted 1 Feb 2022"
-msgstr "Dernier extrait le 1 février 2022"
-
 msgid "Add country project from LiST database"
 msgstr "Ajouter un pays depuis la base de données LiST"
 
@@ -670,3 +667,6 @@ msgid "list_data_warning"
 msgstr ""
 "Attention : les recueils de données ont des champs invalidés qui doivent "
 "être vérifiés avant d'utiliser les résultats"
+
+msgid "Last extracted 25 Mar 2024"
+msgstr "Dernier extrait le 1 mars 2024"

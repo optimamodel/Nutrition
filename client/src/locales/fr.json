@@ -189,10 +189,10 @@
   "Error after": "Erreur après",
   "Delete projects": "Supprimer les projets",
   "Parameters": "Paramètres",
-  "Last extracted 1 Feb 2022": "Dernier extrait le 1 février 2022",
   "Add country project from LiST database": "Ajouter un pays depuis la base de données LiST",
   "Select country": "Sélectionner un pays",
   "Load": "Charger",
   "Could not initialize LiST country set": "Impossible d'initialiser les pays LiST",
-  "Access the legacy version here": "Accéder à l'ancienne version ici"
+  "Access the legacy version here": "Accéder à l'ancienne version ici",
+  "Last extracted 25 Mar 2024": "Dernier extrait le 1 mars 2024"
 }

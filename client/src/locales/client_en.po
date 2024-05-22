@@ -641,9 +641,6 @@ msgstr "Delete projects"
 msgid "Parameters"
 msgstr "Parameters"
 
-msgid "Last extracted 1 Feb 2022"
-msgstr "Last extracted 1 Feb 2022"
-
 msgid "Add country project from LiST database"
 msgstr "Add country project from LiST database"
 
@@ -670,3 +667,6 @@ msgid "list_data_warning"
 msgstr ""
 "Warning: databooks contain unvalidated fields and require review before "
 "results are used"
+
+msgid "Last extracted 25 Mar 2024"
+msgstr "Last extracted 25 Mar 2024"

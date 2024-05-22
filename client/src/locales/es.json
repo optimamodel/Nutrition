@@ -153,7 +153,6 @@
     "Could not rename databook": "No se ha podido cambiar el nombre del libro de datos",
     "Are you sure you want to delete the selected projects?": "¿Está seguro de que quiere eliminar los proyectos seleccionados?"
   },
-  "Last extracted 1 Feb 2022": "Última extracción: 1 de febrero de 2022",
   "Add country project from LiST database": "Añadir proyecto de país desde la base de datos LiST",
   "Open": "Abierto",
   "Delete selected": "Eliminar seleccionado",
@@ -194,5 +193,6 @@
   "uncertainty": {
     "Input uncertainty runs": "Ejecutar incertidumbre de las entradas",
     "Number of runs": "Número de ejecuciones"
-  }
+  },
+  "Last extracted 25 Mar 2024": "Última extracción: 1 de marzo de 2024"
 }

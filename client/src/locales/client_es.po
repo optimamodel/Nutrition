@@ -557,9 +557,6 @@ msgctxt "projects"
 msgid "Are you sure you want to delete the selected projects?"
 msgstr "¿Está seguro de que quiere eliminar los proyectos seleccionados?"
 
-msgid "Last extracted 1 Feb 2022"
-msgstr "Última extracción: 1 de febrero de 2022"
-
 msgid "Add country project from LiST database"
 msgstr "Añadir proyecto de país desde la base de datos LiST"
 
@@ -686,3 +683,6 @@ msgstr "Ejecutar incertidumbre de las entradas"
 msgctxt "uncertainty"
 msgid "Number of runs"
 msgstr "Número de ejecuciones"
+
+msgid "Last extracted 25 Mar 2024"
+msgstr "Última extracción: 1 de marzo de 2024"
