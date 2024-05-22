@@ -1249,6 +1249,3 @@ msgstr "Condición"
 
 msgid "Distribution"
 msgstr "Distribución"
-
-msgid "prev"
-msgstr ""

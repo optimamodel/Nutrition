@@ -1149,6 +1149,3 @@ msgstr ""
 
 msgid "Small quantity lipid-based nutrition supplements - upper"
 msgstr ""
-
-msgid "prev"
-msgstr ""
