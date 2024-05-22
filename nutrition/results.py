@@ -232,9 +232,9 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else [""]
                 thisout = out[o]
-                if "prev" in outcome.lower():
+                if _("prev") in outcome.lower():
                     cumul = _("N/A")
-                elif "mortality" in outcome.lower():
+                elif _("mortality") in outcome.lower():
                     cumul = _("N/A")
                 elif _("Number of SAM children") in outcome or _("Number of MAM children") in outcome:
                     cumul = "N/A"
