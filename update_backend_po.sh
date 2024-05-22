@@ -11,6 +11,8 @@ python setup.py update_catalog # Update the backend po files with new entries fr
 
 (cd client && npm run translate ) # vue->json
 sleep 3
+(cd client && npm run translate ) # vue->json
+sleep 3
 
 python client/src/locales/json_to_po.py # json -> po (this will add any new strings in the FE to the po file)
 
