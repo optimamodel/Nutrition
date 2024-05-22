@@ -320,9 +320,9 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                 for o, outcome in enumerate(rows):
                     name = [res] if o == 0 else [""]
                     thisout = out[o]
-                    if "prev" in outcome.lower():
+                    if _("prev") in outcome.lower():
                         cumul = "N/A"
-                    elif "mortality" in outcome.lower():
+                    elif _("mortality") in outcome.lower():
                         cumul = "N/A"
                     elif _("Number of SAM children") in outcome or _("Number of MAM children") in outcome:
                         cumul = "N/A"
