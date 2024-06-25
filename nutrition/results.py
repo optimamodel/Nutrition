@@ -206,7 +206,7 @@ def reduce_results(results, point_estimate: str = "median", bounds: str = "quant
     return res_unc
 
 
-def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False):
+def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False, full_rows=False):
     """Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
@@ -230,7 +230,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
         if res.name != _("Excess budget") and resampled_key_str not in res.name:
             out = res.get_outputs(outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(rows):
-                name = [res.name] if o == 0 else [""]
+                name = [res.name] if o == 0 or full_rows else [""]
                 thisout = out[o]
                 if _("prev") in outcome.lower():
                     cumul = _("N/A")
@@ -241,7 +241,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
                 else:
                     cumul = sum(thisout)
                 outputs.append(name + ["point"] + [outcome] + list(thisout) + [cumul])
-            outputs.append(nullrow)
+            if not full_rows: outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
 
@@ -255,16 +255,17 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             # print(spend)
             # collate coverages first
             for r, prog in enumerate(rows):
-                name = [res.name] if r == 0 else [""]
+                name = [res.name] if r == 0 or full_rows else [""]
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
                 outputs.append(name + [prog] + [_("Coverage")] + [costcov] + list(thiscov))
             # collate spending second
             for r, prog in enumerate(rows):
+                name = [res.name] if r == 0 or full_rows else [""]
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
-                outputs.append([""] + [prog] + [_("Budget")] + [costcov] + list(thisspend))
-            outputs.append(nullrow)
+                outputs.append(name + [prog] + [_("Budget")] + [costcov] + list(thisspend))
+            if not full_rows: outputs.append(nullrow)
         elif resampled_key_str not in res.name:
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
@@ -272,21 +273,22 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             # print(spend)
             # collate coverages first
             for r, prog in enumerate(rows):
-                name = [res.name] if r == 0 else [""]
+                name = [res.name] if r == 0 or full_rows else [""]
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
                 outputs.append(name + [prog] + [_("Coverage")] + [costcov] + list(thiscov))
             # collate spending second
             for r, prog in enumerate(rows):
+                name = [res.name] if r == 0 or full_rows else [""]
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
-                outputs.append([""] + [prog] + [_("Budget")] + [costcov] + list(thisspend))
-            outputs.append(nullrow)
+                outputs.append(name + [prog] + [_("Budget")] + [costcov] + list(thisspend))
+            if not full_rows: outputs.append(nullrow)
         else:
             spend = res.get_allocs(ref=True)
             thisspend = spend[_("Excess budget not allocated")]
             outputs.append([_("Excess budget not allocated")] + [_("N/A")] + [_("Budget")] + [_("N/A")] + list(thisspend))
-            outputs.append(nullrow)
+            if not full_rows: outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
 
