@@ -131,14 +131,6 @@ class Geospatial:
             for index in sorted(track_del_ind, reverse=True):
                 del results[index]
 
-        if excess_budget > 0:
-            excess_res = sc.dcp(results[0])
-            excess_res.name = _("Excess budget")
-            excess_prog = sc.dcp(excess_res.programs[_("Excess budget not allocated")])
-            excess_prog.annual_spend[1:] += excess_budget
-            excess_res.prog_info.programs = {_("Excess budget not allocated"): excess_prog}
-            excess_res.programs = excess_res.prog_info.programs
-            results.append(excess_res)
         return results
 
     def make_regions(self, add_funds=None, rem_curr=False, mults=None, weight_ind=None):
