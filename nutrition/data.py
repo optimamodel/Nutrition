@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
 import pandas
 import openpyxl
@@ -144,6 +145,7 @@ class DemographicData(object):
         self.get_time_trends()
         self.get_incidences()
         self.get_economic_cost()
+        self.get_lifetable()
 
         self.impacted_pop = None
         self.prog_areas = sc.odict()
@@ -347,13 +349,101 @@ class DemographicData(object):
 
     @translate
     def get_economic_cost(self):
-        econo_cost = utils.read_sheet(self._spreadsheet, _("Economic loss"), cols=[0], dropna=False)
-        self.cost_wasting = econo_cost.loc[_("Child wasting episode")].values[0]
-        self.cost_stunting = econo_cost.loc[_("Child turning age 5 stunted (over lifetime)")].values[0]
-        self.cost_child_death = econo_cost.loc[_("Child death")].values[0]
-        self.cost_pw_death = econo_cost.loc[_("Maternal death")].values[0]
-        self.cost_child_anaemic = econo_cost.loc[_("Anaemic child (per year)")].values[0]
-        self.cost_pw_anaemic = econo_cost.loc[_("Anaemic pregnant woman (per pregnancy)")].values[0]
+        econo_inputs        = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], dropna=False)
+        life_exp            = econo_inputs.loc[_("Life expectancy at birth")].values[0]
+        gdp_growth          = econo_inputs.loc[_("GDP growth rate")].values[0]
+        gdp_pc              = econo_inputs.loc[_("Life expectancy at birth")].values[0]
+        per_earn_realised   = econo_inputs.loc[_("Percentage of lifetime earning actually realized")].values[0]
+        age_end_prod        = econo_inputs.loc[_("Age for end of productivity")].values[0]
+        age_sta_prod        = econo_inputs.loc[_("Age start productivity")].values[0]
+        fem_lb_part         = econo_inputs.loc[_("Female labor force participation")].values[0]
+        prop_pw_benef       = econo_inputs.loc[_("Proportion of pregnancy to apply benefits to")].values[0]
+        inc_iq_bf           = econo_inputs.loc[_("Increase in IQ due to early breastfeeding")].values[0]
+        inc_ear_iq          = econo_inputs.loc[_("Increase in earnings due to increase in one IQ pt")].values[0]
+        lab_share_gdp       = econo_inputs.loc[_("Labor share of GDP")].values[0]
+        low_earn_stunted    = econo_inputs.loc[_("Percentage of lower lifetime earning of a stunted individual")].values[0]
+        produc_gain_anemia  = econo_inputs.loc[_("Gains in productivity from averted childhood anemia")].values[0]
+        produc_gain_lbw     = econo_inputs.loc[_("Productivity gains due to averted low birth weight")].values[0]
+        wage_share_manual   = econo_inputs.loc[_("Wage Share in GDP for manual occupations")].values[0]
+        produc_light_lab    = econo_inputs.loc[_("Gains productivity in light labour")].values[0]
+        blue_col_share      = econo_inputs.loc[_("Blue-Collar Share employment in total employment")].values[0]
+        heavy_manu_lab      = econo_inputs.loc[_("Wage Share of Heavy manual labor")].values[0]
+        produc_heavy_lab    = econo_inputs.loc[_("Gains in productivity in heavy labor")].values[0][0]
+        
+        econo_inputs        = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], skiprows=22)
+        
+        num_people          = econo_inputs.loc[_("Number of people")].values.tolist()
+        
+        self.econ_inputs = {"Life expectancy at birth": life_exp,
+                               "GDP growth rate": gdp_growth,
+                               "GDP per capita": gdp_pc ,
+                               "Percent of lifetime earning actually realized": per_earn_realised,
+                               "Productivity year end": age_end_prod,
+                               "Productivity year start": age_sta_prod,
+                               "Female labor force participation": fem_lb_part,
+                               "Proportion of pregnancy to apply benefits to": prop_pw_benef,
+                               "Percentage of pregnant women 15-19 years": self.pw_agedist[0],
+                               "Percentage of pregnant women 20-29 years": self.pw_agedist[1],
+                               "Percentage of pregnant women 30-39 years": self.pw_agedist[2],
+                               "Percentage of pregnant women 40-49 years": self.pw_agedist[3],
+                               "Increase in IQ due to EBF": inc_iq_bf,
+                               "Rate of increase in earnings from IQ": inc_ear_iq,
+                               "Labor share of GDP": lab_share_gdp,
+                               "Percent lower lifetime earning of a stunted": low_earn_stunted,
+                               "Productivity gain from averting child anemia": produc_gain_anemia,
+                               "Productivity gain from averting LBW": produc_gain_lbw,
+                               "Wage Share in GDP for manual occupations": wage_share_manual,
+                               "Gains productivity in light labour": produc_light_lab,
+                               "Blue-Collar Share employment in total employment": blue_col_share,
+                               "Wage Share of Heavy manual labor": heavy_manu_lab,
+                               "Gains in productivity in heavy labor": produc_heavy_lab,
+                               "Number of people per 100,000": num_people}
+        
+    def get_lifetable(self):
+        all_ages = [a for a in range(5,66)]
+        age_cats = ["5-9 years", "10-14 years", "15-19 years", "20-24 years", "25-29 years",
+                    "30-34 years", "35-39 years", "40-44 years", "45-49 years", "50-54 years",
+                    "55-59 years", "60-64 years","65-69 years"]
+        
+        number_list = self.econ_inputs["Number of people per 100,000"]
+        people_number = {age_cat: 0 for age_cat in age_cats}
+        for c, cat in enumerate(age_cats):
+            people_number[cat] = number_list[c]
+        
+        Px = {cat: 0 for cat in age_cats}
+            
+        proportion_left_since_age_5 = []
+        proportion_left_since_age_15 = np.zeros(len(all_ages))
+        proportion_left_since_age_25 = np.zeros(len(all_ages))
+        proportion_left_since_age_35 = np.zeros(len(all_ages))
+        proportion_left_since_age_45 = np.zeros(len(all_ages))
+        
+        for cat in age_cats:
+            Px[cat] = people_number[cat] / people_number["5-9 years"]
+            
+        for i in range(0, len(age_cats) - 1):
+            this_interp = np.linspace(Px[age_cats[i]],Px[age_cats[i + 1]],6)[:5]
+            proportion_left_since_age_5.extend(this_interp)
+            
+        proportion_left_since_age_5.append(Px["65-69 years"])
+        
+        for i in range(10, len(all_ages)):
+            proportion_left_since_age_15[i] = proportion_left_since_age_5[i] / Px["15-19 years"]
+        for i in range(20, len(all_ages)):
+            proportion_left_since_age_25[i] = proportion_left_since_age_5[i] / Px["25-29 years"]
+        for i in range(30, len(all_ages)):
+            proportion_left_since_age_35[i] = proportion_left_since_age_5[i] / Px["35-39 years"]
+        for i in range(40, len(all_ages)):
+            proportion_left_since_age_45[i] = proportion_left_since_age_5[i] / Px["45-49 years"]
+            
+        self.life_table = pd.DataFrame({
+            "Age": all_ages,
+            "Proportion left since age 5": proportion_left_since_age_5,
+            "Proportion left since age 15": proportion_left_since_age_15,
+            "Proportion left since age 25": proportion_left_since_age_25,
+            "Proportion left since age 35": proportion_left_since_age_35,
+            "Proportion left since age 45": proportion_left_since_age_45
+        })
 
     @translate
     def get_incidences(self):
