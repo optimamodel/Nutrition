@@ -30,13 +30,9 @@ class Model(sc.prettyobj):
         self.enforce_constraints_year = enforce_constraints_year
 
         # For economic loss
-        self.cost_wasting = self.demo_data.cost_wasting
-        self.cost_stunting = self.demo_data.cost_stunting
-        self.cost_child_death = self.demo_data.cost_child_death
-        self.cost_pw_death = self.demo_data.cost_pw_death
-        self.cost_child_anaemic = self.demo_data.cost_child_anaemic
-        self.cost_pw_anaemic = self.demo_data.cost_pw_anaemic
-
+        self.econ_inputs = self.demo_data.econ_inputs # this comes as a dictionary of several economic inputs reqired for economic cost/benefit calculations
+        self.life_table = self.demo_data.life_table
+        
     @property
     def locale(self):
         return self.ss.locale
@@ -145,18 +141,93 @@ class Model(sc.prettyobj):
         self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
         self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
 
+    # def _track_economic_loss(self):
+    #     """To calculate the economic cost of children become stunting or wasting for the country.
+    #     Simply, the cost of stunting and cost of wasting have been input over the databook."""
+    #     oldest = self.children.age_groups[-1]
+    #     rate = oldest.ageingRate
+    #     self.stunting_cost[self.year] += oldest.num_stunted() * rate * self.cost_wasting
+    #     self.wasting_cost[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate * self.cost_stunting
+    #     self.child_death_cost[self.year] = np.sum(self.child_deaths) * self.cost_child_death
+    #     self.pw_death_cost[self.year] = np.sum(self.pw_deaths) * self.cost_pw_death
+    #     self.child_anaemic_cost[self.year] = oldest.num_anaemic() * rate * self.cost_child_anaemic
+    #     self.pw_anaemic_cost[self.year] = self.pw.num_anaemic() * self.cost_pw_anaemic
+    
     def _track_economic_loss(self):
-        """To calculate the economic cost of children become stunting or wasting for the country.
-        Simply, the cost of stunting and cost of wasting have been input over the databook."""
-        oldest = self.children.age_groups[-1]
-        rate = oldest.ageingRate
-        self.stunting_cost[self.year] += oldest.num_stunted() * rate * self.cost_wasting
-        self.wasting_cost[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate * self.cost_stunting
-        self.child_death_cost[self.year] = np.sum(self.child_deaths) * self.cost_child_death
-        self.pw_death_cost[self.year] = np.sum(self.pw_deaths) * self.cost_pw_death
-        self.child_anaemic_cost[self.year] = oldest.num_anaemic() * rate * self.cost_child_anaemic
-        self.pw_anaemic_cost[self.year] = self.pw.num_anaemic() * self.cost_pw_anaemic
-
+        bene_age_start = self.econ_inputs[_("Productivity year start")]
+        bene_age_end   = self.econ_inputs[_("Productivity year end")]
+        start_year = self.demo_data.t[0]
+        
+        self.child_death_cost[self.year]     = 0
+        self.stunting_cases_cost[self.year]  = 0
+        self.mat_death_cost[self.year]       = 0
+        self.ch_anemia_cost[self.year]       = 0
+        self.bf_benefit[self.year]           = 0
+        self.lbw_cost[self.year]             = 0
+        
+        for a, age in enumerate(range(bene_age_start, bene_age_end + 1)):
+            probability_5yr  = self.life_table[(self.life_table[_("Age")] == age)][_("Proportion left since age 5")].item()
+            
+            
+            """Stunting cases"""
+                                       
+            this_stun_cases_cost = self.stunted[self.year] * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
+                                         * self.econ_inputs[_("Percent lower lifetime earning of a stunted")] * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
+                                             * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+            
+            """Child Anemia cases"""
+            child_anemia = self.child_anaemprev[self.year] * self.child_less_5years[self.year] / 5
+            this_ch_anem_cases_cost = child_anemia * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
+                                         * self.econ_inputs[_("Productivity loss due to child anemia")] * self.econ_inputs[_("Labor share of GDP")]\
+                                             * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
+                                             * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+              
+            """ Child deaths"""                            
+            this_ch_death_cost = self.child_deaths[self.year] * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
+                                          * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
+                                             * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+            
+            """Additional EBF"""
+            num_bf = self.child_1_6months[self.year] * self.child_bfprev[self.year] * 2
+            this_bf_cognitive_benefit = num_bf * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
+                                          * self.econ_inputs[_("Increase in IQ points due to early breastfeeding")] * self.econ_inputs[_("Rate of increase in earnings from IQ")] * self.econ_inputs[_("Labor share of GDP")]\
+                                              * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age))\
+                                                  * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+               
+            """Low Birth Weight children averted"""
+            this_lbw_cost =  self.child_sga[self.year] * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
+                                            * self.econ_inputs[_("Labor share of GDP")] * self.econ_inputs[_("Productivity loss due to LBW")] * self.econ_inputs[_("GDP per capita")]\
+                                                * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age)) * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+            
+            """Maternal deaths averted"""
+            probability_15yr = self.life_table[(self.life_table["Age"] == age)][_("Proportion left since age 15")].item()
+            probability_25yr = self.life_table[(self.life_table["Age"] == age)][_("Proportion left since age 25")].item()
+            probability_35yr = self.life_table[(self.life_table["Age"] == age)][_("Proportion left since age 35")].item()
+            probability_45yr = self.life_table[(self.life_table["Age"] == age)][_("Proportion left since age 45")].item()
+            
+                            
+            this_maternal_death_cost = self.pw_deaths[self.year] * (probability_15yr * self.econ_inputs[_("Percentage of pregnant women 15-19 years")] + probability_25yr * self.econ_inputs[_("Percentage of pregnant women 20-29 years")]\
+                                            + probability_35yr * self.econ_inputs[_("Percentage of pregnant women 30-39 years")] + probability_45yr * self.econ_inputs[_("Percentage of pregnant women 40-49 years")]) * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
+                                                * self.econ_inputs[_("Female labor force participation")] * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + a - 1))\
+                                                  * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + a - 1))
+            
+            
+            """"Totalling the future lifetime benefits for the averted/additional cases for this year [t]"""
+            
+            self.child_death_cost[self.year]       = self.child_death_cost[self.year] + this_ch_death_cost
+            self.stunting_cases_cost[self.year]    = self.stunting_cases_cost[self.year] + this_stun_cases_cost
+            self.ch_anemia_cost[self.year]         = self.ch_anemia_cost[self.year] + this_ch_anem_cases_cost
+            self.bf_benefit[self.year]             = self.bf_benefit[self.year] + this_bf_cognitive_benefit
+            self.lbw_cost[self.year]               = self.lbw_cost[self.year] + this_lbw_cost
+            self.mat_death_cost[self.year]         = self.mat_death_cost[self.year] + this_maternal_death_cost
+        
+        pw_ane = self.pw_anaemic[self.year] / 0.75
+        self.mat_anemia_cases_cost[self.year]  = pw_ane * (self.econ_inputs[_("Loss in productivity due to maternal anemia")] * self.econ_inputs[_("Proportion of pregnancy to apply benefits to (maternal anemia)")] * self.econ_inputs[_("Female labor force participation")]\
+                                                                * self.econ_inputs[_("GDP per capita")]) * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year - 1)) * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year - 1))
+        
+        self.total_econ_costs[self.year] =  self.child_death_cost[self.year] + self.stunting_cases_cost[self.year] + self.ch_anemia_cost[self.year] +  self.lbw_cost[self.year] + self.mat_death_cost[self.year] + self.mat_anemia_cases_cost[self.year]
+    
+    
     def _track_total_pop(self):
         self.pop_sizes[self.year] = dict()
         for pop in self.pops:

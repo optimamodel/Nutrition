@@ -349,55 +349,47 @@ class DemographicData(object):
 
     @translate
     def get_economic_cost(self):
-        econo_inputs        = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], dropna=False)
-        life_exp            = econo_inputs.loc[_("Life expectancy at birth")].values[0]
-        gdp_growth          = econo_inputs.loc[_("GDP growth rate")].values[0]
-        gdp_pc              = econo_inputs.loc[_("Life expectancy at birth")].values[0]
-        per_earn_realised   = econo_inputs.loc[_("Percentage of lifetime earning actually realized")].values[0]
-        age_end_prod        = econo_inputs.loc[_("Age for end of productivity")].values[0]
-        age_sta_prod        = econo_inputs.loc[_("Age start productivity")].values[0]
-        fem_lb_part         = econo_inputs.loc[_("Female labor force participation")].values[0]
-        prop_pw_benef       = econo_inputs.loc[_("Proportion of pregnancy to apply benefits to")].values[0]
-        inc_iq_bf           = econo_inputs.loc[_("Increase in IQ due to early breastfeeding")].values[0]
-        inc_ear_iq          = econo_inputs.loc[_("Increase in earnings due to increase in one IQ pt")].values[0]
-        lab_share_gdp       = econo_inputs.loc[_("Labor share of GDP")].values[0]
-        low_earn_stunted    = econo_inputs.loc[_("Percentage of lower lifetime earning of a stunted individual")].values[0]
-        produc_gain_anemia  = econo_inputs.loc[_("Gains in productivity from averted childhood anemia")].values[0]
-        produc_gain_lbw     = econo_inputs.loc[_("Productivity gains due to averted low birth weight")].values[0]
-        wage_share_manual   = econo_inputs.loc[_("Wage Share in GDP for manual occupations")].values[0]
-        produc_light_lab    = econo_inputs.loc[_("Gains productivity in light labour")].values[0]
-        blue_col_share      = econo_inputs.loc[_("Blue-Collar Share employment in total employment")].values[0]
-        heavy_manu_lab      = econo_inputs.loc[_("Wage Share of Heavy manual labor")].values[0]
-        produc_heavy_lab    = econo_inputs.loc[_("Gains in productivity in heavy labor")].values[0][0]
+        econo_inputs            = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], dropna=False)
+        gdp_growth              = econo_inputs.loc[_("GDP growth rate")].values[0]
+        gdp_pc                  = econo_inputs.loc[_("GDP per capita")].values[0]
+        discount_rate           = econo_inputs.loc[_("Rate of dicounting")].values[0]
+        per_earn_realised       = econo_inputs.loc[_("Percentage of lifetime earning actually realized")].values[0]
+        age_end_prod            = econo_inputs.loc[_("Age for end of productivity")].values[0]
+        age_sta_prod            = econo_inputs.loc[_("Age start productivity")].values[0]
+        fem_lb_part             = econo_inputs.loc[_("Female labor force participation")].values[0]
+        prop_pw_benef           = econo_inputs.loc[_("Proportion of pregnancy to apply benefits to (maternal anemia)")].values[0]
+        inc_iq_bf               = econo_inputs.loc[_("Increase in IQ points due to early breastfeeding")].values[0]
+        inc_ear_iq              = econo_inputs.loc[_("Increase in earnings due to increase in one IQ pt")].values[0]
+        lab_share_gdp           = econo_inputs.loc[_("Labor share of GDP")].values[0][0]
+        low_earn_stunted        = econo_inputs.loc[_("Percentage of lower lifetime earning of a stunted individual")].values[0]
+        produc_loss_anemia      = econo_inputs.loc[_("Loss in productivity from due to childhood anemia")].values[0]
+        produc_loss_lbw         = econo_inputs.loc[_("Loss in productivity due to low birth weight")].values[0]
+        produc_loss_mat_ane     = econo_inputs.loc[_("Loss in productivity due to maternal anemia")].values[0]
+       
+        econo_inputs            = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], skiprows=18)
         
-        econo_inputs        = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], skiprows=22)
+        num_people              = econo_inputs.loc[_("Number of people left alive (starting with 100,000 births)")].values.tolist()
         
-        num_people          = econo_inputs.loc[_("Number of people")].values.tolist()
-        
-        self.econ_inputs = {"Life expectancy at birth": life_exp,
-                               "GDP growth rate": gdp_growth,
-                               "GDP per capita": gdp_pc ,
+        self.econ_inputs = {"GDP growth rate": gdp_growth,
+                               "GDP per capita": gdp_pc,
+                               "Discount rate": discount_rate,
                                "Percent of lifetime earning actually realized": per_earn_realised,
                                "Productivity year end": age_end_prod,
                                "Productivity year start": age_sta_prod,
                                "Female labor force participation": fem_lb_part,
-                               "Proportion of pregnancy to apply benefits to": prop_pw_benef,
+                               "Proportion of pregnancy to apply benefits to (maternal anemia)": prop_pw_benef,
                                "Percentage of pregnant women 15-19 years": self.pw_agedist[0],
                                "Percentage of pregnant women 20-29 years": self.pw_agedist[1],
                                "Percentage of pregnant women 30-39 years": self.pw_agedist[2],
                                "Percentage of pregnant women 40-49 years": self.pw_agedist[3],
-                               "Increase in IQ due to EBF": inc_iq_bf,
+                               "Increase in IQ points due to early breastfeeding": inc_iq_bf,
                                "Rate of increase in earnings from IQ": inc_ear_iq,
                                "Labor share of GDP": lab_share_gdp,
                                "Percent lower lifetime earning of a stunted": low_earn_stunted,
-                               "Productivity gain from averting child anemia": produc_gain_anemia,
-                               "Productivity gain from averting LBW": produc_gain_lbw,
-                               "Wage Share in GDP for manual occupations": wage_share_manual,
-                               "Gains productivity in light labour": produc_light_lab,
-                               "Blue-Collar Share employment in total employment": blue_col_share,
-                               "Wage Share of Heavy manual labor": heavy_manu_lab,
-                               "Gains in productivity in heavy labor": produc_heavy_lab,
-                               "Number of people per 100,000": num_people}
+                               "Productivity loss due to child anemia": produc_loss_anemia,
+                               "Productivity loss due to LBW": produc_loss_lbw,
+                               "Loss in productivity due to maternal anemia": produc_loss_mat_ane,
+                               "Number of people left alive (starting with 100,000 births)": num_people}
         
     def get_lifetable(self):
         all_ages = [a for a in range(5,66)]
@@ -405,7 +397,7 @@ class DemographicData(object):
                     "30-34 years", "35-39 years", "40-44 years", "45-49 years", "50-54 years",
                     "55-59 years", "60-64 years","65-69 years"]
         
-        number_list = self.econ_inputs["Number of people per 100,000"]
+        number_list = self.econ_inputs["Number of people left alive (starting with 100,000 births)"]
         people_number = {age_cat: 0 for age_cat in age_cats}
         for c, cat in enumerate(age_cats):
             people_number[cat] = number_list[c]

@@ -127,12 +127,14 @@ def default_trackers(prev=None, rate=None):
         "child_6_23months",
         "child_less_5years",
         "num_pw",
-        "stunting_cost",
-        "wasting_cost",
         "child_death_cost",
-        "pw_death_cost",
-        "child_anaemic_cost",
-        "pw_anaemic_cost",
+        "stunting_cases_cost",
+        "ch_anemia_cost",
+        "bf_benefit",
+        "lbw_cost",
+        "mat_death_cost",
+        "mat_anemia_cases_cost",
+        "total_econ_costs",
         "pw_mortrate",
         "total_popn",
         "pop_rate",
@@ -212,12 +214,14 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Number of children 6-23 months"),
             pgettext("plotting", "Number of children <5 years"),
             pgettext("plotting", "Number of pregnant women"),
-            pgettext("plotting", "Economic cost of stunting"),
-            pgettext("plotting", "Economic cost of wasting"),
-            pgettext("plotting", "Economic cost of child death"),
-            pgettext("plotting", "Economic cost of pregnant woman death"),
-            pgettext("plotting", "Economic cost of ID anaemic child"),
-            pgettext("plotting", "Economic cost of ID anaemic pregnant woman"),
+            pgettext("plotting", "Economic cost of child deaths (discounted)"),
+            pgettext("plotting", "Economic cost of stunting (discounted)"),
+            pgettext("plotting", "Economic cost of child anemia (discounted)"),
+            pgettext("plotting", "Economic benefits of EBF (discounted)"),
+            pgettext("plotting", "Economic cost of low birth weight chidren (discounted)"),
+            pgettext("plotting", "Economic cost of maternal deaths (discounted)"),
+            pgettext("plotting", "Economic cost of maternal anemia (discounted)"),
+            pgettext("plotting", "Total economic cost (discounted)"),
             pgettext("plotting", "Pregnant women mortality rate"),
             pgettext("plotting", "Total population"),
             pgettext("plotting", "Population growth rate"),
@@ -255,7 +259,7 @@ def relabel(old, direction=False, lower=False, locale=None):
 
 
 def get_sign(obj):
-    max_obj = ["thrive", "child_notanaemic", "child_healthy", "child_notwasted"]
+    max_obj = ["thrive", "child_notanaemic", "child_healthy", "child_notwasted", "bf_benefit"]
     if obj in max_obj:
         return -1
     else:
