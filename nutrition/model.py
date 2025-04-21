@@ -141,18 +141,7 @@ class Model(sc.prettyobj):
         self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
         self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
 
-    # def _track_economic_loss(self):
-    #     """To calculate the economic cost of children become stunting or wasting for the country.
-    #     Simply, the cost of stunting and cost of wasting have been input over the databook."""
-    #     oldest = self.children.age_groups[-1]
-    #     rate = oldest.ageingRate
-    #     self.stunting_cost[self.year] += oldest.num_stunted() * rate * self.cost_wasting
-    #     self.wasting_cost[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate * self.cost_stunting
-    #     self.child_death_cost[self.year] = np.sum(self.child_deaths) * self.cost_child_death
-    #     self.pw_death_cost[self.year] = np.sum(self.pw_deaths) * self.cost_pw_death
-    #     self.child_anaemic_cost[self.year] = oldest.num_anaemic() * rate * self.cost_child_anaemic
-    #     self.pw_anaemic_cost[self.year] = self.pw.num_anaemic() * self.cost_pw_anaemic
-    
+        
     def _track_economic_loss(self):
         bene_age_start = self.econ_inputs[_("Productivity year start")]
         bene_age_end   = self.econ_inputs[_("Productivity year end")]
