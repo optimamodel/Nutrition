@@ -55,6 +55,7 @@ class Model(sc.prettyobj):
         self._set_trackers()
         self._track_risk_outcomes()
         self._track_child_outcomes
+        self._update_sam_costs()
         try:
             self.enforce_constraints_year = scen.enforce_constraints_year
         except:
@@ -171,6 +172,7 @@ class Model(sc.prettyobj):
         self._track_economic_loss()
         self._track_total_pop()
         self._track_child_outcomes
+        self._update_sam_costs()
 
     @translate
     def _set_pop_probs(self, year):
@@ -179,6 +181,17 @@ class Model(sc.prettyobj):
         for pop in self.pops:
             pop.previousCov = init_cov
             pop.set_probs(prog_areas)
+
+    @translate
+    def _update_sam_costs(self):
+        """
+        Treatment of SAM is modelled to have a target population of all children.
+        The unit cost is scaled based on treatment cost * SAM_prev * 2.6.
+        This means that 100% coverage the total cost is treatment cost * SAM_prev * 2.6.
+        It also means the unit cost needs to be scaled dynamically as SAM prevalence changes
+        """
+        if self.year>0:
+            self.prog_info.programs[_("Treatment of SAM")].unit_cost *= self.child_samprev[self.year] / self.child_samprev[self.year-1]
 
     def _reset_storage(self):
         for pop in self.pops:
