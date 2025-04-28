@@ -188,10 +188,19 @@ class Model(sc.prettyobj):
         Treatment of SAM is modelled to have a target population of all children.
         The unit cost is scaled based on treatment cost * SAM_prev * 2.6.
         This means that 100% coverage the total cost is treatment cost * SAM_prev * 2.6.
-        It also means the unit cost needs to be scaled dynamically as SAM prevalence changes
+        It also means the unit cost needs to be scaled dynamically as SAM incidence changes due to prevention scale-up.
+        An alternate implementation is to scale based on SAM prevalence, but this assumes incidence declines with treatment
         """
         if self.year>0:
-            self.prog_info.programs[_("Treatment of SAM")].unit_cost *= self.child_samprev[self.year] / self.child_samprev[self.year-1]
+            sam_cost_update_numerator = 0
+            sam_cost_update_denominator = 0
+            for a, age in enumerate(self.pops[0].age_groups):
+                sam_cost_update_numerator += (self.pops[0].age_groups[a].wastingPreventionUpdate[_("SAM")] *
+                                              self.pops[0].age_groups[a].bfUpdate[_("SAM")] *
+                                              self.pops[0].age_groups[a].diarrhoeaUpdate[_("SAM")]) * self.pops[0].age_groups[a].pop_size
+                sam_cost_update_denominator += self.pops[0].age_groups[a].pop_size
+            self.prog_info.programs[_("Treatment of SAM")].unit_cost *= sam_cost_update_numerator / sam_cost_update_denominator
+            #self.prog_info.programs[_("Treatment of SAM")].unit_cost *= self.child_samprev[self.year] / self.child_samprev[self.year-1]
 
     def _reset_storage(self):
         for pop in self.pops:
