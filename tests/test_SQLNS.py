@@ -8,8 +8,8 @@ doplot = False
 
 # load in data to create model
 p = nu.Project("eg")
-#p.load_data("demo", name="eg")
-p.load_data(inputspath='C:\\Users\\nick.scott\\Burnet Institute\\WG-Modelling-Nutrition - Documents\\Applications\\WB multi_country 2025\\Databooks\\AGO_databook.xlsx', name='AGO')
+#p.load_data("demo", name="eg") 
+p.load_data(inputspath='C:\\Users\\tharindu.wickram\\Burnet Institute\\WG-Modelling-Nutrition - Documents\\Applications\\WB multi_country 2025\\Databooks\\AGO_databook.xlsx', name='AGO')
 
 ### TEST MMS / IFAS dependency
 kwargs1 = {"name": "SQLNS",

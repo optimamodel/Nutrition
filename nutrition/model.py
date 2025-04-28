@@ -138,7 +138,7 @@ class Model(sc.prettyobj):
         self.child_samprev[self.year] = self.children.frac_risk("sam")
         self.child_mamprev[self.year] = self.children.frac_risk("mam")
         self.child_bfprev[self.year] = (NewlyBorns.num_correctbf() + Child_1_5_months.num_correctbf()) / (NewlyBorns.totalchild_pop() + Child_1_5_months.totalchild_pop())
-
+        
     def _track_rates(self):
         """Rates defined as total deaths per 1000 live births.
         This is calculated per year with the cumulative deaths and births,
@@ -157,7 +157,7 @@ class Model(sc.prettyobj):
         self.pw_death_cost[self.year] = np.sum(self.pw_deaths) * self.cost_pw_death
         self.child_anaemic_cost[self.year] = oldest.num_anaemic() * rate * self.cost_child_anaemic
         self.pw_anaemic_cost[self.year] = self.pw.num_anaemic() * self.cost_pw_anaemic
-
+        
     def _track_total_pop(self):
         self.pop_sizes[self.year] = dict()
         for pop in self.pops:
