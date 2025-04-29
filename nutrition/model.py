@@ -52,6 +52,7 @@ class Model(sc.prettyobj):
         self._track_risk_outcomes()
         self._track_child_outcomes
         self._update_sam_costs()
+
         try:
             self.enforce_constraints_year = scen.enforce_constraints_year
         except:
@@ -241,7 +242,8 @@ class Model(sc.prettyobj):
             pop.previousCov = init_cov
             pop.set_probs(prog_areas)
             
-    @translate        
+
+    @translate       
     def _update_sam_costs(self):
         """
         Treatment of SAM is modelled to have a target population of all children.
@@ -259,7 +261,7 @@ class Model(sc.prettyobj):
                                               self.pops[0].age_groups[a].diarrhoeaUpdate[_("SAM")]) * self.pops[0].age_groups[a].pop_size
                 sam_cost_update_denominator += self.pops[0].age_groups[a].pop_size
             self.prog_info.programs[_("Treatment of SAM")].unit_cost *= sam_cost_update_numerator / sam_cost_update_denominator
-            
+
     def _reset_storage(self):
         for pop in self.pops:
             for age_group in pop.age_groups:
