@@ -145,6 +145,10 @@ class Model(sc.prettyobj):
 
         
     def _track_economic_loss(self):
+        
+        """ This calculated the economic cost of child malnutrition, deaths
+        and the benefits of breastfeeding """
+        
         bene_age_start = self.econ_inputs[_("Productivity year start")]
         bene_age_end   = self.econ_inputs[_("Productivity year end")]
         start_year = self.demo_data.t[0]

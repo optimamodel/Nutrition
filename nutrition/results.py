@@ -222,7 +222,11 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
 
     years = results[0].years
     rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years, locale=results[0].locale)
-
+    
+    econ_rows = []
+    for outcome in rows:
+        if _("cost") in outcome or _("benefit") in outcome:
+            econ_rows.append(outcome) 
     ### Outcomes sheet
     headers = [[_("Scenario"), _("Estimate"), _("Outcome")] + years + [_("Cumulative")]]
 
@@ -252,7 +256,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=False)
-            # print(spend)
+            
             # collate coverages first
             for r, prog in enumerate(rows):
                 name = [res.name] if r == 0 or full_rows else [""]
@@ -270,7 +274,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=True)
-            # print(spend)
+            
             # collate coverages first
             for r, prog in enumerate(rows):
                 name = [res.name] if r == 0 or full_rows else [""]
@@ -291,6 +295,30 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             if not full_rows: outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
+    
+    nrows, ncols, formatdata, allformats, outputs, headers = _write_results_econo_costs(data, allformats, years, results[0].locale)
+    
+    ### Economic costs/benefits sheet
+    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total (discounted)"]]
+    for r, res in enumerate(results):
+        if res.name != _("Excess budget") and resampled_key_str not in res.name:
+            econo_outcomes = []
+            for out in outcomes:
+                if _("cost") in out or _("benefit") in out:
+                    econo_outcomes.append(out)
+            econo_out = res.get_outputs(econo_outcomes, seq=True, pretty=True)
+            
+            
+            for o, outcome in enumerate(econ_rows):
+                name = [res.name] if o == 0 or full_rows else [""]
+                thisout = econo_out[o]
+                
+                cumul = sum(thisout)
+                outputs.append(name + ["point"] + [outcome] + list(thisout) + [cumul])
+            if not full_rows: outputs.append(nullrow)
+    data = headers + outputs
+    alldata.append(data)
+      
 
     _write_results_finalise(data, allformats, filename, alldata, sheetnames)
 
@@ -306,9 +334,15 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     estimate_labels = list(reduced_results[list(reduced_results.keys())[0]][list(reduced_results[list(reduced_results.keys())[0]].keys())[0]].keys())
     years = results[0].years
     rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years, locale=results[0].locale)
-
+    
+    _ = get_translator(results[0].locale)
+    econ_rows = []
+    for outcome in rows:
+        if _("cost") in outcome or _("benefit") in outcome:
+            econ_rows.append(outcome) 
+               
     ### Outcomes sheet
-    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Cumulative"]] #TODO these should have a locale?
+    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total (discounted)"]] #TODO these should have a locale?
     for r, res in enumerate(reduced_results):
 
         # _ = get_translator(res.locale)
@@ -365,6 +399,38 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
+    
+    nrows, ncols, formatdata, allformats, outputs, headers = _write_results_econo_costs(data, allformats, years, results[0].locale)
+    
+    ### Economic costs/benefits sheet
+    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total (discounted)"]]
+    # _ = get_translator(results[0].locale)
+    
+    for r, res in enumerate(reduced_results):
+
+        # _ = get_translator(res.locale)
+        _ = get_translator(results[0].locale) #TODO fix this - reduced results don't have a locale just using (possibly unrelated) .
+
+        for esti in estimate_labels:
+            if res != _("Excess budget"):
+                econo_out = []
+                for measure in list(reduced_results[res].keys()):
+                    if _("cost") in measure or _("benefit") in measure:
+                        econo_out.append(reduced_results[res][measure][esti])
+                
+                for o, outcome in enumerate(econ_rows):
+                    name = [res] if o == 0 else [""]
+                    thisout = econo_out[o]
+                    
+                    cumul = sum(thisout)
+                    outputs.append(name + [esti] + [outcome] + list(thisout) + [cumul])
+                    # print(outputs)
+                outputs.append(nullrow)
+    data = headers + outputs
+    alldata.append(data)
+    
+   
+    
 
     _write_results_finalise(data, allformats, filename, alldata, sheetnames)
 
@@ -386,7 +452,7 @@ def _write_results_outcomes(projname, filename, folder, years, locale):
         filename = "outputs.xlsx"
     filepath = sc.makefilepath(filename=filename, folder=folder, ext="xlsx", default="%s outputs.xlsx" % projname)
     outputs = []
-    sheetnames = [_("Version"), _("Outcomes"), _("Budget & coverage")]
+    sheetnames = [_("Version"), _("Outcomes"), _("Budget & coverage"), _("Economic costs")]
     alldata = []
     allformats = []
     # print(results[1])
@@ -422,6 +488,25 @@ def _write_results_costcov(data, allformats, years, locale):
 
     outputs = []
     headers = [[_("Scenario"), _("Program"), _("Type"), _("Cost-coverage type")] + years]
+
+    return nrows, ncols, formatdata, allformats, outputs, headers
+
+
+def _write_results_econo_costs(data, allformats, years, locale):
+    # Formatting
+
+    _ = get_translator(locale, context=False)
+
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = "plain"  # Format data as plain
+    formatdata[:, 0] = "bold"  # Left side bold
+    formatdata[0, :] = "header"  # Top with green header
+    allformats.append(formatdata)
+
+    outputs = []
+    headers = [[_("Scenario"), _("Estimate"), _("Outcome"), _("Cumulative")]]
 
     return nrows, ncols, formatdata, allformats, outputs, headers
 
