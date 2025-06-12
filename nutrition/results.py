@@ -226,14 +226,20 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     econ_rows = []
     for outcome in rows:
         if _("cost") in outcome or _("benefit") in outcome:
-            econ_rows.append(outcome) 
+            econ_rows.append(outcome)
+            
+    out_rows = []
+    for outcome in rows:
+        if _("cost") not in outcome and _("benefit") not in outcome:
+            out_rows.append(outcome) 
+    
     ### Outcomes sheet
     headers = [[_("Scenario"), _("Estimate"), _("Outcome")] + years + [_("Cumulative")]]
 
     for r, res in enumerate(results):
         if res.name != _("Excess budget") and resampled_key_str not in res.name:
             out = res.get_outputs(outcomes, seq=True, pretty=True)
-            for o, outcome in enumerate(rows):
+            for o, outcome in enumerate(out_rows):
                 name = [res.name] if o == 0 or full_rows else [""]
                 thisout = out[o]
                 if _("prev") in outcome.lower():
@@ -340,7 +346,12 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     for outcome in rows:
         if _("cost") in outcome or _("benefit") in outcome:
             econ_rows.append(outcome) 
-               
+            
+    out_rows = []
+    for outcome in rows:
+        if _("cost") not in outcome and _("benefit") not in outcome:
+            out_rows.append(outcome) 
+                   
     ### Outcomes sheet
     headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total (discounted)"]] #TODO these should have a locale?
     for r, res in enumerate(reduced_results):
@@ -353,7 +364,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                 out = []
                 for measure in list(reduced_results[res].keys()):
                     out.append(reduced_results[res][measure][esti])
-                for o, outcome in enumerate(rows):
+                for o, outcome in enumerate(out_rows):
                     name = [res] if o == 0 else [""]
                     thisout = out[o]
                     if _("prev") in outcome.lower():

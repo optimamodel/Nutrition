@@ -38,6 +38,12 @@ kwargs7 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progval
 
 kwargs8 = {"name": "Treat SAM 100%", "model_name": "Maximize thrive", "mults": [1], "weights": sc.odict({"thrive": 1}), "prog_set": ["Vitamin A supplementation", "IYCF 1", "IFA fortification of maize", "Balanced energy-protein supplementation", "Public provision of complementary foods", "Iron and iodine fortification of salt"], "fix_curr": False, "add_funds": 0, "filter_progs": True}
 
+kwargs9 = {"name": "Cash transfers", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"Cash transfers": [0.9]}), "growth": "fixed coverage"}
+
+kwargs10 = {"name": "Calcium supplementation", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"Calcium supplementation": [0.9]}), "growth": "fixed coverage"}
+
+kwargs11 = {"name": "MMS on Stillbirths", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"Multiple micronutrient supplementation": [0.5, 0.6, 0.9]}), "growth": "fixed coverage"}
+
 if __name__ == "__main__":
     # mod = p.models.keys()[0]
     # progs = p.models[mod].prog_info.programs.keys()
@@ -45,7 +51,7 @@ if __name__ == "__main__":
     # inf_budget_kwargs = {"name": 'Infinite spending exc FP', "model_name": mod, "scen_type": "budget", "progvals": sc.odict([(prog, [0 if prog=='Family planning' else 9999999999]) for prog in progs])}
     # scen_list = nu.make_scens([zero_budget_kwargs, inf_budget_kwargs])
 
-    scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3, kwargs2])
+    scen_list = nu.make_scens([kwargs11])
     p.add_scens(scen_list)
 
     results = p.run_scens(n_samples=0)

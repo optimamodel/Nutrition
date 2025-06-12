@@ -135,7 +135,12 @@ class Model(sc.prettyobj):
         self.child_samprev[self.year] = self.children.frac_risk("sam")
         self.child_mamprev[self.year] = self.children.frac_risk("mam")
         self.child_bfprev[self.year] = (NewlyBorns.num_correctbf() + Child_1_5_months.num_correctbf()) / (NewlyBorns.totalchild_pop() + Child_1_5_months.totalchild_pop())
-
+        
+        live_births = self.annual_births[self.year]
+        stillbirth_rate = self.demo_data.stillbirth # assume baseline rate
+        for age_group in self.pw.age_groups:
+            self.num_stillbirth[self.year] += age_group.age_dist * live_births * (stillbirth_rate / 1000) * age_group.stillbirthUpdate
+        
     def _track_rates(self):
         """Rates defined as total deaths per 1000 live births.
         This is calculated per year with the cumulative deaths and births,
@@ -149,11 +154,12 @@ class Model(sc.prettyobj):
         """ This calculated the economic cost of child malnutrition, deaths
         and the benefits of breastfeeding """
         
-        bene_age_start = self.econ_inputs[_("Productivity year start")]
-        bene_age_end   = self.econ_inputs[_("Productivity year end")]
-        start_year = self.demo_data.t[0]
-        
+        bene_age_start   = self.econ_inputs[_("Productivity year start")]
+        bene_age_end     = self.econ_inputs[_("Productivity year end")]
+        prop_stillbirths = self.econ_inputs[_("Percentage of stillbirths to include in productivity loss")]
+                
         self.child_death_cost[self.year]     = 0
+        self.stillbirth_cost[self.year]      = 0
         self.stunting_cases_cost[self.year]  = 0
         self.mat_death_cost[self.year]       = 0
         self.ch_anemia_cost[self.year]       = 0
@@ -168,31 +174,36 @@ class Model(sc.prettyobj):
                                        
             this_stun_cases_cost = self.stunted[self.year] * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
                                          * self.econ_inputs[_("Percent lower lifetime earning of a stunted")] * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
-                                             * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+                                             * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age - 1))
             
             """Child Anemia cases"""
             child_anemia = self.child_anaemprev[self.year] * self.child_less_5years[self.year] / 5
             this_ch_anem_cases_cost = child_anemia * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
                                          * self.econ_inputs[_("Productivity loss due to child anemia")] * self.econ_inputs[_("Labor share of GDP")]\
                                              * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
-                                             * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+                                             * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age - 1))
               
             """ Child deaths"""                            
             this_ch_death_cost = self.child_deaths[self.year] * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
                                           * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
-                                             * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+                                             * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age - 1))
+                                             
+            """ stillbirths"""                            
+            this_stillbirth_cost = self.num_stillbirth[self.year] * prop_stillbirths * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
+                                          * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
+                                             * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age - 1))
             
             """Additional EBF"""
             num_bf = self.child_1_6months[self.year] * self.child_bfprev[self.year] * 2
             this_bf_cognitive_benefit = num_bf * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
                                           * self.econ_inputs[_("Increase in IQ points due to early breastfeeding")] * self.econ_inputs[_("Rate of increase in earnings from IQ")] * self.econ_inputs[_("Labor share of GDP")]\
                                               * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age))\
-                                                  * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+                                                  * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age - 1))
                
             """Low Birth Weight children averted"""
             this_lbw_cost =  self.child_sga[self.year] * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
                                             * self.econ_inputs[_("Labor share of GDP")] * self.econ_inputs[_("Productivity loss due to LBW")] * self.econ_inputs[_("GDP per capita")]\
-                                                * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age)) * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + age - 1))
+                                                * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age)) * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age - 1))
             
             """Maternal deaths averted"""
             probability_15yr = self.life_table[(self.life_table["Age"] == age)][_("Proportion left since age 15")].item()
@@ -204,12 +215,13 @@ class Model(sc.prettyobj):
             this_maternal_death_cost = self.pw_deaths[self.year] * (probability_15yr * self.econ_inputs[_("Percentage of pregnant women 15-19 years")] + probability_25yr * self.econ_inputs[_("Percentage of pregnant women 20-29 years")]\
                                             + probability_35yr * self.econ_inputs[_("Percentage of pregnant women 30-39 years")] + probability_45yr * self.econ_inputs[_("Percentage of pregnant women 40-49 years")]) * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
                                                 * self.econ_inputs[_("Female labor force participation")] * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + a - 1))\
-                                                  * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year + a - 1))
+                                                  * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + a - 1))
             
             
             """"Totalling the future lifetime benefits for the averted/additional cases for this year [t]"""
             
             self.child_death_cost[self.year]       = self.child_death_cost[self.year] + this_ch_death_cost
+            self.stillbirth_cost[self.year]        = self.stillbirth_cost[self.year] + this_stillbirth_cost
             self.stunting_cases_cost[self.year]    = self.stunting_cases_cost[self.year] + this_stun_cases_cost
             self.ch_anemia_cost[self.year]         = self.ch_anemia_cost[self.year] + this_ch_anem_cases_cost
             self.bf_benefit[self.year]             = self.bf_benefit[self.year] + this_bf_cognitive_benefit
@@ -218,9 +230,9 @@ class Model(sc.prettyobj):
         
         pw_ane = self.pw_anaemic[self.year] / 0.75
         self.mat_anemia_cases_cost[self.year]  = pw_ane * (self.econ_inputs[_("Loss in productivity due to maternal anemia")] * self.econ_inputs[_("Proportion of pregnancy to apply benefits to (maternal anemia)")] * self.econ_inputs[_("Female labor force participation")]\
-                                                                * self.econ_inputs[_("GDP per capita")]) * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year - 1)) * ((1 + self.econ_inputs[_("Discount rate")]) ** -(self.year - 1))
+                                                                * self.econ_inputs[_("GDP per capita")]) * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year - 1)) * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year - 1))
         
-        self.total_econ_costs[self.year] =  self.child_death_cost[self.year] + self.stunting_cases_cost[self.year] + self.ch_anemia_cost[self.year] +  self.lbw_cost[self.year] + self.mat_death_cost[self.year] + self.mat_anemia_cases_cost[self.year]
+        self.total_econ_costs[self.year] =  self.child_death_cost[self.year] + self.stillbirth_cost[self.year] + self.stunting_cases_cost[self.year] + self.ch_anemia_cost[self.year] +  self.lbw_cost[self.year] + self.mat_death_cost[self.year] + self.mat_anemia_cases_cost[self.year] - self.bf_benefit[self.year]
     
     
     def _track_total_pop(self):
@@ -318,7 +330,7 @@ class Model(sc.prettyobj):
         self._apply_pw_mort()
         self._update_pw()
         self._update_wra_pop()
-
+        
     @translate
     def _update_pop_mort(self, pop):
         if pop.name != _("Non-pregnant women"):
@@ -363,6 +375,8 @@ class Model(sc.prettyobj):
                             program.get_pregav_update(age_group)
                         elif risk == _("Birth spacing"):
                             program.get_birthspace_update(age_group)
+                        elif risk == _("Stillbirths"):
+                            program.get_stillbirths_update(age_group)
                         else:
                             print('Warning: Risk "%s" not found. No update applied ' % risk)
                             continue
@@ -668,7 +682,7 @@ class Model(sc.prettyobj):
         adj_pw = numpw * (1.0 - self.nonpw.get_pregav())
         for age_group in self.pw.age_groups:
             age_group.pop_size = adj_pw * age_group.age_dist
-
+            
     def _update_wra_pop(self):
         """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
         warning: pw pop must be updated first."""

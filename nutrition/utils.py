@@ -127,7 +127,9 @@ def default_trackers(prev=None, rate=None):
         "child_6_23months",
         "child_less_5years",
         "num_pw",
+        "num_stillbirth",
         "child_death_cost",
+        "stillbirth_cost",
         "stunting_cases_cost",
         "ch_anemia_cost",
         "bf_benefit",
@@ -137,7 +139,7 @@ def default_trackers(prev=None, rate=None):
         "total_econ_costs",
         "pw_mortrate",
         "total_popn",
-        "pop_rate",
+        "pop_rate"
     ]
 
     if prev is not None:
@@ -214,7 +216,9 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Number of children 6-23 months"),
             pgettext("plotting", "Number of children <5 years"),
             pgettext("plotting", "Number of pregnant women"),
+            pgettext("plotting", "Number of stillbirths"),
             pgettext("plotting", "Economic cost of child deaths (discounted)"),
+            pgettext("plotting", "Economic cost of stillbirths (discounted)"),
             pgettext("plotting", "Economic cost of stunting (discounted)"),
             pgettext("plotting", "Economic cost of child anemia (discounted)"),
             pgettext("plotting", "Economic benefits of EBF (discounted)"),
@@ -224,7 +228,7 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Total economic cost (discounted)"),
             pgettext("plotting", "Pregnant women mortality rate"),
             pgettext("plotting", "Total population"),
-            pgettext("plotting", "Population growth rate"),
+            pgettext("plotting", "Population growth rate")
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
@@ -259,7 +263,7 @@ def relabel(old, direction=False, lower=False, locale=None):
 
 
 def get_sign(obj):
-    max_obj = ["thrive", "child_notanaemic", "child_healthy", "child_notwasted", "bf_benefit"]
+    max_obj = ["thrive", "child_notanaemic", "child_healthy", "child_notwasted"]
     if obj in max_obj:
         return -1
     else:

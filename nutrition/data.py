@@ -241,7 +241,7 @@ class DemographicData(object):
 
         # Read in the Baseline spreadsheet information we'll need.
         baseline = utils.read_sheet(self._spreadsheet, _("Baseline year population inputs"), [0, 1])
-        stillbirth = baseline.loc[_("Mortality")].loc[_("Stillbirths (per 1,000 total births)")].values[0]
+        self.stillbirth = baseline.loc[_("Mortality")].loc[_("Stillbirths (per 1,000 total births)")].values[0]
         abortion = baseline.loc[_("Mortality")].loc[_("Fraction of pregnancies ending in spontaneous abortion")].values[0]
 
         # Recalculate cells that need it, and remember in the calculations cache.
@@ -249,7 +249,7 @@ class DemographicData(object):
         proj.loc[:, _("Total WRA")] = total_wra
         self.calcscache.write_col(_("Demographic projections"), 1, 6, total_wra)
         numbirths = proj.loc[:, _("Number of births")].values
-        estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
+        estpregwomen = (numbirths + numbirths * self.stillbirth / (1000.0 - self.stillbirth)) / (1.0 - abortion)
         proj.loc[:, _("Estimated pregnant women")] = estpregwomen
         self.calcscache.write_col(_("Demographic projections"), 1, 7, estpregwomen)
         nonpregwra = total_wra - estpregwomen
@@ -350,29 +350,32 @@ class DemographicData(object):
     @translate
     def get_economic_cost(self):
         econo_inputs            = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], dropna=False)
-        gdp_growth              = econo_inputs.loc[_("GDP growth rate")].values[0]
+        gdp_growth              = econo_inputs.loc[_("GDP growth rate per annum")].values[0]
         gdp_pc                  = econo_inputs.loc[_("GDP per capita")].values[0]
-        discount_rate           = econo_inputs.loc[_("Rate of dicounting")].values[0]
+        discount_rate_cost      = econo_inputs.loc[_("Discounting (costs)")].values[0]
+        discount_rate_bene      = econo_inputs.loc[_("Discounting (benefits)")].values[0]
         per_earn_realised       = econo_inputs.loc[_("Percentage of lifetime earning actually realized")].values[0]
-        age_end_prod            = econo_inputs.loc[_("Age for end of productivity")].values[0]
-        age_sta_prod            = econo_inputs.loc[_("Age start productivity")].values[0]
+        age_end_prod            = econo_inputs.loc[_("Ending age for workforce productivity")].values[0]
+        age_sta_prod            = econo_inputs.loc[_("Starting age for workforce productivity")].values[0]
         fem_lb_part             = econo_inputs.loc[_("Female labor force participation")].values[0]
-        prop_pw_benef           = econo_inputs.loc[_("Proportion of pregnancy to apply benefits to (maternal anemia)")].values[0]
+        prop_pw_benef           = econo_inputs.loc[_("Percentage of pregnancy to apply maternal anemia productivity loss to")].values[0]
         inc_iq_bf               = econo_inputs.loc[_("Increase in IQ points due to early breastfeeding")].values[0]
-        inc_ear_iq              = econo_inputs.loc[_("Increase in earnings due to increase in one IQ pt")].values[0]
-        lab_share_gdp           = econo_inputs.loc[_("Labor share of GDP")].values[0][0]
-        low_earn_stunted        = econo_inputs.loc[_("Percentage of lower lifetime earning of a stunted individual")].values[0]
-        produc_loss_anemia      = econo_inputs.loc[_("Loss in productivity from due to childhood anemia")].values[0]
-        produc_loss_lbw         = econo_inputs.loc[_("Loss in productivity due to low birth weight")].values[0]
-        produc_loss_mat_ane     = econo_inputs.loc[_("Loss in productivity due to maternal anemia")].values[0]
+        inc_ear_iq              = econo_inputs.loc[_("Increase in earnings due per one point increase in IQ")].values[0]
+        lab_share_gdp           = econo_inputs.loc[_("Labor share of GDP")].values[0]
+        low_earn_stunted        = econo_inputs.loc[_("Percentage reduction in lifetime earnings for a stunted individual")].values[0]
+        produc_loss_anemia      = econo_inputs.loc[_("Percentage loss in productivity due to childhood anemia")].values[0]
+        produc_loss_lbw         = econo_inputs.loc[_("Percentage loss in productivity due to low birth weight")].values[0]
+        produc_loss_mat_ane     = econo_inputs.loc[_("Percentage loss in productivity due to maternal anemia")].values[0]
+        perc_stillbirths_cal    = econo_inputs.loc[_("Percentage of stillbirths to include in productivity loss")].values[0][0]
        
-        econo_inputs            = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], skiprows=18)
+        econo_inputs            = utils.read_sheet(self._spreadsheet, _("Economic inputs"), cols=[0], skiprows=20)
         
         num_people              = econo_inputs.loc[_("Number of people left alive (starting with 100,000 births)")].values.tolist()
         
         self.econ_inputs = {"GDP growth rate": gdp_growth,
                                "GDP per capita": gdp_pc,
-                               "Discount rate": discount_rate,
+                               "Discount rate (cost)": discount_rate_cost,
+                               "Discount rate (benefits)": discount_rate_bene,
                                "Percent of lifetime earning actually realized": per_earn_realised,
                                "Productivity year end": age_end_prod,
                                "Productivity year start": age_sta_prod,
@@ -389,14 +392,19 @@ class DemographicData(object):
                                "Productivity loss due to child anemia": produc_loss_anemia,
                                "Productivity loss due to LBW": produc_loss_lbw,
                                "Loss in productivity due to maternal anemia": produc_loss_mat_ane,
+                               "Percentage of stillbirths to include in productivity loss": perc_stillbirths_cal,
                                "Number of people left alive (starting with 100,000 births)": num_people}
         
     def get_lifetable(self):
         all_ages = [a for a in range(5,66)]
-        age_cats = ["5-9 years", "10-14 years", "15-19 years", "20-24 years", "25-29 years",
-                    "30-34 years", "35-39 years", "40-44 years", "45-49 years", "50-54 years",
-                    "55-59 years", "60-64 years","65-69 years"]
+        # age_cats = ["5-9 years", "10-14 years", "15-19 years", "20-24 years", "25-29 years",
+        #             "30-34 years", "35-39 years", "40-44 years", "45-49 years", "50-54 years",
+        #             "55-59 years", "60-64 years","65-69 years"]
         
+        age_cats = ["Age 5", "Age 10", "Age 15", "Age 20", "Age 25",
+                    "Age 30", "Age 35", "Age 40", "Age 45", "Age 50",
+                    "Age 55", "Age 60","Age 65", "Age 70"]
+        prob_age_cats = age_cats[1:]
         number_list = self.econ_inputs["Number of people left alive (starting with 100,000 births)"]
         people_number = {age_cat: 0 for age_cat in age_cats}
         for c, cat in enumerate(age_cats):
@@ -411,22 +419,22 @@ class DemographicData(object):
         proportion_left_since_age_45 = np.zeros(len(all_ages))
         
         for cat in age_cats:
-            Px[cat] = people_number[cat] / people_number["5-9 years"]
+            Px[cat] = people_number[cat] / people_number["Age 5"]
             
-        for i in range(0, len(age_cats) - 1):
-            this_interp = np.linspace(Px[age_cats[i]],Px[age_cats[i + 1]],6)[:5]
+        for i in range(0, len(prob_age_cats) - 1):
+            this_interp = np.linspace(Px[prob_age_cats[i]],Px[prob_age_cats[i + 1]],6)[:5]
             proportion_left_since_age_5.extend(this_interp)
             
-        proportion_left_since_age_5.append(Px["65-69 years"])
+        proportion_left_since_age_5.append(Px["Age 70"])
         
         for i in range(10, len(all_ages)):
-            proportion_left_since_age_15[i] = proportion_left_since_age_5[i] / Px["15-19 years"]
+            proportion_left_since_age_15[i] = proportion_left_since_age_5[i] / Px["Age 15"]
         for i in range(20, len(all_ages)):
-            proportion_left_since_age_25[i] = proportion_left_since_age_5[i] / Px["25-29 years"]
+            proportion_left_since_age_25[i] = proportion_left_since_age_5[i] / Px["Age 25"]
         for i in range(30, len(all_ages)):
-            proportion_left_since_age_35[i] = proportion_left_since_age_5[i] / Px["35-39 years"]
+            proportion_left_since_age_35[i] = proportion_left_since_age_5[i] / Px["Age 35"]
         for i in range(40, len(all_ages)):
-            proportion_left_since_age_45[i] = proportion_left_since_age_5[i] / Px["45-49 years"]
+            proportion_left_since_age_45[i] = proportion_left_since_age_5[i] / Px["Age 45"]
             
         self.life_table = pd.DataFrame({
             "Age": all_ages,
@@ -580,7 +588,7 @@ class DemographicData(object):
 
     @translate
     def odds_ratios(self):
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(17, 67))]).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(18, 70))]).dropna(axis=1, how="all")
         this_or = or_sheet.loc[_("Condition")].to_dict("index")
         self.or_cond[_("Stunting")] = sc.odict()
         self.or_cond[_("Stunting")][_("Prev stunting")] = this_or[_("Given previous stunting (HAZ < -2 in previous age band)")]
@@ -594,12 +602,12 @@ class DemographicData(object):
         self.or_cond[_("Anaemia")][_("Severe diarrhoea")] = or_sheet.loc[_("Anaemia")].to_dict("index")[_("For anaemia per additional episode of severe diarrhoea")]
         self.or_stunting_prog = or_sheet.loc[_("By program")].to_dict("index")
         self.or_bf_prog = or_sheet.loc[_("Odds ratios for correct breastfeeding by program")].to_dict("index")
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 19), range(21, 67))]).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 20), range(22, 70))]).dropna(axis=1, how="all")
         self.or_space_prog = or_sheet.loc[_("Odds ratios for optimal birth spacing by program")].to_dict("index")
 
     @translate
     def get_bo_progs(self):
-        progs = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(13, 43)]).to_dict("index")
+        progs = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(15, 49)]).to_dict("index")
         newprogs = sc.odict()
         for program in progs.keys():
             if not newprogs.get(program[0]):
@@ -628,7 +636,7 @@ class DemographicData(object):
 
     @translate
     def get_pw_progs(self):
-        self.pw_progs = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
+        self.pw_progs = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(9, 31)]).dropna(axis=1, how="all")
 
     @translate
     def get_bo_risks(self):
@@ -1458,10 +1466,10 @@ class UncertaintyParams(object):
 
     @translate
     def set_pw_progs(self):
-        self.pw_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))]).dropna(axis=1, how="all")
-        self.pw_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(1, 19)]).dropna(axis=1, how="all")
+        self.pw_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in chain(range(1, 11), range(20, 31))]).dropna(axis=1, how="all")
+        self.pw_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(1, 23)]).dropna(axis=1, how="all")
 
-        self.pw_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
+        self.pw_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(9, 31)]).dropna(axis=1, how="all")
 
     @translate
     def set_child_progs(self):
@@ -1498,10 +1506,10 @@ class UncertaintyParams(object):
 
     @translate
     def set_bo_progs(self):
-        self.progs_lower = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in chain(range(1, 16), range(28, 43))]).dropna(axis=1, how="all")
-        self.progs_upper = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(1, 31)]).dropna(axis=1, how="all")
+        self.progs_lower = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in chain(range(1, 18), range(32, 49))]).dropna(axis=1, how="all")
+        self.progs_upper = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(1, 35)]).dropna(axis=1, how="all")
 
-        self.progs_orig = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(13, 43)]).dropna(axis=1, how="all")
+        self.progs_orig = utils.read_sheet(self._spreadsheet, _("Programs birth outcomes"), [0, 1], skiprows=[i for i in range(15, 49)]).dropna(axis=1, how="all")
 
     @translate
     def set_iycf_effects(self):
@@ -1592,10 +1600,10 @@ class UncertaintyParams(object):
 
     @translate
     def set_odds_ratios(self):
-        or_sheet_cond_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 24), range(40, 67))]).dropna(axis=1, how="all")
-        or_sheet_cond_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 47), range(63, 67))]).dropna(axis=1, how="all")
-        or_sheet_space_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 42), range(44, 67))]).dropna(axis=1, how="all")
-        or_sheet_space_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in range(0, 65)]).dropna(axis=1, how="all")
+        or_sheet_cond_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 25), range(42, 70))]).dropna(axis=1, how="all")
+        or_sheet_cond_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 49), range(66, 70))]).dropna(axis=1, how="all")
+        or_sheet_space_lower = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 44), range(46, 70))]).dropna(axis=1, how="all")
+        or_sheet_space_upper = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in range(0, 68)]).dropna(axis=1, how="all")
         self.stun_or_lower = or_sheet_cond_lower.loc[_("Condition")].fillna(0)
         self.stun_or_upper = or_sheet_cond_upper.loc[_("Condition")].fillna(0)
 
@@ -1613,7 +1621,7 @@ class UncertaintyParams(object):
         self.or_space_prog_lower = or_sheet_space_lower.loc[_("Odds ratios for optimal birth spacing by program - lower")]
         self.or_space_prog_upper = or_sheet_space_upper.loc[_("Odds ratios for optimal birth spacing by program - upper")]
 
-        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(17, 67))]).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 1), range(18, 70))]).dropna(axis=1, how="all")
         self.this_or_orig = or_sheet.loc[_("Condition")]
 
         self.wasting_or_orig = or_sheet.loc[_("Wasting")]
@@ -1624,5 +1632,5 @@ class UncertaintyParams(object):
 
         self.or_bf_prog_orig = or_sheet.loc[_("Odds ratios for correct breastfeeding by program")].dropna(axis=0, how="all")
 
-        or_sheet_space = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 19), range(21, 67))]).dropna(axis=1, how="all")
+        or_sheet_space = utils.read_sheet(self._spreadsheet, _("Odds ratios"), [0, 1], skiprows=[i for i in chain(range(0, 20), range(22, 70))]).dropna(axis=1, how="all")
         self.or_space_prog_orig = or_sheet_space.loc[_("Odds ratios for optimal birth spacing by program")]

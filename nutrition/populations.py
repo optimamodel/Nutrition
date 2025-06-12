@@ -107,6 +107,7 @@ class PWAgeGroup(AgeGroup):
         super(PWAgeGroup, self).reset_storage()
         # this update will impact Newborn age group
         self.birthUpdate = {}
+        self.stillbirthUpdate = 1.0
         for BO in self.ss.birth_outcomes:
             self.birthUpdate[BO] = 1
         self.mortalityUpdate = {}
