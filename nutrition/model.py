@@ -173,8 +173,8 @@ class Model(sc.prettyobj):
             """Stunting cases"""
                                        
             this_stun_cases_cost = self.stunted[self.year] * probability_5yr * self.econ_inputs[_("Percent of lifetime earning actually realized")]\
-                                         * self.econ_inputs[_("Percent lower lifetime earning of a stunted")] * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age - 1))\
-                                             * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age - 1))
+                                         * self.econ_inputs[_("Percent lower lifetime earning of a stunted")] * self.econ_inputs[_("GDP per capita")] * ((1 + self.econ_inputs[_("GDP growth rate")]) ** (self.year + age -1))\
+                                             * ((1 + self.econ_inputs[_("Discount rate (benefits)")]) ** -(self.year + age -1))
             
             """Child Anemia cases"""
             child_anemia = self.child_anaemprev[self.year] * self.child_less_5years[self.year] / 5

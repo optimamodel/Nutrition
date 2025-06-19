@@ -846,9 +846,9 @@ class ProgramData(object):
         treatsam = self._spreadsheet.parse(sheet_name=_("Treatment of SAM"))
         comm_deliv_raw = treatsam.iloc[1][_("Add extension")]
         comm_deliv = pandas.notnull(comm_deliv_raw)
-        cash_transfers_row = food_insecure * np.ones(4)
-        targetPopSheet.loc[_("Children"), _("Cash transfers")].iloc[1:5] = cash_transfers_row
-        self.calcscache.write_row(_("Programs target population"), 1, 3, cash_transfers_row)
+        cash_transfers_row = food_insecure * np.ones(2)
+        targetPopSheet.loc[_("Children"), _("Cash transfers")].iloc[2:4] = cash_transfers_row
+        self.calcscache.write_row(_("Programs target population"), 1, 4, cash_transfers_row)
         lipid_row = food_insecure * np.ones(2)
         small_qty_lipid_row = food_insecure * np.ones(2)
         targetPopSheet.loc[_("Children"), _("Lipid-based nutrition supplements")].iloc[2:4] = lipid_row
