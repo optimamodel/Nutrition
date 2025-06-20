@@ -353,7 +353,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
             out_rows.append(outcome) 
                    
     ### Outcomes sheet
-    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total (discounted)"]] #TODO these should have a locale?
+    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total"]] #TODO these should have a locale?
     for r, res in enumerate(reduced_results):
 
         # _ = get_translator(res.locale)
@@ -414,7 +414,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     nrows, ncols, formatdata, allformats, outputs, headers = _write_results_econo_costs(data, allformats, years, results[0].locale)
     
     ### Economic costs/benefits sheet
-    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total (discounted)"]]
+    headers = [["Scenario", "Estimate", "Outcome"] + years + ["Total"]]
     # _ = get_translator(results[0].locale)
     
     for r, res in enumerate(reduced_results):
