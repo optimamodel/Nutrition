@@ -61,5 +61,5 @@ if doplot:
 # costeff = p.get_costeff()
 # p.write_results("scen_results_test.xlsx")
 all_reduce = reduce_results(results)
-write_results(results=results, reduced_results=all_reduce, filename="scen_results_test_2025.xlsx")
+write_results(results=results, reduced_results=all_reduce, filename="scen_results_test_2025_stillbirths.xlsx")
 p.save("test")

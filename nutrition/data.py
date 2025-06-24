@@ -372,29 +372,30 @@ class DemographicData(object):
         
         num_people              = econo_inputs.loc[_("Number of people left alive (starting with 100,000 births)")].values.tolist()
         
-        self.econ_inputs = {"GDP growth rate": gdp_growth,
-                               "GDP per capita": gdp_pc,
-                               "Discount rate (cost)": discount_rate_cost,
-                               "Discount rate (benefits)": discount_rate_bene,
-                               "Percent of lifetime earning actually realized": per_earn_realised,
-                               "Productivity year end": age_end_prod,
-                               "Productivity year start": age_sta_prod,
-                               "Female labor force participation": fem_lb_part,
-                               "Proportion of pregnancy to apply benefits to (maternal anemia)": prop_pw_benef,
-                               "Percentage of pregnant women 15-19 years": self.pw_agedist[0],
-                               "Percentage of pregnant women 20-29 years": self.pw_agedist[1],
-                               "Percentage of pregnant women 30-39 years": self.pw_agedist[2],
-                               "Percentage of pregnant women 40-49 years": self.pw_agedist[3],
-                               "Increase in IQ points due to early breastfeeding": inc_iq_bf,
-                               "Rate of increase in earnings from IQ": inc_ear_iq,
-                               "Labor share of GDP": lab_share_gdp,
-                               "Percent lower lifetime earning of a stunted": low_earn_stunted,
-                               "Productivity loss due to child anemia": produc_loss_anemia,
-                               "Productivity loss due to LBW": produc_loss_lbw,
-                               "Loss in productivity due to maternal anemia": produc_loss_mat_ane,
-                               "Percentage of stillbirths to include in productivity loss": perc_stillbirths_cal,
-                               "Number of people left alive (starting with 100,000 births)": num_people}
-        
+        self.econ_inputs = {_("GDP growth rate per annum"): gdp_growth,
+                            _("GDP per capita"): gdp_pc,
+                               _("Discount rate (cost)"): discount_rate_cost,
+                               _("Discount rate (benefits)"): discount_rate_bene,
+                               _("Percentage of lifetime earning actually realized"): per_earn_realised,
+                               _("Ending age for workforce productivity"): age_end_prod,
+                               _("Starting age for workforce productivity"): age_sta_prod,
+                               _("Female labor force participation"): fem_lb_part,
+                               _("Percentage of pregnancy to apply maternal anemia productivity loss to"): prop_pw_benef,
+                               _("Percentage of pregnant women 15-19 years"): self.pw_agedist[0],
+                               _("Percentage of pregnant women 20-29 years"): self.pw_agedist[1],
+                               _("Percentage of pregnant women 30-39 years"): self.pw_agedist[2],
+                               _("Percentage of pregnant women 40-49 years"): self.pw_agedist[3],
+                               _("Increase in IQ points due to early breastfeeding"): inc_iq_bf,
+                               _("Increase in earnings due per one point increase in IQ"): inc_ear_iq,
+                               _("Labor share of GDP"): lab_share_gdp,
+                               _("Percentage reduction in lifetime earnings for a stunted individual"): low_earn_stunted,
+                               _("Percentage loss in productivity due to childhood anemia"): produc_loss_anemia,
+                               _("Percentage loss in productivity due to low birth weight"): produc_loss_lbw,
+                               _("Percentage loss in productivity due to maternal anemia"): produc_loss_mat_ane,
+                               _("Percentage of stillbirths to include in productivity loss"): perc_stillbirths_cal,
+                               _("Number of people left alive (starting with 100,000 births)"): num_people}
+    
+    @translate
     def get_lifetable(self):
         all_ages = [a for a in range(5,66)]
         # age_cats = ["5-9 years", "10-14 years", "15-19 years", "20-24 years", "25-29 years",
@@ -405,7 +406,7 @@ class DemographicData(object):
                     "Age 30", "Age 35", "Age 40", "Age 45", "Age 50",
                     "Age 55", "Age 60","Age 65", "Age 70"]
         prob_age_cats = age_cats[1:]
-        number_list = self.econ_inputs["Number of people left alive (starting with 100,000 births)"]
+        number_list = self.econ_inputs[_("Number of people left alive (starting with 100,000 births)")]
         people_number = {age_cat: 0 for age_cat in age_cats}
         for c, cat in enumerate(age_cats):
             people_number[cat] = number_list[c]
@@ -437,12 +438,12 @@ class DemographicData(object):
             proportion_left_since_age_45[i] = proportion_left_since_age_5[i] / Px["Age 45"]
             
         self.life_table = pd.DataFrame({
-            "Age": all_ages,
-            "Proportion left since age 5": proportion_left_since_age_5,
-            "Proportion left since age 15": proportion_left_since_age_15,
-            "Proportion left since age 25": proportion_left_since_age_25,
-            "Proportion left since age 35": proportion_left_since_age_35,
-            "Proportion left since age 45": proportion_left_since_age_45
+            _("Age"): all_ages,
+            _("Proportion left since age 5"): proportion_left_since_age_5,
+            _("Proportion left since age 15"): proportion_left_since_age_15,
+            _("Proportion left since age 25"): proportion_left_since_age_25,
+            _("Proportion left since age 35"): proportion_left_since_age_35,
+            _("Proportion left since age 45"): proportion_left_since_age_45
         })
 
     @translate

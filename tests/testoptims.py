@@ -28,4 +28,4 @@ if __name__ == '__main__':
     if doplot:
         p.plot(optim=True)
     if dosave:
-        p.write_results("optim_results.xlsx")
+        p.write_results("optim_results_stillbirths.xlsx")

@@ -352,7 +352,7 @@ class Program(sc.prettyobj):
         affFrac = age_group.prog_eff.get((self.name, target_cond, _("Affected fraction")), 0)
         effectiveness = age_group.prog_eff.get((self.name, target_cond, effType), 0)
         reduction = affFrac * effectiveness * (self.annual_unrestr_cov[self.year] - oldCov) / (1.0 - effectiveness * oldCov)
-        update *= 1.0 - reduction
+        update = 1.0 - reduction
         return update
 
     @translate
