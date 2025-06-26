@@ -206,7 +206,7 @@ def reduce_results(results, point_estimate: str = "median", bounds: str = "quant
     return res_unc
 
 
-def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False, full_rows=False):
+def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False, full_rows=True):
     """Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
@@ -365,7 +365,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                 for measure in list(reduced_results[res].keys()):
                     out.append(reduced_results[res][measure][esti])
                 for o, outcome in enumerate(out_rows):
-                    name = [res] if o == 0 else [""]
+                    name = [res] 
                     thisout = out[o]
                     if _("prev") in outcome.lower():
                         cumul = "N/A"
@@ -393,7 +393,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
             # print(spend)
             # collate coverages first
             for p, prog in enumerate(rows):
-                name = [res.name] if p == 0 else [""]
+                name = [res.name] 
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
                 outputs.append(name + [prog] + [_("Coverage")] + [costcov] + list(thiscov))
@@ -430,7 +430,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                         econo_out.append(reduced_results[res][measure][esti])
                 
                 for o, outcome in enumerate(econ_rows):
-                    name = [res] if o == 0 else [""]
+                    name = [res] 
                     thisout = econo_out[o]
                     
                     cumul = sum(thisout)

@@ -398,15 +398,12 @@ class DemographicData(object):
     @translate
     def get_lifetable(self):
         all_ages = [a for a in range(5,66)]
-        # age_cats = ["5-9 years", "10-14 years", "15-19 years", "20-24 years", "25-29 years",
-        #             "30-34 years", "35-39 years", "40-44 years", "45-49 years", "50-54 years",
-        #             "55-59 years", "60-64 years","65-69 years"]
         
         age_cats = ["Age 5", "Age 10", "Age 15", "Age 20", "Age 25",
                     "Age 30", "Age 35", "Age 40", "Age 45", "Age 50",
-                    "Age 55", "Age 60","Age 65", "Age 70"]
-        prob_age_cats = age_cats[1:]
-        number_list = self.econ_inputs[_("Number of people left alive (starting with 100,000 births)")]
+                    "Age 55", "Age 60","Age 65"] # removed 70-74 age group (if added, change the number_list below)
+        
+        number_list = self.econ_inputs[_("Number of people left alive (starting with 100,000 births)")][:13] # removed 70-74 age group which is also there in the databook
         people_number = {age_cat: 0 for age_cat in age_cats}
         for c, cat in enumerate(age_cats):
             people_number[cat] = number_list[c]
@@ -420,13 +417,13 @@ class DemographicData(object):
         proportion_left_since_age_45 = np.zeros(len(all_ages))
         
         for cat in age_cats:
-            Px[cat] = people_number[cat] / people_number["Age 5"]
+            Px[cat] = people_number[cat] / people_number["Age 5"] # normalizing using survivors in 5-9 years age group
             
-        for i in range(0, len(prob_age_cats) - 1):
-            this_interp = np.linspace(Px[prob_age_cats[i]],Px[prob_age_cats[i + 1]],6)[:5]
+        for i in range(0, len(age_cats) - 1):
+            this_interp = np.linspace(Px[age_cats[i]],Px[age_cats[i + 1]],6)[:5]
             proportion_left_since_age_5.extend(this_interp)
             
-        proportion_left_since_age_5.append(Px["Age 70"])
+        proportion_left_since_age_5.append(Px["Age 65"])
         
         for i in range(10, len(all_ages)):
             proportion_left_since_age_15[i] = proportion_left_since_age_5[i] / Px["Age 15"]
@@ -1303,6 +1300,7 @@ class Dataset(object):
         # for i in range(0, m):
         #     for j in range(0, n):
         #         d[i][j] = rng.uniform(lb[i][j], ub[i][j], 1)
+       
         d = rng.uniform(low=lb, high=ub)
 
         return d
@@ -1467,7 +1465,7 @@ class UncertaintyParams(object):
 
     @translate
     def set_pw_progs(self):
-        self.pw_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in chain(range(1, 11), range(20, 31))]).dropna(axis=1, how="all")
+        self.pw_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in chain(range(1, 12), range(20, 31))]).dropna(axis=1, how="all")
         self.pw_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(1, 23)]).dropna(axis=1, how="all")
 
         self.pw_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for PW"), [0, 1, 2], skiprows=[i for i in range(9, 31)]).dropna(axis=1, how="all")
