@@ -238,7 +238,11 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
 
     for r, res in enumerate(results):
         if res.name != _("Excess budget") and resampled_key_str not in res.name:
-            out = res.get_outputs(outcomes, seq=True, pretty=True)
+            these_outcomes = []
+            for out in outcomes:
+                if "pop" not in out and "pw_mortrate" not in out:
+                    these_outcomes.append(out)
+            out = res.get_outputs(these_outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(out_rows):
                 name = [res.name] if o == 0 or full_rows else [""]
                 thisout = out[o]
@@ -355,7 +359,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     ### Outcomes sheet
     headers = [[_("Scenario"), _("Estimate"), _("Outcome")] + years + [_("Cumulative")]] #TODO these should have a locale?
     for r, res in enumerate(reduced_results):
-
+        
         # _ = get_translator(res.locale)
         _ = get_translator(results[0].locale) #TODO fix this - reduced results don't have a locale just using (possibly unrelated) .
 
@@ -363,7 +367,8 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
             if res != _("Excess budget"):
                 out = []
                 for measure in list(reduced_results[res].keys()):
-                    out.append(reduced_results[res][measure][esti])
+                    if _("cost") not in measure and _("benefit") not in measure and "pop" not in measure and "pw_mortrate" not in measure:
+                        out.append(reduced_results[res][measure][esti])
                 for o, outcome in enumerate(out_rows):
                     name = [res] 
                     thisout = out[o]

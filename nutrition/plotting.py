@@ -232,7 +232,13 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                     baseout = sc.promotetoarray(all_reduce[base_results[base_key]][outcome]['point'][1:])
                 else:
                     baseout = sc.promotetoarray(all_reduce[base_results[base_key]][outcome]['point'][1:].sum())
-                scale = 1e6 if baseout.max() > 1e6 else 1
+                # scale = 1e6 if baseout.max() > 1e6 else 1
+                if baseout.max() > 1e9:
+                    scale = 1e9
+                elif baseout.max() > 1e6 and baseout.max() < 1e9:
+                    scale = 1e6
+                else:
+                    scale = 1
                 baseout /= scale
                 offsets = np.arange(
                     len(all_reduce) + 1) * width  # Calculate offset so tick is in the center of the bars
@@ -291,6 +297,8 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name, locale=None):
                 ylabel = pgettext("plotting", "Number")
             elif scale == 1e6:
                 ylabel = pgettext("plotting", "Number (millions)")
+            elif scale == 1e9:
+                ylabel = pgettext("plotting", "Number (billions)")
             else:
                 raise Exception("Scale value must be 1 or 1e6, not %s" % scale)
             ax.set_ylabel(ylabel)
