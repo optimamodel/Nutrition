@@ -118,6 +118,7 @@ def default_trackers(prev=None, rate=None):
         "nonpw_anaemprev",
         "child_mortrate",
         "pw_mortrate",
+        "total_econ_costs",
         "child_samprev",
         "child_mamprev",
         "child_sam",
@@ -137,7 +138,6 @@ def default_trackers(prev=None, rate=None):
         "lbw_cost",
         "mat_death_cost",
         "mat_anemia_cases_cost",
-        "total_econ_costs",
         "total_popn",
         "pop_rate"
     ]
@@ -186,6 +186,7 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Minimize the prevalence of ID anaemia in non-pregnant women"),
             pgettext("plotting", "Minimize child mortality rate"),
             pgettext("plotting", "Minimize pregnant women mortality rate"),
+            pgettext("plotting", "Minimize total economic costs")
         ]
     else:
         pretty = [
@@ -207,6 +208,7 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Prevalence of ID anaemia in non-pregnant women"),
             pgettext("plotting", "Child mortality rate"),
             pgettext("plotting", "Pregnant women mortality rate"),
+            pgettext("plotting", "Total economic cost (discounted)"),
             pgettext("plotting", "Prevalence of SAM"),
             pgettext("plotting", "Prevalence of MAM"),
             pgettext("plotting", "Number of SAM children"),
@@ -226,7 +228,6 @@ def pretty_labels(direction=False, locale=None):
             pgettext("plotting", "Economic cost of low birth weight children (discounted)"),
             pgettext("plotting", "Economic cost of maternal deaths (discounted)"),
             pgettext("plotting", "Economic cost of maternal anemia (discounted)"),
-            pgettext("plotting", "Total economic cost (discounted)"),
             pgettext("plotting", "Total population"),
             pgettext("plotting", "Population growth rate")
         ]

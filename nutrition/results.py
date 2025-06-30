@@ -240,7 +240,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
         if res.name != _("Excess budget") and resampled_key_str not in res.name:
             these_outcomes = []
             for out in outcomes:
-                if "pop" not in out and "pw_mortrate" not in out:
+                if _("cost") not in out and _("benefit") not in out and "pop" not in out and "pw_mortrate" not in out:
                     these_outcomes.append(out)
             out = res.get_outputs(these_outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(out_rows):
