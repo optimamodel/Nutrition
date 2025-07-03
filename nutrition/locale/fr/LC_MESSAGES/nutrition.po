@@ -1672,7 +1672,7 @@ msgstr "Minimiser le taux de mortalité des femmes enceintes"
 #: nutrition/utils.py:189
 msgctxt "plotting"
 msgid "Minimize total economic costs"
-msgstr ""
+msgstr "Minimiser les coûts économiques totaux"
 
 #: nutrition/utils.py:193
 msgctxt "plotting"
