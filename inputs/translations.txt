@@ -378,3 +378,23 @@ Low birth weight
 Small quantity lipid-based nutrition supplements
 Small quantity lipid-based nutrition supplements - lower
 Small quantity lipid-based nutrition supplements - upper
+Economic inputs
+GDP growth rate per annum
+GDP per capita
+Discounting (costs)
+Discounting (benefits)
+Percentage of lifetime earning actually realized
+Ending age for workforce productivity
+Starting age for workforce productivity
+Female labor force participation
+Percentage of pregnancy to apply maternal anemia productivity loss to
+Increase in IQ points due to early breastfeeding
+Increase in earnings due per one point increase in IQ
+Labor share of GDP
+Percentage reduction in lifetime earnings for a stunted individual
+Percentage loss in productivity due to childhood anemia
+Percentage loss in productivity due to low birth weight
+Percentage loss in productivity due to maternal anemia
+Percentage of stillbirths to include in productivity loss
+Number of people left alive (starting with 100,000 births)
+Age

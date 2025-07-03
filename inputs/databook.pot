@@ -1149,3 +1149,63 @@ msgstr ""
 
 msgid "Small quantity lipid-based nutrition supplements - upper"
 msgstr ""
+
+msgid "Economic inputs"
+msgstr ""
+
+msgid "GDP growth rate per annum"
+msgstr ""
+
+msgid "GDP per capita"
+msgstr ""
+
+msgid "Discounting (costs)"
+msgstr ""
+
+msgid "Discounting (benefits)"
+msgstr ""
+
+msgid "Percentage of lifetime earning actually realized"
+msgstr ""
+
+msgid "Ending age for workforce productivity"
+msgstr ""
+
+msgid "Starting age for workforce productivity"
+msgstr ""
+
+msgid "Female labor force participation"
+msgstr ""
+
+msgid "Percentage of pregnancy to apply maternal anemia productivity loss to"
+msgstr ""
+
+msgid "Increase in IQ points due to early breastfeeding"
+msgstr ""
+
+msgid "Increase in earnings due per one point increase in IQ"
+msgstr ""
+
+msgid "Labor share of GDP"
+msgstr ""
+
+msgid "Percentage reduction in lifetime earnings for a stunted individual"
+msgstr ""
+
+msgid "Percentage loss in productivity due to childhood anemia"
+msgstr ""
+
+msgid "Percentage loss in productivity due to low birth weight"
+msgstr ""
+
+msgid "Percentage loss in productivity due to maternal anemia"
+msgstr ""
+
+msgid "Percentage of stillbirths to include in productivity loss"
+msgstr ""
+
+msgid "Number of people left alive (starting with 100,000 births)"
+msgstr ""
+
+msgid "Age"
+msgstr ""
