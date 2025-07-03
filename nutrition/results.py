@@ -225,12 +225,12 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     
     econ_rows = []
     for outcome in rows:
-        if _("cost") in outcome or _("benefit") in outcome:
+        if "cost" in outcome or "benefit" in outcome:
             econ_rows.append(outcome)
             
     out_rows = []
     for outcome in rows:
-        if _("cost") not in outcome and _("benefit") not in outcome:
+        if "cost" not in outcome and "benefit" not in outcome:
             out_rows.append(outcome) 
     
     ### Outcomes sheet
@@ -240,7 +240,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
         if res.name != _("Excess budget") and resampled_key_str not in res.name:
             these_outcomes = []
             for out in outcomes:
-                if _("cost") not in out and _("benefit") not in out and "pop" not in out and "pw_mortrate" not in out:
+                if "cost" not in out and "benefit" not in out and "pop" not in out and "pw_mortrate" not in out:
                     these_outcomes.append(out)
             out = res.get_outputs(these_outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(out_rows):
@@ -314,7 +314,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
         if res.name != _("Excess budget") and resampled_key_str not in res.name:
             econo_outcomes = []
             for out in outcomes:
-                if _("cost") in out or _("benefit") in out:
+                if "cost" in out or "benefit" in out:
                     econo_outcomes.append(out)
             econo_out = res.get_outputs(econo_outcomes, seq=True, pretty=True)
             
@@ -348,12 +348,12 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     _ = get_translator(results[0].locale)
     econ_rows = []
     for outcome in rows:
-        if _("cost") in outcome or _("benefit") in outcome:
+        if "cost" in outcome or "benefit" in outcome:
             econ_rows.append(outcome) 
             
     out_rows = []
     for outcome in rows:
-        if _("cost") not in outcome and _("benefit") not in outcome:
+        if "cost" not in outcome and "benefit" not in outcome:
             out_rows.append(outcome) 
                    
     ### Outcomes sheet
@@ -367,7 +367,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
             if res != _("Excess budget"):
                 out = []
                 for measure in list(reduced_results[res].keys()):
-                    if _("cost") not in measure and _("benefit") not in measure and "pop" not in measure and "pw_mortrate" not in measure:
+                    if "cost" not in measure and "benefit" not in measure and "pop" not in measure and "pw_mortrate" not in measure:
                         out.append(reduced_results[res][measure][esti])
                 for o, outcome in enumerate(out_rows):
                     name = [res] 
@@ -431,7 +431,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
             if res != _("Excess budget"):
                 econo_out = []
                 for measure in list(reduced_results[res].keys()):
-                    if _("cost") in measure or _("benefit") in measure:
+                    if "cost" in measure or "benefit" in measure:
                         econo_out.append(reduced_results[res][measure][esti])
                 
                 for o, outcome in enumerate(econ_rows):

@@ -1217,61 +1217,64 @@ msgid "Distribution"
 msgstr "Distribution"
 
 msgid "Economic inputs"
-msgstr ""
+msgstr "Données économiques"
 
 msgid "GDP growth rate per annum"
-msgstr ""
+msgstr "Taux de croissance du PIB"
 
 msgid "GDP per capita"
-msgstr ""
+msgstr "PIB par habitant"
 
 msgid "Discounting (costs)"
-msgstr ""
+msgstr "Actualisation (coûts)"
 
 msgid "Discounting (benefits)"
-msgstr ""
+msgstr "Actualisation (avantages)"
 
 msgid "Percentage of lifetime earning actually realized"
-msgstr ""
+msgstr "Pourcentage des gains à vie réellement réalisés"
 
 msgid "Ending age for workforce productivity"
-msgstr ""
+msgstr "Âge de départ de la population active"
 
 msgid "Starting age for workforce productivity"
-msgstr ""
+msgstr "Âge d’entrée dans la population active"
 
 msgid "Female labor force participation"
-msgstr ""
+msgstr "Participation des femmes à la population active"
 
 msgid "Percentage of pregnancy to apply maternal anemia productivity loss to"
-msgstr ""
+msgstr "Pourcentage de la grossesse auquel attribuer la perte de productivité imputée à l’anémie maternelle"
 
 msgid "Increase in IQ points due to early breastfeeding"
-msgstr ""
+msgstr "Augmentation des points QI grâce à l’allaitement maternel"
 
 msgid "Increase in earnings due per one point increase in IQ"
-msgstr ""
+msgstr "Augmentation de gains grâce à une augmentation d’un point du QI"
 
 msgid "Labor share of GDP"
-msgstr ""
+msgstr "Part du travail du PIB"
 
 msgid "Percentage reduction in lifetime earnings for a stunted individual"
-msgstr ""
+msgstr "Pourcentage de réduction des gains à vie pour un individu avec un retard de croissance"
 
 msgid "Percentage loss in productivity due to childhood anemia"
-msgstr ""
+msgstr "Pourcentage de la perte de productivité imputable à l’anémie infantile"
 
 msgid "Percentage loss in productivity due to low birth weight"
-msgstr ""
+msgstr "Pourcentage de la perte de productivité imputable à l’insuffisance pondérale à la naissance"
 
 msgid "Percentage loss in productivity due to maternal anemia"
-msgstr ""
+msgstr "Pourcentage de la perte de productivité imputable à l’anémie maternelle"
 
 msgid "Percentage of stillbirths to include in productivity loss"
-msgstr ""
+msgstr "Pourcentage des mortinaissances à inclure pour la perte de productivité"
 
 msgid "Number of people left alive (starting with 100,000 births)"
-msgstr ""
+msgstr "Nombre de personnes qui restent en vie (Avec un point de départ de 100.000 naissances)"
 
 msgid "Age"
-msgstr ""
+msgstr "Âge"
+
+msgid "Stillbirths"
+msgstr "Mortinaissances"
