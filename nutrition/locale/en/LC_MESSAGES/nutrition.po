@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-04 10:13+1000\n"
-"PO-Revision-Date: 2023-01-19 09:45+1100\n"
+"POT-Creation-Date: 2025-07-04 10:27+1000\n"
+"PO-Revision-Date: 2025-07-04 10:26+1000\n"
 "Last-Translator: \n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.16.0\n"
 
 #: nutrition/data.py:198 nutrition/data.py:206 nutrition/data.py:209
 #: nutrition/data.py:212 nutrition/data.py:229 nutrition/data.py:243
@@ -316,7 +316,6 @@ msgid "Prevalence of age-appropriate breastfeeding"
 msgstr "Prevalence of age-appropriate breastfeeding"
 
 #: nutrition/data.py:352 nutrition/data.py:371
-#, fuzzy
 msgid "Economic inputs"
 msgstr "Economic loss"
 
@@ -325,138 +324,133 @@ msgstr "Economic loss"
 #: nutrition/model.py:200 nutrition/model.py:206 nutrition/model.py:217
 #: nutrition/model.py:234
 msgid "GDP growth rate per annum"
-msgstr ""
+msgstr "GDP growth rate per annum"
 
 #: nutrition/data.py:354 nutrition/data.py:376 nutrition/model.py:176
 #: nutrition/model.py:183 nutrition/model.py:188 nutrition/model.py:193
 #: nutrition/model.py:200 nutrition/model.py:205 nutrition/model.py:217
 #: nutrition/model.py:234
-#, fuzzy
 msgid "GDP per capita"
 msgstr "Mg for eclampsia"
 
 #: nutrition/data.py:355
 msgid "Discounting (costs)"
-msgstr ""
+msgstr "Discounting (costs)"
 
 #: nutrition/data.py:356
 msgid "Discounting (benefits)"
-msgstr ""
+msgstr "Discounting (benefits)"
 
 #: nutrition/data.py:357 nutrition/data.py:379 nutrition/model.py:175
 #: nutrition/model.py:181 nutrition/model.py:187 nutrition/model.py:192
 #: nutrition/model.py:198 nutrition/model.py:204 nutrition/model.py:216
 msgid "Percentage of lifetime earning actually realized"
-msgstr ""
+msgstr "Percentage of lifetime earning actually realized"
 
 #: nutrition/data.py:358 nutrition/data.py:380 nutrition/model.py:159
 msgid "Ending age for workforce productivity"
-msgstr ""
+msgstr "Ending age for workforce productivity"
 
 #: nutrition/data.py:359 nutrition/data.py:381 nutrition/model.py:158
 msgid "Starting age for workforce productivity"
-msgstr ""
+msgstr "Starting age for workforce productivity"
 
 #: nutrition/data.py:360 nutrition/data.py:382 nutrition/model.py:217
 #: nutrition/model.py:233
 msgid "Female labor force participation"
-msgstr ""
+msgstr "Female labor force participation"
 
 #: nutrition/data.py:361 nutrition/data.py:383 nutrition/model.py:233
 msgid "Percentage of pregnancy to apply maternal anemia productivity loss to"
-msgstr ""
+msgstr "Percentage of pregnancy to apply maternal anemia productivity loss to"
 
 #: nutrition/data.py:362 nutrition/data.py:388 nutrition/model.py:199
 msgid "Increase in IQ points due to early breastfeeding"
-msgstr ""
+msgstr "Increase in IQ points due to early breastfeeding"
 
 #: nutrition/data.py:363 nutrition/data.py:389 nutrition/model.py:199
 msgid "Increase in earnings due per one point increase in IQ"
-msgstr ""
+msgstr "Increase in earnings due per one point increase in IQ"
 
 #: nutrition/data.py:364 nutrition/data.py:390 nutrition/model.py:182
 #: nutrition/model.py:199 nutrition/model.py:205
 msgid "Labor share of GDP"
-msgstr ""
+msgstr "Labor share of GDP"
 
 #: nutrition/data.py:365 nutrition/data.py:391 nutrition/model.py:176
 msgid "Percentage reduction in lifetime earnings for a stunted individual"
-msgstr ""
+msgstr "Percentage reduction in lifetime earnings for a stunted individual"
 
 #: nutrition/data.py:366 nutrition/data.py:392 nutrition/model.py:182
 msgid "Percentage loss in productivity due to childhood anemia"
-msgstr ""
+msgstr "Percentage loss in productivity due to childhood anemia"
 
 #: nutrition/data.py:367 nutrition/data.py:393 nutrition/model.py:205
 msgid "Percentage loss in productivity due to low birth weight"
-msgstr ""
+msgstr "Percentage loss in productivity due to low birth weight"
 
 #: nutrition/data.py:368 nutrition/data.py:394 nutrition/model.py:233
 msgid "Percentage loss in productivity due to maternal anemia"
-msgstr ""
+msgstr "Percentage loss in productivity due to maternal anemia"
 
 #: nutrition/data.py:369 nutrition/data.py:395 nutrition/model.py:160
 msgid "Percentage of stillbirths to include in productivity loss"
-msgstr ""
+msgstr "Percentage of stillbirths to include in productivity loss"
 
 #: nutrition/data.py:373 nutrition/data.py:396 nutrition/data.py:406
 msgid "Number of people left alive (starting with 100,000 births)"
-msgstr ""
+msgstr "Number of people left alive (starting with 100,000 births)"
 
 #: nutrition/data.py:377
 msgid "Discount rate (cost)"
-msgstr ""
+msgstr "Discount rate (cost)"
 
 #: nutrition/data.py:378 nutrition/model.py:177 nutrition/model.py:184
 #: nutrition/model.py:189 nutrition/model.py:194 nutrition/model.py:201
 #: nutrition/model.py:206 nutrition/model.py:218 nutrition/model.py:234
 msgid "Discount rate (benefits)"
-msgstr ""
+msgstr "Discount rate (benefits)"
 
 #: nutrition/data.py:384 nutrition/model.py:215
-#, fuzzy
 msgid "Percentage of pregnant women 15-19 years"
 msgstr "Percentage of pregnant women attending health facility"
 
 #: nutrition/data.py:385 nutrition/model.py:215
-#, fuzzy
 msgid "Percentage of pregnant women 20-29 years"
 msgstr "Percentage of pregnant women attending health facility"
 
 #: nutrition/data.py:386 nutrition/model.py:216
-#, fuzzy
 msgid "Percentage of pregnant women 30-39 years"
 msgstr "Percentage of pregnant women attending health facility"
 
 #: nutrition/data.py:387 nutrition/model.py:216
-#, fuzzy
 msgid "Percentage of pregnant women 40-49 years"
 msgstr "Percentage of pregnant women attending health facility"
 
 #: nutrition/data.py:438 nutrition/model.py:171 nutrition/model.py:209
 #: nutrition/model.py:210 nutrition/model.py:211 nutrition/model.py:212
 msgid "Age"
-msgstr ""
+msgstr "Age"
 
 #: nutrition/data.py:439 nutrition/model.py:171
 msgid "Proportion left since age 5"
-msgstr ""
+msgstr "Proportion left since age 5"
 
 #: nutrition/data.py:440 nutrition/model.py:209
 msgid "Proportion left since age 15"
-msgstr ""
+msgstr "Proportion left since age 15"
 
 #: nutrition/data.py:441 nutrition/model.py:210
 msgid "Proportion left since age 25"
-msgstr ""
+msgstr "Proportion left since age 25"
 
 #: nutrition/data.py:442 nutrition/model.py:211
 msgid "Proportion left since age 35"
-msgstr ""
+msgstr "Proportion left since age 35"
 
 #: nutrition/data.py:443 nutrition/model.py:212
 msgid "Proportion left since age 45"
-msgstr ""
+msgstr "Proportion left since age 45"
 
 #: nutrition/data.py:449 nutrition/data.py:455 nutrition/data.py:460
 #: nutrition/data.py:462
@@ -1143,7 +1137,16 @@ msgstr "Birth number"
 
 #: nutrition/model.py:379 nutrition/programs.py:348
 msgid "Stillbirths"
+msgstr "Stillbirths"
+
+#: nutrition/optimization.py:124 nutrition/optimization.py:125
+msgid "Balanced objectives"
 msgstr ""
+
+#: nutrition/optimization.py:129
+#, fuzzy
+msgid "budget"
+msgstr "Budget"
 
 #: nutrition/plotting.py:190
 msgctxt "plotting"
@@ -1177,7 +1180,6 @@ msgid "Number (millions)"
 msgstr "Number (millions)"
 
 #: nutrition/plotting.py:301
-#, fuzzy
 msgctxt "plotting"
 msgid "Number (billions)"
 msgstr "Number (millions)"
@@ -1429,7 +1431,7 @@ msgstr "Budget"
 
 #: nutrition/results.py:312 nutrition/results.py:422
 msgid "Total (discounted)"
-msgstr ""
+msgstr "Total (discounted)"
 
 #: nutrition/results.py:471 nutrition/results.py:477
 msgid "Version"
@@ -1444,7 +1446,6 @@ msgid "Budget & coverage"
 msgstr "Budget & coverage"
 
 #: nutrition/results.py:471
-#, fuzzy
 msgid "Economic costs"
 msgstr "Economic loss"
 
@@ -1633,7 +1634,7 @@ msgstr "Minimize pregnant women mortality rate"
 #: nutrition/utils.py:189
 msgctxt "plotting"
 msgid "Minimize total economic costs"
-msgstr ""
+msgstr "Minimize total economic costs"
 
 #: nutrition/utils.py:193
 msgctxt "plotting"
@@ -1726,7 +1727,6 @@ msgid "Pregnant women mortality rate"
 msgstr "Pregnant women mortality rate"
 
 #: nutrition/utils.py:211
-#, fuzzy
 msgctxt "plotting"
 msgid "Total economic cost (discounted)"
 msgstr "Economic cost of stunting"
@@ -1782,31 +1782,26 @@ msgid "Number of pregnant women"
 msgstr "Number of pregnant women"
 
 #: nutrition/utils.py:222
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of stillbirths"
 msgstr "Number of births"
 
 #: nutrition/utils.py:223
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of child deaths (discounted)"
 msgstr "Economic cost of child death"
 
 #: nutrition/utils.py:224
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of stillbirths (discounted)"
 msgstr "Economic cost of stunting"
 
 #: nutrition/utils.py:225
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of stunting (discounted)"
 msgstr "Economic cost of stunting"
 
 #: nutrition/utils.py:226
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of child anemia (discounted)"
 msgstr "Economic cost of child death"
@@ -1814,22 +1809,19 @@ msgstr "Economic cost of child death"
 #: nutrition/utils.py:227
 msgctxt "plotting"
 msgid "Economic benefits of early breastfeeding (discounted)"
-msgstr ""
+msgstr "Economic benefits of early breastfeeding (discounted)"
 
 #: nutrition/utils.py:228
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of low birth weight children (discounted)"
 msgstr "Economic cost of ID anaemic child"
 
 #: nutrition/utils.py:229
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of maternal deaths (discounted)"
 msgstr "Economic cost of child death"
 
 #: nutrition/utils.py:230
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of maternal anemia (discounted)"
 msgstr "Economic cost of ID anaemic child"
@@ -1903,7 +1895,4 @@ msgstr "Default scenario (budget)"
 
 #~ msgid "cost"
 #~ msgstr "Cost"
-
-#~ msgid "benefit"
-#~ msgstr ""
 
