@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-03 13:24+1000\n"
+"POT-Creation-Date: 2025-07-04 10:13+1000\n"
 "PO-Revision-Date: 2023-01-27 12:40+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: nutrition/data.py:198 nutrition/data.py:206 nutrition/data.py:209
 #: nutrition/data.py:212 nutrition/data.py:229 nutrition/data.py:243
@@ -366,7 +366,9 @@ msgstr "Participation des femmes à la population active"
 
 #: nutrition/data.py:361 nutrition/data.py:383 nutrition/model.py:233
 msgid "Percentage of pregnancy to apply maternal anemia productivity loss to"
-msgstr "Pourcentage de la grossesse auquel attribuer la perte de productivité imputée à l’anémie maternelle"
+msgstr ""
+"Pourcentage de la grossesse auquel attribuer la perte de productivité "
+"imputée à l’anémie maternelle"
 
 #: nutrition/data.py:362 nutrition/data.py:388 nutrition/model.py:199
 msgid "Increase in IQ points due to early breastfeeding"
@@ -383,27 +385,36 @@ msgstr "Part du travail du PIB"
 
 #: nutrition/data.py:365 nutrition/data.py:391 nutrition/model.py:176
 msgid "Percentage reduction in lifetime earnings for a stunted individual"
-msgstr "Pourcentage de réduction des gains à vie pour un individu avec un retard de croissance"
+msgstr ""
+"Pourcentage de réduction des gains à vie pour un individu avec un retard de "
+"croissance"
 
 #: nutrition/data.py:366 nutrition/data.py:392 nutrition/model.py:182
 msgid "Percentage loss in productivity due to childhood anemia"
-msgstr "Pourcentage de la perte de productivité imputable à l’anémie infantile"
+msgstr ""
+"Pourcentage de la perte de productivité imputable à l’anémie infantile"
 
 #: nutrition/data.py:367 nutrition/data.py:393 nutrition/model.py:205
 msgid "Percentage loss in productivity due to low birth weight"
-msgstr "Pourcentage de la perte de productivité imputable à l’insuffisance pondérale à la naissance"
+msgstr ""
+"Pourcentage de la perte de productivité imputable à l’insuffisance pondérale"
+" à la naissance"
 
 #: nutrition/data.py:368 nutrition/data.py:394 nutrition/model.py:233
 msgid "Percentage loss in productivity due to maternal anemia"
-msgstr "Pourcentage de la perte de productivité imputable à l’anémie maternelle"
+msgstr ""
+"Pourcentage de la perte de productivité imputable à l’anémie maternelle"
 
 #: nutrition/data.py:369 nutrition/data.py:395 nutrition/model.py:160
 msgid "Percentage of stillbirths to include in productivity loss"
-msgstr "Pourcentage des mortinaissances à inclure pour la perte de productivité"
+msgstr ""
+"Pourcentage des mortinaissances à inclure pour la perte de productivité"
 
 #: nutrition/data.py:373 nutrition/data.py:396 nutrition/data.py:406
 msgid "Number of people left alive (starting with 100,000 births)"
-msgstr "Nombre de personnes qui restent en vie (Avec un point de départ de 100.000 naissances)"
+msgstr ""
+"Nombre de personnes qui restent en vie (Avec un point de départ de 100.000 "
+"naissances)"
 
 #: nutrition/data.py:377
 msgid "Discount rate (cost)"
@@ -1171,14 +1182,6 @@ msgstr "Nombre de naissances"
 msgid "Stillbirths"
 msgstr "Mortinaissances"
 
-#: nutrition/optimization.py:124 nutrition/optimization.py:125
-msgid "Balanced objectives"
-msgstr "Objectifs équilibrés"
-
-#: nutrition/optimization.py:129
-msgid "budget"
-msgstr "budget"
-
 #: nutrition/plotting.py:190
 msgctxt "plotting"
 msgid "Prevalence (%)"
@@ -1862,7 +1865,8 @@ msgstr "Avantages économiques de l’allaitement maternel précoce (actualisés
 #, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of low birth weight children (discounted)"
-msgstr "Coût économique de l’insuffisance pondérale à la naissance (actualisé)"
+msgstr ""
+"Coût économique de l’insuffisance pondérale à la naissance (actualisé)"
 
 #: nutrition/utils.py:229
 #, fuzzy
@@ -1938,3 +1942,9 @@ msgstr "Scénario par défaut (budget)"
 #~ msgctxt "plotting"
 #~ msgid "Economic cost of ID anaemic pregnant woman"
 #~ msgstr "Coût économique d'une femme enceinte anémique ferriprive"
+
+#~ msgid "Balanced objectives"
+#~ msgstr "Objectifs équilibrés"
+
+#~ msgid "budget"
+#~ msgstr "budget"

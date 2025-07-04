@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 2.0.11\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-03 13:24+1000\n"
+"POT-Creation-Date: 2025-07-04 10:13+1000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: nutrition/data.py:198 nutrition/data.py:206 nutrition/data.py:209
 #: nutrition/data.py:212 nutrition/data.py:229 nutrition/data.py:243
@@ -1135,14 +1135,6 @@ msgstr ""
 msgid "Stillbirths"
 msgstr ""
 
-#: nutrition/optimization.py:124 nutrition/optimization.py:125
-msgid "Balanced objectives"
-msgstr ""
-
-#: nutrition/optimization.py:129
-msgid "budget"
-msgstr ""
-
 #: nutrition/plotting.py:190
 msgctxt "plotting"
 msgid "Prevalence (%)"
@@ -1374,18 +1366,6 @@ msgstr ""
 
 #: nutrition/results.py:103
 msgid "Scenario overall"
-msgstr ""
-
-#: nutrition/results.py:228 nutrition/results.py:233 nutrition/results.py:243
-#: nutrition/results.py:317 nutrition/results.py:351 nutrition/results.py:356
-#: nutrition/results.py:370 nutrition/results.py:434
-msgid "cost"
-msgstr ""
-
-#: nutrition/results.py:228 nutrition/results.py:233 nutrition/results.py:243
-#: nutrition/results.py:317 nutrition/results.py:351 nutrition/results.py:356
-#: nutrition/results.py:370 nutrition/results.py:434
-msgid "benefit"
 msgstr ""
 
 #: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:360
