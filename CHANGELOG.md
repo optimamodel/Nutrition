@@ -1,6 +1,15 @@
 
 ### Changelog
 
+#### [2.0.12] - 2025-07-04
+- Cash transfers impacts stunting and calcium suppementation impacts birth outcomes
+- A pathway for stillbirths is added and MMS impacts stillbirths
+- Databook is updated to include economic inputs
+- Economic cost calculation module is intergrated
+- A new optimization objective added to minimize economic costs
+- Output excel file writes economic costs into a separate sheet
+
+
 #### [2.0.11]
 - Update effect sizes for IYCF, MMS, treatment of SAM, SQ-LNS, PPCF, Zn supplementation, Kangaroo mother care, food fortification, delayed cord clamping, IFAS for pregnant women, micronutrient supplements. See comments in hidden sheet of template databook for references for each effect size.
 
