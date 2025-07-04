@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-04 10:27+1000\n"
-"PO-Revision-Date: 2025-07-04 10:26+1000\n"
+"POT-Creation-Date: 2025-07-04 10:13+1000\n"
+"PO-Revision-Date: 2025-07-05 06:14+1000\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -16,7 +16,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.11.0\n"
+"X-Generator: Poedit 3.2.2\n"
 
 #: nutrition/data.py:198 nutrition/data.py:206 nutrition/data.py:209
 #: nutrition/data.py:212 nutrition/data.py:229 nutrition/data.py:243
@@ -389,14 +390,13 @@ msgstr ""
 
 #: nutrition/data.py:366 nutrition/data.py:392 nutrition/model.py:182
 msgid "Percentage loss in productivity due to childhood anemia"
-msgstr ""
-"Pourcentage de la perte de productivité imputable à l’anémie infantile"
+msgstr "Pourcentage de la perte de productivité imputable à l’anémie infantile"
 
 #: nutrition/data.py:367 nutrition/data.py:393 nutrition/model.py:205
 msgid "Percentage loss in productivity due to low birth weight"
 msgstr ""
-"Pourcentage de la perte de productivité imputable à l’insuffisance pondérale"
-" à la naissance"
+"Pourcentage de la perte de productivité imputable à l’insuffisance pondérale "
+"à la naissance"
 
 #: nutrition/data.py:368 nutrition/data.py:394 nutrition/model.py:233
 msgid "Percentage loss in productivity due to maternal anemia"
@@ -555,8 +555,7 @@ msgstr "Femmes enceintes"
 #: nutrition/data.py:505 nutrition/data.py:629 nutrition/data.py:844
 #: nutrition/data.py:867 nutrition/data.py:1022 nutrition/geospatial.py:321
 #: nutrition/model.py:280 nutrition/programs.py:304 nutrition/project.py:709
-#: nutrition/project.py:776 nutrition_app/rpcs.py:739
-#: nutrition_app/rpcs.py:824
+#: nutrition/project.py:776 nutrition_app/rpcs.py:739 nutrition_app/rpcs.py:824
 msgid "Treatment of SAM"
 msgstr "Traitement de la MAS"
 
@@ -758,8 +757,7 @@ msgstr "La saturation est en dehors de l'intervalle (0, 100) pour %s"
 #: nutrition/data.py:796
 #, python-format
 msgid "Maximum increase is outside the interval (0, 100) for %s"
-msgstr ""
-"L'augmentation maximale est en dehors de l'intervalle (0, 100) pour %s"
+msgstr "L'augmentation maximale est en dehors de l'intervalle (0, 100) pour %s"
 
 #: nutrition/data.py:800
 #, python-format
@@ -808,8 +806,7 @@ msgstr "Fréquentation scolaire (pourcentage des femmes de 15 à 19 ans)"
 
 #: nutrition/data.py:828 nutrition/data.py:1032
 msgid "Percentage of pregnant women attending health facility"
-msgstr ""
-"Pourcentage des femmes enceintes fréquentant un établissement de santé"
+msgstr "Pourcentage des femmes enceintes fréquentant un établissement de santé"
 
 #: nutrition/data.py:829 nutrition/data.py:1033
 msgid "Percentage of children attending health facility"
@@ -831,8 +828,8 @@ msgid ""
 "be used."
 msgstr ""
 "Attention, le recueil de données en cours de lecture n'est pas à jour et ne "
-"comprend pas les prévalences de base de l'éclampsie et de la pré-éclampsie ;"
-" des moyennes mondiales seront donc utilisées."
+"comprend pas les prévalences de base de l'éclampsie et de la pré-éclampsie ; "
+"des moyennes mondiales seront donc utilisées."
 
 #: nutrition/data.py:841
 msgid "Prevalence of pre-eclampsia"
@@ -872,8 +869,7 @@ msgstr "Fourniture publique d'aliments complémentaires"
 msgid "Zinc for treatment + ORS"
 msgstr "SRO+Zn pour le traitement de la diarrhée"
 
-#: nutrition/data.py:873 nutrition/optimization.py:299
-#: nutrition/project.py:745
+#: nutrition/data.py:873 nutrition/optimization.py:299 nutrition/project.py:745
 msgid "Balanced energy-protein supplementation"
 msgstr "Supplémentation équilibrée en énergie et en protéines"
 
@@ -1064,8 +1060,7 @@ msgstr "Par programme - inférieur"
 
 #: nutrition/data.py:1616
 msgid "Odds ratios for correct breastfeeding by program - lower"
-msgstr ""
-"Rapport des cotes pour l'allaitement correct par programme - inférieur"
+msgstr "Rapport des cotes pour l'allaitement correct par programme - inférieur"
 
 #: nutrition/data.py:1617
 msgid "By program - upper"
@@ -1073,8 +1068,7 @@ msgstr "Par programme - supérieur"
 
 #: nutrition/data.py:1618
 msgid "Odds ratios for correct breastfeeding by program - upper"
-msgstr ""
-"Rapport des cotes pour l'allaitement correct par programme - supérieur"
+msgstr "Rapport des cotes pour l'allaitement correct par programme - supérieur"
 
 #: nutrition/data.py:1620
 msgid "Odds ratios for optimal birth spacing by program - lower"
@@ -1107,11 +1101,10 @@ msgstr "Scénario de base"
 #: nutrition/geospatial.py:128 nutrition/optimization.py:227
 #: nutrition/optimization.py:230 nutrition/optimization.py:240
 #: nutrition/optimization.py:241 nutrition/plotting.py:542
-#: nutrition/plotting.py:696 nutrition/plotting.py:697
-#: nutrition/project.py:419 nutrition/project.py:420 nutrition/project.py:512
-#: nutrition/project.py:513 nutrition/project.py:583 nutrition/project.py:584
-#: nutrition/results.py:303 nutrition/results.py:304 nutrition/results.py:413
-#: nutrition/results.py:414
+#: nutrition/plotting.py:696 nutrition/plotting.py:697 nutrition/project.py:419
+#: nutrition/project.py:420 nutrition/project.py:512 nutrition/project.py:513
+#: nutrition/project.py:583 nutrition/project.py:584 nutrition/results.py:303
+#: nutrition/results.py:304 nutrition/results.py:413 nutrition/results.py:414
 msgid "Excess budget not allocated"
 msgstr "Budget excédentaire non alloué"
 
@@ -1175,15 +1168,6 @@ msgstr "Nombre de naissances"
 #: nutrition/model.py:379 nutrition/programs.py:348
 msgid "Stillbirths"
 msgstr "Mortinaissances"
-
-#: nutrition/optimization.py:124 nutrition/optimization.py:125
-msgid "Balanced objectives"
-msgstr ""
-
-#: nutrition/optimization.py:129
-#, fuzzy
-msgid "budget"
-msgstr "Budget"
 
 #: nutrition/plotting.py:190
 msgctxt "plotting"
@@ -1281,9 +1265,9 @@ msgctxt "plotting"
 msgid "Spending ($US)"
 msgstr "Dépenses ($US)"
 
-#: nutrition/plotting.py:695 nutrition/plotting.py:705
-#: nutrition/results.py:240 nutrition/results.py:265 nutrition/results.py:314
-#: nutrition/results.py:367 nutrition/results.py:394 nutrition/results.py:431
+#: nutrition/plotting.py:695 nutrition/plotting.py:705 nutrition/results.py:240
+#: nutrition/results.py:265 nutrition/results.py:314 nutrition/results.py:367
+#: nutrition/results.py:394 nutrition/results.py:431
 msgid "Excess budget"
 msgstr "Budget excédentaire"
 
@@ -1859,8 +1843,7 @@ msgstr "Avantages économiques de l’allaitement maternel précoce (actualisés
 #: nutrition/utils.py:228
 msgctxt "plotting"
 msgid "Economic cost of low birth weight children (discounted)"
-msgstr ""
-"Coût économique de l’insuffisance pondérale à la naissance (actualisé)"
+msgstr "Coût économique de l’insuffisance pondérale à la naissance (actualisé)"
 
 #: nutrition/utils.py:229
 msgctxt "plotting"
