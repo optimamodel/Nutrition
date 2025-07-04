@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.15\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-04 10:13+1000\n"
-"PO-Revision-Date: 2023-01-19 09:49+1100\n"
+"POT-Creation-Date: 2025-07-04 10:27+1000\n"
+"PO-Revision-Date: 2025-07-04 10:26+1000\n"
 "Last-Translator: \n"
 "Language-Team: es <LL@li.org>\n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.16.0\n"
 
 #: nutrition/data.py:198 nutrition/data.py:206 nutrition/data.py:209
 #: nutrition/data.py:212 nutrition/data.py:229 nutrition/data.py:243
@@ -316,7 +316,6 @@ msgid "Prevalence of age-appropriate breastfeeding"
 msgstr "Prevalencia de lactancia materna adecuada para la edad"
 
 #: nutrition/data.py:352 nutrition/data.py:371
-#, fuzzy
 msgid "Economic inputs"
 msgstr "Variables económicas   "
 
@@ -331,7 +330,6 @@ msgstr "Crecimiento anual del PIB"
 #: nutrition/model.py:183 nutrition/model.py:188 nutrition/model.py:193
 #: nutrition/model.py:200 nutrition/model.py:205 nutrition/model.py:217
 #: nutrition/model.py:234
-#, fuzzy
 msgid "GDP per capita"
 msgstr "PIB per cápita"
 
@@ -419,22 +417,18 @@ msgid "Discount rate (benefits)"
 msgstr "Descuento temporal (beneficios)"
 
 #: nutrition/data.py:384 nutrition/model.py:215
-#, fuzzy
 msgid "Percentage of pregnant women 15-19 years"
 msgstr "Porcentaje de mujeres embarazadas de 15 a 19 años"
 
 #: nutrition/data.py:385 nutrition/model.py:215
-#, fuzzy
 msgid "Percentage of pregnant women 20-29 years"
 msgstr "Porcentaje de mujeres embarazadas de 20 a 29 años"
 
 #: nutrition/data.py:386 nutrition/model.py:216
-#, fuzzy
 msgid "Percentage of pregnant women 30-39 years"
 msgstr "Porcentaje de mujeres embarazadas de 30 a 39 años"
 
 #: nutrition/data.py:387 nutrition/model.py:216
-#, fuzzy
 msgid "Percentage of pregnant women 40-49 years"
 msgstr "Porcentaje de mujeres embarazadas de 40 a 49 años"
 
@@ -1182,6 +1176,15 @@ msgstr "Número de nacimiento"
 msgid "Stillbirths"
 msgstr "Mortinatos"
 
+#: nutrition/optimization.py:124 nutrition/optimization.py:125
+msgid "Balanced objectives"
+msgstr ""
+
+#: nutrition/optimization.py:129
+#, fuzzy
+msgid "budget"
+msgstr "Presupuesto"
+
 #: nutrition/plotting.py:190
 msgctxt "plotting"
 msgid "Prevalence (%)"
@@ -1214,7 +1217,6 @@ msgid "Number (millions)"
 msgstr "Número (millones)"
 
 #: nutrition/plotting.py:301
-#, fuzzy
 msgctxt "plotting"
 msgid "Number (billions)"
 msgstr "Número (millones)"
@@ -1484,7 +1486,6 @@ msgid "Budget & coverage"
 msgstr "Presupuesto y cobertura"
 
 #: nutrition/results.py:471
-#, fuzzy
 msgid "Economic costs"
 msgstr "Costes económicos"
 
@@ -1606,19 +1607,16 @@ msgid "Minimize the number of ID anaemic children"
 msgstr "Minimizar el número de niños anémicos DH"
 
 #: nutrition/utils.py:176
-#, fuzzy
 msgctxt "plotting"
 msgid "Maximize the number of alive, non ID anaemic children"
 msgstr "Maximizar el número de niños vivos sin anemia de identidad"
 
 #: nutrition/utils.py:177
-#, fuzzy
 msgctxt "plotting"
 msgid "Maximize the number of alive, non wasted children"
 msgstr "Maximizar el número de niños vivos y sin desperdicio"
 
 #: nutrition/utils.py:178
-#, fuzzy
 msgctxt "plotting"
 msgid "Maximize the number of alive, healthy children"
 msgstr "Maximizar el número de niños vivos y sanos"
@@ -1706,19 +1704,16 @@ msgid "Number of ID anaemic children turning age 5"
 msgstr "Número de niños anémicos DH que cumplen 5 años"
 
 #: nutrition/utils.py:198
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of alive, non-ID anaemic children turning age 5"
 msgstr "Número de niños vivos, sin identificación anémica, que cumplen 5 años"
 
 #: nutrition/utils.py:199
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of alive, non-wasted children turning age 5"
 msgstr "Número de niños vivos y sin emaciación que cumplen 5 años"
 
 #: nutrition/utils.py:200
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of alive, healthy children turning age 5"
 msgstr "Número de niños vivos y sanos que cumplen 5 años"
@@ -1774,7 +1769,6 @@ msgid "Pregnant women mortality rate"
 msgstr "Tasa de mortalidad de mujeres embarazadas"
 
 #: nutrition/utils.py:211
-#, fuzzy
 msgctxt "plotting"
 msgid "Total economic cost (discounted)"
 msgstr "Coste económico total (con descuento temporal)"
@@ -1830,31 +1824,26 @@ msgid "Number of pregnant women"
 msgstr "Número de mujeres embarazadas"
 
 #: nutrition/utils.py:222
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of stillbirths"
 msgstr "Número de mortinatos"
 
 #: nutrition/utils.py:223
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of child deaths (discounted)"
 msgstr "Coste económico de las muertes infantiles (con descuento temporal)"
 
 #: nutrition/utils.py:224
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of stillbirths (discounted)"
 msgstr "Coste económico de los mortinatos (con descuento temporal)"
 
 #: nutrition/utils.py:225
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of stunting (discounted)"
 msgstr "Coste económico del retraso del crecimiento (con descuento temporal)"
 
 #: nutrition/utils.py:226
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of child anemia (discounted)"
 msgstr "Coste económico de la anemia infantil (con descuento temporal)"
@@ -1865,19 +1854,16 @@ msgid "Economic benefits of early breastfeeding (discounted)"
 msgstr "Beneficio económico de la lactancia temprana (con descuento temporal)"
 
 #: nutrition/utils.py:228
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of low birth weight children (discounted)"
 msgstr "Coste económico del bajo peso al nacer (con descuento temporal)"
 
 #: nutrition/utils.py:229
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of maternal deaths (discounted)"
 msgstr "Coste económico de las muertes maternas (con descuento temporal)"
 
 #: nutrition/utils.py:230
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of maternal anemia (discounted)"
 msgstr "Coste económico de la anemia materna (con descuento temporal)"
