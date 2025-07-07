@@ -7,17 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-04 10:13+1000\n"
-"PO-Revision-Date: 2025-07-05 06:13+1000\n"
+"POT-Creation-Date: 2025-07-08 08:43+1000\n"
+"PO-Revision-Date: 2025-07-08 08:43+1000\n"
 "Last-Translator: \n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Generated-By: Babel 2.11.0\n"
-"X-Generator: Poedit 3.2.2\n"
+"Generated-By: Babel 2.16.0\n"
 
 #: nutrition/data.py:198 nutrition/data.py:206 nutrition/data.py:209
 #: nutrition/data.py:212 nutrition/data.py:229 nutrition/data.py:243
@@ -807,12 +806,12 @@ msgstr "Percentage of diarrhea that is severe"
 #: nutrition/data.py:837
 msgid ""
 "Warning, the databook being read is out of date and does not include "
-"baseline prevalences of eclampsia and pre-eclampsia so global averages will "
-"be used."
+"baseline prevalences of eclampsia and pre-eclampsia so global averages "
+"will be used."
 msgstr ""
 "Warning, the databook being read is out of date and does not include "
-"baseline prevalences of eclampsia and pre-eclampsia so global averages will "
-"be used."
+"baseline prevalences of eclampsia and pre-eclampsia so global averages "
+"will be used."
 
 #: nutrition/data.py:841
 msgid "Prevalence of pre-eclampsia"
@@ -1139,6 +1138,14 @@ msgstr "Birth number"
 #: nutrition/model.py:379 nutrition/programs.py:348
 msgid "Stillbirths"
 msgstr "Stillbirths"
+
+#: nutrition/optimization.py:124 nutrition/optimization.py:125
+msgid "Balanced objectives"
+msgstr "Balanced objectives"
+
+#: nutrition/optimization.py:129
+msgid "budget"
+msgstr "budget"
 
 #: nutrition/plotting.py:190
 msgctxt "plotting"
@@ -1845,45 +1852,3 @@ msgstr "Default scenario (coverage)"
 msgid "Default scenario (budget)"
 msgstr "Default scenario (budget)"
 
-#~ msgctxt "plotting"
-#~ msgid "Minimize the number of pregnant women deaths"
-#~ msgstr "Minimize the number of pregnant women deaths"
-
-#~ msgid "Child wasting episode"
-#~ msgstr "Child wasting episode"
-
-#~ msgid "Child turning age 5 stunted (over lifetime)"
-#~ msgstr "Child turning age 5 stunted (over lifetime)"
-
-#~ msgid "Child death"
-#~ msgstr "Child death"
-
-#~ msgid "Maternal death"
-#~ msgstr "Maternal death"
-
-#~ msgid "Anaemic child (per year)"
-#~ msgstr "Anaemic child (per year)"
-
-#~ msgid "Anaemic pregnant woman (per pregnancy)"
-#~ msgstr "Anaemic pregnant woman (per pregnancy)"
-
-#~ msgctxt "plotting"
-#~ msgid "Economic cost of wasting"
-#~ msgstr "Economic cost of wasting"
-
-#~ msgctxt "plotting"
-#~ msgid "Economic cost of pregnant woman death"
-#~ msgstr "Economic cost of pregnant woman death"
-
-#~ msgctxt "plotting"
-#~ msgid "Economic cost of ID anaemic pregnant woman"
-#~ msgstr "Economic cost of ID anaemic pregnant woman"
-
-#~ msgid "Balanced objectives"
-#~ msgstr "Balanced objectives"
-
-#~ msgid "budget"
-#~ msgstr "budget"
-
-#~ msgid "cost"
-#~ msgstr "Cost"
