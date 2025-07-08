@@ -8,7 +8,7 @@
 - Databook is updated to include economic inputs
 - Economic cost calculation module is intergrated
 - A new optimization objective added to minimize economic costs
-- Output excel file writes economic costs into a separate sheet
+- Output Excel file writes economic costs into a separate sheet
 
 
 #### [2.0.11]
