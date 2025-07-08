@@ -1,7 +1,7 @@
 
 ### Changelog
 
-#### [2.0.12] - 2025-07-04
+#### [2.1.0] - 2025-07-04
 - Cash transfers impacts stunting and calcium suppementation impacts birth outcomes
 - A pathway for stillbirths is added and MMS impacts stillbirths
 - Databook is updated to include economic inputs
