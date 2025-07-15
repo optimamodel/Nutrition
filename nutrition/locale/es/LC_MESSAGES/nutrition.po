@@ -1430,12 +1430,12 @@ msgstr "Escenario general"
 #: nutrition/results.py:356
 #, fuzzy
 msgid "cost"
-msgstr "Costo"
+msgstr "Coste"
 
 #: nutrition/results.py:228 nutrition/results.py:233 nutrition/results.py:351
 #: nutrition/results.py:356
 msgid "benefit"
-msgstr ""
+msgstr "Beneficio"
 
 #: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:361
 #: nutrition/results.py:423 nutrition/results.py:507 nutrition/results.py:526
