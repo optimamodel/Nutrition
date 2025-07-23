@@ -349,11 +349,11 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     econ_rows = []
     for outcome in rows:
         if _("cost") in outcome or _("benefit") in outcome:
-            econ_rows.append(outcome)      
+            econ_rows.append(outcome)
     out_rows = []
     for outcome in rows:
         if _("cost") not in outcome and _("benefit") not in outcome:
-            out_rows.append(outcome)                 
+            out_rows.append(outcome)               
     ### Outcomes sheet
     headers = [[_("Scenario"), _("Estimate"), _("Outcome")] + years + [_("Cumulative")]] #TODO these should have a locale?
     for r, res in enumerate(reduced_results):

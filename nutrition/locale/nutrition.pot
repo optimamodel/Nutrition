@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 2.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-15 12:40+1000\n"
+"POT-Creation-Date: 2025-07-23 12:23+1000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -924,7 +924,7 @@ msgstr ""
 msgid "Threshold dependency"
 msgstr ""
 
-#: nutrition/data.py:935 nutrition/results.py:507
+#: nutrition/data.py:935 nutrition/results.py:504
 msgid "Program"
 msgstr ""
 
@@ -1070,7 +1070,7 @@ msgstr ""
 #: nutrition/plotting.py:696 nutrition/plotting.py:697 nutrition/project.py:419
 #: nutrition/project.py:420 nutrition/project.py:512 nutrition/project.py:513
 #: nutrition/project.py:583 nutrition/project.py:584 nutrition/results.py:303
-#: nutrition/results.py:304 nutrition/results.py:414 nutrition/results.py:415
+#: nutrition/results.py:304 nutrition/results.py:411 nutrition/results.py:412
 msgid "Excess budget not allocated"
 msgstr ""
 
@@ -1246,8 +1246,8 @@ msgid "Spending ($US)"
 msgstr ""
 
 #: nutrition/plotting.py:695 nutrition/plotting.py:705 nutrition/results.py:240
-#: nutrition/results.py:265 nutrition/results.py:314 nutrition/results.py:368
-#: nutrition/results.py:395 nutrition/results.py:432
+#: nutrition/results.py:265 nutrition/results.py:314 nutrition/results.py:365
+#: nutrition/results.py:392 nutrition/results.py:429
 msgid "Excess budget"
 msgstr ""
 
@@ -1383,35 +1383,35 @@ msgid "Scenario overall"
 msgstr ""
 
 #: nutrition/results.py:228 nutrition/results.py:233 nutrition/results.py:351
-#: nutrition/results.py:356
+#: nutrition/results.py:355
 msgid "cost"
 msgstr ""
 
 #: nutrition/results.py:228 nutrition/results.py:233 nutrition/results.py:351
-#: nutrition/results.py:356
+#: nutrition/results.py:355
 msgid "benefit"
 msgstr ""
 
-#: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:361
-#: nutrition/results.py:423 nutrition/results.py:507 nutrition/results.py:526
+#: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:358
+#: nutrition/results.py:420 nutrition/results.py:504 nutrition/results.py:523
 msgid "Scenario"
 msgstr ""
 
-#: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:361
-#: nutrition/results.py:423 nutrition/results.py:526
+#: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:358
+#: nutrition/results.py:420 nutrition/results.py:523
 msgid "Estimate"
 msgstr ""
 
-#: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:361
-#: nutrition/results.py:423 nutrition/results.py:526
+#: nutrition/results.py:237 nutrition/results.py:312 nutrition/results.py:358
+#: nutrition/results.py:420 nutrition/results.py:523
 msgid "Outcome"
 msgstr ""
 
-#: nutrition/results.py:237 nutrition/results.py:361 nutrition/results.py:526
+#: nutrition/results.py:237 nutrition/results.py:358 nutrition/results.py:523
 msgid "Cumulative"
 msgstr ""
 
-#: nutrition/results.py:249 nutrition/results.py:376
+#: nutrition/results.py:249 nutrition/results.py:373
 msgid "prev"
 msgstr ""
 
@@ -1419,56 +1419,56 @@ msgstr ""
 msgid "N/A"
 msgstr ""
 
-#: nutrition/results.py:251 nutrition/results.py:378
+#: nutrition/results.py:251 nutrition/results.py:375
 msgid "mortality"
 msgstr ""
 
-#: nutrition/results.py:253 nutrition/results.py:380
+#: nutrition/results.py:253 nutrition/results.py:377
 msgid "Number of SAM children"
 msgstr ""
 
-#: nutrition/results.py:253 nutrition/results.py:380
+#: nutrition/results.py:253 nutrition/results.py:377
 msgid "Number of MAM children"
 msgstr ""
 
-#: nutrition/results.py:275 nutrition/results.py:293 nutrition/results.py:405
+#: nutrition/results.py:275 nutrition/results.py:293 nutrition/results.py:402
 msgid "Coverage"
 msgstr ""
 
 #: nutrition/results.py:281 nutrition/results.py:299 nutrition/results.py:304
-#: nutrition/results.py:410 nutrition/results.py:415
+#: nutrition/results.py:407 nutrition/results.py:412
 msgid "Budget"
 msgstr ""
 
-#: nutrition/results.py:312 nutrition/results.py:423
+#: nutrition/results.py:312 nutrition/results.py:420
 msgid "Total (discounted)"
 msgstr ""
 
-#: nutrition/results.py:472 nutrition/results.py:478
+#: nutrition/results.py:469 nutrition/results.py:475
 msgid "Version"
 msgstr ""
 
-#: nutrition/results.py:472
+#: nutrition/results.py:469
 msgid "Outcomes"
 msgstr ""
 
-#: nutrition/results.py:472
+#: nutrition/results.py:469
 msgid "Budget & coverage"
 msgstr ""
 
-#: nutrition/results.py:472
+#: nutrition/results.py:469
 msgid "Economic costs"
 msgstr ""
 
-#: nutrition/results.py:478
+#: nutrition/results.py:475
 msgid "Date"
 msgstr ""
 
-#: nutrition/results.py:507
+#: nutrition/results.py:504
 msgid "Type"
 msgstr ""
 
-#: nutrition/results.py:507
+#: nutrition/results.py:504
 msgid "Cost-coverage type"
 msgstr ""
 
