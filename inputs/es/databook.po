@@ -1312,3 +1312,6 @@ msgstr "Edad"
 
 msgid "Stillbirths"
 msgstr "Mortinatos"
+
+msgid "All causes"
+msgstr "Todas las causas"

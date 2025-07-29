@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-23 12:44+1000\n"
+"POT-Creation-Date: 2025-07-30 09:00+1000\n"
 "PO-Revision-Date: 2025-07-08 08:43+1000\n"
 "Last-Translator: \n"
 "Language: en\n"
@@ -286,8 +286,8 @@ msgstr "Breastfeeding distribution"
 #: nutrition/model.py:386 nutrition/populations.py:361
 #: nutrition/populations.py:486 nutrition/populations.py:495
 #: nutrition/populations.py:547 nutrition/populations.py:617
-#: nutrition/populations.py:769 nutrition/programs.py:373
-#: nutrition/programs.py:374 nutrition/settings.py:45
+#: nutrition/populations.py:769 nutrition/programs.py:388
+#: nutrition/programs.py:389 nutrition/settings.py:45
 msgid "Breastfeeding"
 msgstr "Breastfeeding"
 
@@ -468,7 +468,7 @@ msgstr "Diarrhoea incidence"
 #: nutrition/data.py:1598 nutrition/model.py:369 nutrition/model.py:388
 #: nutrition/model.py:500 nutrition/model.py:528 nutrition/populations.py:262
 #: nutrition/populations.py:272 nutrition/populations.py:276
-#: nutrition/programs.py:249 nutrition/programs.py:332
+#: nutrition/programs.py:249 nutrition/programs.py:333
 msgid "Diarrhoea"
 msgstr "Diarrhoea"
 
@@ -489,8 +489,8 @@ msgstr "SAM (WHZ-score < -3)"
 #: nutrition/populations.py:275 nutrition/populations.py:389
 #: nutrition/populations.py:390 nutrition/populations.py:404
 #: nutrition/populations.py:405 nutrition/populations.py:646
-#: nutrition/populations.py:649 nutrition/programs.py:304
-#: nutrition/programs.py:306 nutrition/settings.py:29
+#: nutrition/populations.py:649 nutrition/programs.py:305
+#: nutrition/programs.py:307 nutrition/settings.py:29
 msgid "MAM"
 msgstr "MAM"
 
@@ -503,7 +503,7 @@ msgstr "MAM"
 #: nutrition/populations.py:207 nutrition/populations.py:275
 #: nutrition/populations.py:391 nutrition/populations.py:392
 #: nutrition/populations.py:406 nutrition/populations.py:407
-#: nutrition/populations.py:649 nutrition/programs.py:306
+#: nutrition/populations.py:649 nutrition/programs.py:307
 #: nutrition/settings.py:29
 msgid "SAM"
 msgstr "SAM"
@@ -542,7 +542,7 @@ msgstr "Pregnant women"
 #: nutrition/data.py:505 nutrition/data.py:629 nutrition/data.py:844
 #: nutrition/data.py:867 nutrition/data.py:1022 nutrition/geospatial.py:321
 #: nutrition/model.py:280 nutrition/optimization.py:307
-#: nutrition/programs.py:304 nutrition/project.py:709 nutrition/project.py:776
+#: nutrition/programs.py:305 nutrition/project.py:709 nutrition/project.py:776
 #: nutrition_app/rpcs.py:739 nutrition_app/rpcs.py:824
 msgid "Treatment of SAM"
 msgstr "Treatment of SAM"
@@ -1137,7 +1137,7 @@ msgstr "Wasting treatment"
 msgid "Birth number"
 msgstr "Birth number"
 
-#: nutrition/model.py:379 nutrition/programs.py:348
+#: nutrition/model.py:379 nutrition/programs.py:363
 msgid "Stillbirths"
 msgstr "Stillbirths"
 
@@ -1306,28 +1306,32 @@ msgstr "Pre-term AGA"
 msgid "Maternal mortality (per 1,000 live births)"
 msgstr "Maternal mortality (per 1,000 live births)"
 
-#: nutrition/programs.py:204 nutrition/programs.py:274
+#: nutrition/programs.py:204 nutrition/programs.py:275
 msgid "Effectiveness"
 msgstr "Effectiveness"
 
-#: nutrition/programs.py:248 nutrition/programs.py:323
+#: nutrition/programs.py:248 nutrition/programs.py:324
 msgid "Effectiveness incidence"
 msgstr "Effectiveness incidence"
 
-#: nutrition/programs.py:265
+#: nutrition/programs.py:265 nutrition/programs.py:266
 msgid "Effectiveness mortality"
 msgstr "Effectiveness mortality"
 
-#: nutrition/programs.py:322 nutrition/programs.py:338
-#: nutrition/programs.py:352
+#: nutrition/programs.py:323 nutrition/programs.py:339
+#: nutrition/programs.py:353 nutrition/programs.py:367
 msgid "Affected fraction"
 msgstr "Affected fraction"
 
-#: nutrition/programs.py:363
+#: nutrition/programs.py:349
+msgid "All causes"
+msgstr "All causes"
+
+#: nutrition/programs.py:378
 msgid "affected fraction"
 msgstr "affected fraction"
 
-#: nutrition/programs.py:364
+#: nutrition/programs.py:379
 msgid "effectiveness"
 msgstr "effectiveness"
 
