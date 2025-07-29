@@ -630,7 +630,7 @@ class DemographicData(object):
 
     @translate
     def get_child_progs(self):
-        self.child_progs = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(53, 163)]).dropna(axis=1, how="all")
+        self.child_progs = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(55, 169)]).dropna(axis=1, how="all")
 
     @translate
     def get_pw_progs(self):
@@ -1472,10 +1472,10 @@ class UncertaintyParams(object):
 
     @translate
     def set_child_progs(self):
-        self.child_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in chain(range(1, 56), range(108, 164))]).dropna(axis=1, how="all")
-        self.child_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(1, 111)]).dropna(axis=1, how="all")
+        self.child_progs_lower = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in chain(range(1, 58), range(112, 170))]).dropna(axis=1, how="all")
+        self.child_progs_upper = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(1, 115)]).dropna(axis=1, how="all")
 
-        self.child_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(53, 163)]).dropna(axis=1, how="all")
+        self.child_progs_orig = utils.read_sheet(self._spreadsheet, _("Programs for children"), [0, 1, 2], skiprows=[i for i in range(55, 169)]).dropna(axis=1, how="all")
 
     @translate
     def set_anaemia_progs(self):
