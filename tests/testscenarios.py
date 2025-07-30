@@ -56,7 +56,7 @@ if __name__ == "__main__":
     scen_list = nu.make_scens([kwargs12])
     p.add_scens(scen_list)
 
-    results = p.run_scens(n_samples=0)
+    results = p.run_scens(n_samples=5)
 
 if doplot:
     p.plot()
