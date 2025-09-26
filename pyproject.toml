@@ -1,0 +1,53 @@
+[project]
+name = "nutrition"
+version = "0.1.0"
+description = "Optima Nutrition"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=1.4.2",
+    "numpy>=1.10.1",
+    "scipy",
+    "pandas>=1.2.4",
+    "babel",
+    "openpyxl",
+    "openpyexcel",
+    "sciris",
+    "seaborn",
+    "mpld3>=0.5.11",
+    "scirisweb>=1.0.1",
+    "gunicorn>=23.0.0",
+]
+keywords = ["optima", "nutrition"]
+license = "GPL-3.0-only"
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.12",
+]
+authors = [
+    { name = "Sam Hainsworth" },
+    { name = "Ruth Pearson" },
+    { name = "Madhura Killedar" },
+    { name = "Nick Scott" },
+]
+maintainers = [
+    { name = "Optima Nutrition Team", email = "info@optimamodel.com" }
+]
+
+[project.urls]
+Homepage = "http://github.com/optimamodel/nutrition"
+
+[project.optional-dependencies]
+frontend = [
+    "celery>=5.5.3",
+    "flask>=3.1.2",
+    "redis>=6.4.0",
+]
+
+[tool.setuptools]
+py-modules = ['nutrition','nutrition_app']
