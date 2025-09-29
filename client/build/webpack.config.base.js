@@ -73,7 +73,7 @@ module.exports = {
     new CopyWebpackPlugin(
         {
           patterns: [
-            {from: 'assets/',
+            {from: 'static/',
               to: resolve('dist/static/'),
               globOptions: {
                 ignore: ['**/*.ai', '**/*.eps']
