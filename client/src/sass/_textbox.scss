@@ -1,3 +1,4 @@
+
 // Textbox
 // =======
 
@@ -8,8 +9,8 @@
 // for which elements.
 
 .txbox {
-  @extend .txbox, .__m;
-  @extend .txbox, .__white;
+  @extend .txbox.__m;
+  @extend .txbox.__white;
   border-style: solid;
   border-width: 1px;
   cursor: text;
@@ -76,7 +77,7 @@
   // ### Positions
 
   &.__inline {
-    @extend .txbox, .__inline, .__m;
+    @extend .txbox.__inline.__m;
     display: inline;
 
     &.__xl {

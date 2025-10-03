@@ -63,13 +63,12 @@ USE_TASKS = True
 # URL for the Redis database that Celery will use as the broker.
 # Note that the /N number at the end should match the
 # database number you want to use.  (N=0 is the default Redis database.)
-BROKER_URL = REDIS_URL
+broker_url = REDIS_URL # Celery v6 will require lowercase
+BROKER_URL = REDIS_URL # Kombu still requires uppercase
 
 # URL for the Redis database that Celery will use to hold task results.
 # Note that the /N number at the end should match the
 # database number you want to use.  (N=0 is the default Redis database.)
-CELERY_RESULT_BACKEND = REDIS_URL
-
+result_backend = REDIS_URL
 # Slack logging configuration
-SLACK = {"webhook": "https://hooks.slack.com/services/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"}
 SLACK = None

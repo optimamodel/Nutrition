@@ -70,5 +70,6 @@ export default {
 } */
 
   // Modal dialog styling.
-  @import './sass/_dialogs.scss';
+  //@import './sass/_dialogs.scss';
+  @use './sass/_dialogs.scss' as *;
 </style>

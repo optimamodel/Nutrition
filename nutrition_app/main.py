@@ -12,7 +12,7 @@ from . import config, rpcs, apptasks  # analysis:ignore
 def make_app(**kwargs):
     T = sc.tic()
     app = sw.ScirisApp(name="Optima Nutrition", filepath=__file__, config=config, RPC_dict=rpcs.RPC_dict, **kwargs)  # Create the ScirisApp object.  NOTE: app.config will thereafter contain all of the configuration parameters, including for Flask.
-    sw.make_default_users(app)
+    sw.make_default_users(app, include_admin=True)
     print(">> Webapp initialization complete (elapsed time: %0.2f s)" % sc.toc(T, output=True))
     return app
 
