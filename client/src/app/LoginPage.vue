@@ -33,12 +33,6 @@ Last update: 2018sep22
 
         <div class="modal-body">
           <h2>{{ $t("Login") }}</h2>
-          <div class="section">
-            {{ $t("login.deprecation_warning") }}
-            <a href="http://nutrition.legacy.optimamodel.com" target="_blank">
-            {{ $t("Access the legacy version here") }}
-            </a>
-          </div>
 
           <div class="section" v-if="loginResult != ''">{{ loginResult }}</div>
 
