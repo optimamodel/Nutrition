@@ -35,7 +35,7 @@ Last update: 2018sep22
           <h2>{{ $t("Login") }}</h2>
           <div class="section">
             {{ $t("login.deprecation_warning") }}
-            <a href="http://nutrition.legacy.optimamodel.com" target="_blank">
+            <a href="http://legacy.nutrition.optimamodel.com" target="_blank">
             {{ $t("Access the legacy version here") }}
             </a>
           </div>

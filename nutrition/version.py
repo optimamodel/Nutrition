@@ -1,5 +1,5 @@
 import sciris as sc
 
-version = "2.1.0"
-versiondate = "2024-07-08"
+version = "2.2.0"
+versiondate = "2025-10-06"
 gitinfo = sc.gitinfo(__file__)

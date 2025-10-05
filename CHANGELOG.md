@@ -3,10 +3,10 @@
 
 
 #### [2.1.0] - 2025-07-04
-- Cash transfers impacts stunting and calcium suppementation impacts birth outcomes
+- Cash transfers impacts stunting and calcium supplementation impacts birth outcomes
 - A pathway for stillbirths is added and MMS impacts stillbirths
 - Databook is updated to include economic inputs
-- Economic cost calculation module is intergrated
+- Economic cost calculation module is integrated
 - A new optimization objective added to minimize economic costs
 - Output Excel file writes economic costs into a separate sheet
 
