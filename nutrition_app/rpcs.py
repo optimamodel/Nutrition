@@ -1369,7 +1369,7 @@ def opt_new_optim(project_id, dataset, locale):
     py_optim = nu.make_default_optim(modelname=dataset, basename=_("Maximize thrive"), locale=proj.locale)
     prog_set = []
     for program in proj.model(py_optim.model_name).prog_info.programs.values():
-        if is_included(py_optim.prog_set, program, True):
+        if is_included(py_optim.prog_set, program, False):
             prog_set.append(program.name)
     py_optim.prog_set = prog_set
     js_optim = py_to_js_optim(py_optim, proj)

@@ -263,8 +263,9 @@ class Program(sc.prettyobj):
         :return:
         """
         update = self._effectiveness_update(age_group, _("Effectiveness mortality"))
+        all_cause_update = self._all_mortality_effectiveness_update(age_group, _("Effectiveness mortality"))
         for cause in age_group.causes_death:
-            age_group.mortalityUpdate[cause] *= update[cause]
+            age_group.mortalityUpdate[cause] *= update[cause] * all_cause_update
             
     def get_stillbirths_update(self, age_group):
         """
@@ -339,6 +340,20 @@ class Program(sc.prettyobj):
             effectiveness = age_group.prog_eff.get((self.name, cause, effType), 0)
             reduction = affFrac * effectiveness * (self.annual_unrestr_cov[self.year] - oldCov) / (1.0 - effectiveness * oldCov)
             update[cause] *= 1.0 - reduction
+        return update
+    
+    @translate
+    def _all_mortality_effectiveness_update(self, age_group, effType):
+        """This covers all cause mortality update"""
+        
+        target_cond = _("All causes")
+        update = 1
+        oldCov = self.annual_unrestr_cov[self.year - 1]
+        
+        affFrac = age_group.prog_eff.get((self.name, target_cond, _("Affected fraction")), 0)
+        effectiveness = age_group.prog_eff.get((self.name, target_cond, effType), 0)
+        reduction = affFrac * effectiveness * (self.annual_unrestr_cov[self.year] - oldCov) / (1.0 - effectiveness * oldCov)
+        update = 1.0 - reduction
         return update
     
     @translate

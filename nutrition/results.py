@@ -206,7 +206,7 @@ def reduce_results(results, point_estimate: str = "median", bounds: str = "quant
     return res_unc
 
 
-def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False, full_rows=True):
+def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False, full_rows=False):
     """Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
@@ -225,12 +225,12 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     
     econ_rows = []
     for outcome in rows:
-        if "cost" in outcome or "benefit" in outcome:
+        if _("cost") in outcome or _("benefit") in outcome:
             econ_rows.append(outcome)
             
     out_rows = []
     for outcome in rows:
-        if "cost" not in outcome and "benefit" not in outcome:
+        if _("cost") not in outcome and _("benefit") not in outcome:
             out_rows.append(outcome) 
     
     ### Outcomes sheet
@@ -244,7 +244,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
                     these_outcomes.append(out)
             out = res.get_outputs(these_outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(out_rows):
-                name = [res.name] if o == 0 or full_rows else [""]
+                name = [res.name] 
                 thisout = out[o]
                 if _("prev") in outcome.lower():
                     cumul = _("N/A")
@@ -269,13 +269,13 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             
             # collate coverages first
             for r, prog in enumerate(rows):
-                name = [res.name] if r == 0 or full_rows else [""]
+                name = [res.name] 
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
                 outputs.append(name + [prog] + [_("Coverage")] + [costcov] + list(thiscov))
             # collate spending second
             for r, prog in enumerate(rows):
-                name = [res.name] if r == 0 or full_rows else [""]
+                name = [res.name] 
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
                 outputs.append(name + [prog] + [_("Budget")] + [costcov] + list(thisspend))
@@ -287,13 +287,13 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             
             # collate coverages first
             for r, prog in enumerate(rows):
-                name = [res.name] if r == 0 or full_rows else [""]
+                name = [res.name] 
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
                 outputs.append(name + [prog] + [_("Coverage")] + [costcov] + list(thiscov))
             # collate spending second
             for r, prog in enumerate(rows):
-                name = [res.name] if r == 0 or full_rows else [""]
+                name = [res.name] 
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
                 outputs.append(name + [prog] + [_("Budget")] + [costcov] + list(thisspend))
@@ -320,7 +320,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
             
             
             for o, outcome in enumerate(econ_rows):
-                name = [res.name] if o == 0 or full_rows else [""]
+                name = [res.name] 
                 thisout = econo_out[o]
                 
                 cumul = sum(thisout)
@@ -335,7 +335,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     return filepath
 
 
-def write_reduced_results(results, reduced_results, projname=None, filename=None, folder=None):
+def write_reduced_results(results, reduced_results, projname=None, filename=None, folder=None, full_rows=False):
     """Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
@@ -348,14 +348,12 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     _ = get_translator(results[0].locale)
     econ_rows = []
     for outcome in rows:
-        if "cost" in outcome or "benefit" in outcome:
-            econ_rows.append(outcome) 
-            
+        if _("cost") in outcome or _("benefit") in outcome:
+            econ_rows.append(outcome)
     out_rows = []
     for outcome in rows:
-        if "cost" not in outcome and "benefit" not in outcome:
-            out_rows.append(outcome) 
-                   
+        if _("cost") not in outcome and _("benefit") not in outcome:
+            out_rows.append(outcome)               
     ### Outcomes sheet
     headers = [[_("Scenario"), _("Estimate"), _("Outcome")] + years + [_("Cumulative")]] #TODO these should have a locale?
     for r, res in enumerate(reduced_results):
@@ -368,7 +366,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                 out = []
                 for measure in list(reduced_results[res].keys()):
                     if "cost" not in measure and "benefit" not in measure and "pop" not in measure and "pw_mortrate" not in measure:
-                        out.append(reduced_results[res][measure][esti])
+                        out.append(reduced_results[res][measure][esti]) 
                 for o, outcome in enumerate(out_rows):
                     name = [res] 
                     thisout = out[o]
@@ -381,7 +379,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                     else:
                         cumul = sum(thisout)
                     outputs.append(name + [esti] + [outcome] + list(thisout) + [cumul])
-                outputs.append(nullrow)
+                if not full_rows: outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
 
@@ -406,13 +404,13 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
             for p, prog in enumerate(rows):
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
-                outputs.append([""] + [prog] + [_("Budget")] + [costcov] + list(thisspend))
-            outputs.append(nullrow)
+                outputs.append(name + [prog] + [_("Budget")] + [costcov] + list(thisspend))
+            if not full_rows: outputs.append(nullrow)
         elif resampled_key_str not in res.name:
             spend = res.get_allocs(ref=True)
             thisspend = spend[_("Excess budget not allocated")]
             outputs.append([_("Excess budget not allocated")] + ["N/A"] + [_("Budget")] + ["N/A"] + list(thisspend))
-            outputs.append(nullrow)
+            if not full_rows: outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
     
@@ -441,7 +439,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                     cumul = sum(thisout)
                     outputs.append(name + [esti] + [outcome] + list(thisout) + [cumul])
                     # print(outputs)
-                outputs.append(nullrow)
+                if not full_rows: outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
     

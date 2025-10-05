@@ -44,6 +44,8 @@ kwargs10 = {"name": "Calcium supplementation", "model_name": "eg", "scen_type": 
 
 kwargs11 = {"name": "MMS on Stillbirths", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"Multiple micronutrient supplementation": [0.5, 0.6, 0.9]}), "growth": "fixed coverage"}
 
+kwargs12 = {"name": "SQLNS on all cause mortality", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"Small quantity lipid-based nutrition supplements": [0.5, 0.6, 0.9]}), "growth": "fixed coverage"}
+
 if __name__ == "__main__":
     # mod = p.models.keys()[0]
     # progs = p.models[mod].prog_info.programs.keys()
@@ -51,15 +53,15 @@ if __name__ == "__main__":
     # inf_budget_kwargs = {"name": 'Infinite spending exc FP', "model_name": mod, "scen_type": "budget", "progvals": sc.odict([(prog, [0 if prog=='Family planning' else 9999999999]) for prog in progs])}
     # scen_list = nu.make_scens([zero_budget_kwargs, inf_budget_kwargs])
 
-    scen_list = nu.make_scens([kwargs11])
+    scen_list = nu.make_scens([kwargs12])
     p.add_scens(scen_list)
 
-    results = p.run_scens(n_samples=0)
+    results = p.run_scens(n_samples=5)
 
 if doplot:
     p.plot()
 # costeff = p.get_costeff()
 # p.write_results("scen_results_test.xlsx")
 all_reduce = reduce_results(results)
-write_results(results=results, reduced_results=all_reduce, filename="scen_results_test_2025_stillbirths.xlsx")
+write_results(results=results, reduced_results=all_reduce, filename="scen_results_test_2025_SQLNS.xlsx")
 p.save("test")

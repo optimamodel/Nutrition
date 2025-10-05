@@ -1278,3 +1278,6 @@ msgstr "Âge"
 
 msgid "Stillbirths"
 msgstr "Mortinaissances"
+
+msgid "All causes"
+msgstr "Toutes les causes"
