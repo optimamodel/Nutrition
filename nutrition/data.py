@@ -1004,7 +1004,7 @@ class ProgramData(object):
                 packagesDict[packageName[0]] = []
             for mode in package:
                 col = package[mode]
-                if col.notnull()[0]:
+                if col.notnull().iloc[0]:
                     if mode == _("Mass media"):
                         ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]]  # exclude 24-59 months
                     else:
