@@ -523,13 +523,29 @@ class Project(object):
             res = run_scen(scen, model, name=result_name)
             results.append(res)
         else:
-            for i in range(n_samples):
-                model = Model(dataset.resample(seed=seed + i), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
-                result_name = scen.name + resampled_key_str + str(i)
-                _add_excess_budget(scen, model)
-                res = run_scen(scen, model, name=result_name)
-                results.append(res)
-
+            # for i in range(n_samples):
+            #     model = Model(dataset.resample(seed=seed + i), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+            #     result_name = scen.name + resampled_key_str + str(i)
+            #     _add_excess_budget(scen, model)
+            #     res = run_scen(scen, model, name=result_name)
+            #     results.append(res)
+            successful = 0
+            attempt = 0
+            while successful < n_samples:
+                current_seed = seed + attempt
+                attempt += 1
+                try:
+                    model = Model(dataset.resample(seed=current_seed), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+                    result_name = scen.name + resampled_key_str + str(successful)
+                    _add_excess_budget(scen, model)
+                    res = run_scen(scen, model, name=result_name)
+                    results.append(res)
+                    successful += 1
+                
+                except Exception as e:
+                    # Skip failed seed
+                    print(f"Skipping seed {current_seed} due to error: {e}")
+                    continue
         return results
 
     def run_scens(self, scens_to_run=None, n_samples=0, seed=None, name="scens"):
