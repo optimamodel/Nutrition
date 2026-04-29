@@ -1,6 +1,9 @@
 
 ### Changelog
 
+#### [2.2.1] - 2026-04-26
+Update uncertainty analysis to remove invalid samples
+
 #### [2.2.0] - 2025-10-06
 Update URLs and merge to main site.
 
